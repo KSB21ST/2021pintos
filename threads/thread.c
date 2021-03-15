@@ -320,8 +320,8 @@ thread_set_priority (int new_priority) {
    if(thread_mlfqs){
       return;
    }
-   // #if !thread_mlfqs
-   if(thread_current()->donated_priority < 0){
+
+   if(thread_current()->donated_priority < 0){ //thread가 donate 되지 않은 상태라면
       thread_current ()->priority = new_priority;
    }else{
       thread_current()->original_priority = new_priority;
@@ -428,7 +428,9 @@ init_thread (struct thread *t, const char *name, int priority) {
 	//edit-time
 	t->stop_sleep = 0;
 	t->original_priority = -1;
-	t->donated_priority = -1;
+	t->donated_priority = false;
+	list_init(&t->locks_wait);
+	list_init(&t->locks_have);
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should

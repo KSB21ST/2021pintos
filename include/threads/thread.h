@@ -95,8 +95,11 @@ struct thread {
 
 	//edit - timer
 	int64_t stop_sleep;
-	int donated_priority;
+	bool donated_priority;
 	int original_priority;
+
+	struct list locks_wait;
+	struct list locks_have;
 	//end of edit
 
 	/* Shared between thread.c and synch.c. */

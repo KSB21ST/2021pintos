@@ -92,8 +92,13 @@ struct thread {
 	char name[16];                      /* Name (for debugging purposes). */
 	int priority;                       /* Priority. */
 
+
+	//edit - timer
+	int64_t stop_sleep;
+
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
+	struct list_elem slpelem;
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -142,5 +147,4 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void do_iret (struct intr_frame *tf);
-
 #endif /* threads/thread.h */

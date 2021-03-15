@@ -17,6 +17,9 @@
 #error TIMER_FREQ <= 1000 recommended
 #endif
 
+//edit
+static struct list sleep_list;
+
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
 
@@ -34,6 +37,7 @@ static void real_time_sleep (int64_t num, int32_t denom);
    corresponding interrupt. */
 void
 timer_init (void) {
+	list_init(&sleep_list);
 	/* 8254 input frequency divided by TIMER_FREQ, rounded to
 	   nearest. */
 	uint16_t count = (1193180 + TIMER_FREQ / 2) / TIMER_FREQ;
@@ -91,10 +95,21 @@ timer_elapsed (int64_t then) {
 void
 timer_sleep (int64_t ticks) {
 	int64_t start = timer_ticks ();
-
+	struct thread *current = thread_current();
 	ASSERT (intr_get_level () == INTR_ON);
-	while (timer_elapsed (start) < ticks)
-		thread_yield ();
+	enum intr_level old_level = intr_disable();
+	int64_t sleep_time = start + ticks;
+	add_sleep_list(sleep_time);
+   	intr_set_level(old_level);
+
+}
+
+void 
+add_sleep_list(int time){
+	struct thread *current = thread_current();
+	current->stop_sleep = time;
+	list_push_back(&sleep_list, &current->slpelem);
+	thread_block();
 }
 
 /* Suspends execution for approximately MS milliseconds. */
@@ -125,6 +140,17 @@ timer_print_stats (void) {
 static void
 timer_interrupt (struct intr_frame *args UNUSED) {
 	ticks++;
+	//thread_wake
+	if(!list_empty(&sleep_list)){
+      struct list_elem *e;
+      for (e = list_begin (&sleep_list); e != list_end (&sleep_list); e = list_next (e)) {
+         struct thread *f = list_entry(e, struct thread, slpelem);
+         if(ticks >= (int64_t)f->stop_sleep){
+            list_remove(&f->slpelem);
+            thread_unblock(f);
+         }else{continue;}
+      }
+   }
 	thread_tick ();
 }
 

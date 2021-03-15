@@ -204,6 +204,8 @@ read_command_line (void) {
    and returns the first non-option argument. */
 static char **
 parse_options (char **argv) {
+	//edit
+	power_off_when_done = true;
 	for (; *argv != NULL && **argv == '-'; argv++) {
 		char *save_ptr;
 		char *name = strtok_r (*argv, "=", &save_ptr);

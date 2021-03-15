@@ -321,7 +321,7 @@ thread_set_priority (int new_priority) {
       return;
    }
 
-   if(thread_current()->donated_priority < 0){ //thread가 donate 되지 않은 상태라면
+   if(!thread_current()->donated_priority){ //thread가 donate 되지 않은 상태라면
       thread_current ()->priority = new_priority;
    }else{
       thread_current()->original_priority = new_priority;

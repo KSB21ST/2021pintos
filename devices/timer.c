@@ -145,12 +145,15 @@ timer_interrupt (struct intr_frame *args UNUSED) {
       struct list_elem *e;
       for (e = list_begin (&sleep_list); e != list_end (&sleep_list); e = list_next (e)) {
          struct thread *f = list_entry(e, struct thread, slpelem);
-         if(ticks >= (int64_t)f->stop_sleep){
+         if(ticks >= f->stop_sleep){
             list_remove(&f->slpelem);
             thread_unblock(f);
          }else{continue;}
       }
    }
+   //end of thread_wake
+
+
 	thread_tick ();
 }
 

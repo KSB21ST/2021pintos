@@ -15,6 +15,10 @@
 #include "userprog/process.h"
 #endif
 //THIS IS A TEST For SB
+bool compare_priority(struct list_elem *, struct list_elem *, void *);
+
+//end of edit
+
 /* Random value for struct thread's `magic' member.
    Used to detect stack overflow.  See the big comment at the top
    of thread.h for details. */
@@ -206,6 +210,7 @@ thread_create (const char *name, int priority,
 
 	/* Add to run queue. */
 	thread_unblock (t);
+	thread_yield();
 
 	return tid;
 }
@@ -311,7 +316,17 @@ thread_yield (void) {
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) {
-	thread_current ()->priority = new_priority;
+	//edit-mlfqs
+   if(thread_mlfqs){
+      return;
+   }
+   // #if !thread_mlfqs
+   if(thread_current()->donated_priority < 0){
+      thread_current ()->priority = new_priority;
+   }else{
+      thread_current()->original_priority = new_priority;
+   }
+   thread_yield();
 }
 
 /* Returns the current thread's priority. */
@@ -412,6 +427,8 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 	//edit-time
 	t->stop_sleep = 0;
+	t->original_priority = -1;
+	t->donated_priority = -1;
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
@@ -424,6 +441,7 @@ next_thread_to_run (void) {
 	if (list_empty (&ready_list))
 		return idle_thread;
 	else
+		list_sort((&ready_list), &compare_priority, NULL);
 		return list_entry (list_pop_front (&ready_list), struct thread, elem);
 }
 
@@ -590,4 +608,14 @@ allocate_tid (void) {
 	lock_release (&tid_lock);
 
 	return tid;
+}
+
+//edit
+bool compare_priority(struct list_elem * a, struct list_elem * b, void *aux){
+   struct thread *temp1 = list_entry(a, struct thread, elem);
+   struct thread *temp2 = list_entry(b, struct thread, elem);
+   if((temp1->priority) > (temp2->priority)){
+      return true;
+   }else{
+      return false;}
 }

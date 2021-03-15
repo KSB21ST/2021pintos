@@ -95,6 +95,9 @@ struct thread {
 
 	//edit - timer
 	int64_t stop_sleep;
+	int donated_priority;
+	int original_priority;
+	//end of edit
 
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
@@ -147,4 +150,7 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void do_iret (struct intr_frame *tf);
+//edit
+bool compare_priority(struct list_elem *, struct list_elem *, void *);
+//end of edit
 #endif /* threads/thread.h */

@@ -362,8 +362,8 @@ thread_set_nice (int nice UNUSED) {
    thread_current()->nice = nice;
    if (current != idle_thread){
 	   //recent_cpu = (2 * load_avg) / (2 * load_avg + 1) * recent_cpu + nice
-	   int new_recent_cpu = mult_fp(div_fp(load_avg*2, load_avg*2+1*F), current->recent_cpu) + current->nice*F;
-	   current->recent_cpu = new_recent_cpu;
+	//    int new_recent_cpu = mult_fp(div_fp(load_avg*2, load_avg*2+1*F), current->recent_cpu) + current->nice*F;
+	//    current->recent_cpu = new_recent_cpu;
 	// priority = PRI_MAX – (recent_cpu / 4) – (nice * 2)
 	   int new_priority = fp_round((PRI_MAX*F - (current->recent_cpu / 4)) - (current->nice * 2)*F);
       if ((new_priority > PRI_MAX) || (new_priority < PRI_MIN))
@@ -720,4 +720,19 @@ int div_fp(int x, int y){
 
 int mult_fp(int x, int y){
     return ((int64_t) x) * y / F;
+}
+
+void mlfqs_priority (void){
+   if(!list_empty(&all_list)){
+      struct list_elem *e;
+      for (e = list_begin (&all_list); e != list_end (&all_list); e = list_next (e)) {
+         struct thread *f = list_entry(e, struct thread, allelem);
+         if (f != idle_thread){
+            int new_priority = fp_round((PRI_MAX*F - (f->recent_cpu / 4)) - (f->nice * 2)*F);
+			if ((new_priority > PRI_MAX) || (new_priority < PRI_MIN))
+				new_priority = new_priority > PRI_MAX ? PRI_MAX : PRI_MIN;
+			f->priority = new_priority;
+         }
+       }
+   }
 }

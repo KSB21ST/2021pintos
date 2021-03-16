@@ -167,12 +167,13 @@ timer_interrupt (struct intr_frame *args UNUSED) {
       }
 
       if(ticks % 4 == 0){
-		if (current != idle_thread){
-			int new_priority = fp_round((PRI_MAX*F - (current->recent_cpu / 4)) - (current->nice * 2)*F);
-			if ((new_priority > PRI_MAX) || (new_priority < PRI_MIN))
-				new_priority = new_priority > PRI_MAX ? PRI_MAX : PRI_MIN;
-			current->priority = new_priority;
-		}
+		// if (current != idle_thread){
+		// 	int new_priority = fp_round((PRI_MAX*F - (current->recent_cpu / 4)) - (current->nice * 2)*F);
+		// 	if ((new_priority > PRI_MAX) || (new_priority < PRI_MIN))
+		// 		new_priority = new_priority > PRI_MAX ? PRI_MAX : PRI_MIN;
+		// 	current->priority = new_priority;
+		// }
+		mlfqs_priority();
       }
    }
 

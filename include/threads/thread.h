@@ -92,8 +92,23 @@ struct thread {
 	char name[16];                      /* Name (for debugging purposes). */
 	int priority;                       /* Priority. */
 
+	//edit
+	struct list locks_have;  /*locks that this thread currently acquired*/
+	struct list locks_wait;  /*locks that this thread is waiting to acquire*/
+	int original_priority;   /*original priority before thread was donated priority*/
+	bool dontaed_priority;   /*if thread's current priority is a donated one, true*/
+
+	//mlfqs
+	int nice;				/* nice value for mlfqs */
+	int recent_cpu;			/* recent_cpu value for mlfqs */
+
+
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
+	struct list_elem allelem;
+	struct list_elem slpelem;
+
+	int64_t wake_time;
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -107,6 +122,7 @@ struct thread {
 	/* Owned by thread.c. */
 	struct intr_frame tf;               /* Information for switching */
 	unsigned magic;                     /* Detects stack overflow. */
+
 };
 
 /* If false (default), use round-robin scheduler.
@@ -142,5 +158,8 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void do_iret (struct intr_frame *tf);
+
+//edit
+bool compare_priority(struct list_elem * a, struct list_elem * b, void *aux);
 
 #endif /* threads/thread.h */

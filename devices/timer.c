@@ -18,8 +18,6 @@
 #error TIMER_FREQ <= 1000 recommended
 #endif
 
-//edit
-static struct list sleep_list;
 
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
@@ -163,17 +161,11 @@ timer_interrupt (struct intr_frame *args UNUSED) {
       int ticks = timer_ticks();
       if ( ticks % TIMER_FREQ == 0){
          mlfqs_load_avg();
-         mlfqs_recalc_cpu();
+         all_recent_cpu();
       }
 
       if(ticks % 4 == 0){
-		// if (current != idle_thread){
-		// 	int new_priority = fp_round((PRI_MAX*F - (current->recent_cpu / 4)) - (current->nice * 2)*F);
-		// 	if ((new_priority > PRI_MAX) || (new_priority < PRI_MIN))
-		// 		new_priority = new_priority > PRI_MAX ? PRI_MAX : PRI_MIN;
-		// 	current->priority = new_priority;
-		// }
-		mlfqs_priority();
+		all_priority();
       }
    }
 

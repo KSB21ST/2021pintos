@@ -159,11 +159,13 @@ int thread_get_load_avg (void);
 void do_iret (struct intr_frame *tf);
 //edit
 bool compare_priority(struct list_elem *, struct list_elem *, void *);
-void mlfqs_recalc_cpu (void);
-void mlfqs_priority (void);
+void all_recent_cpu (void);
+void all_priority (void);
 void mlfqs_load_avg (void);
 static struct thread *idle_thread;
 int fp_round(int);
 #define F (1 << 14) //fixed point 1
+//edit
+static struct list sleep_list;
 //end of edit
 #endif /* threads/thread.h */

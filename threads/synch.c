@@ -201,22 +201,17 @@ lock_acquire (struct lock *lock) {
 		lock->holder = thread_current ();
 		return;
 	}
-	// //original
-	// sema_down (&lock->semaphore);
-	// lock->holder = thread_current ();
-	// //end original
-	//edit
    struct semaphore *sema = &lock->semaphore;
    //when the current thread tries to acquire lock, but the lock is owned by thread with smaller priority
    if(lock->holder != NULL){
-	if(thread_get_priority() > lock->holder->priority){ 
-		/*for donate-priority-nest: acquire 하려는 lock을 가지고 있는 holder가
-		기다리고 있는 lock 이 있다면 그 lock의 holder에게도 priority를 donate 해준다*/
-		list_push_back(&thread_current()->locks_wait, &lock->w_elem);
-		rec_donate_pri(thread_current());
-		donate_priority(lock);
-		thread_yield();
-	}
+      if(thread_get_priority() > lock->holder->priority){ 
+         /*for donate-priority-nest: acquire 하려는 lock을 가지고 있는 holder가
+         기다리고 있는 lock 이 있다면 그 lock의 holder에게도 priority를 donate 해준다*/
+         list_push_back(&thread_current()->locks_wait, &lock->w_elem);
+         rec_donate_pri(thread_current());
+         donate_priority(lock);
+         thread_yield();
+      }
    }
    sema_down(&lock->semaphore);
    //if the current thread can successfully acquire the lock:
@@ -261,14 +256,10 @@ lock_release (struct lock *lock) {
 		sema_up (&lock->semaphore);
 		return;
 	}
-	// //original state
-	// lock->holder = NULL;
-	// sema_up (&lock->semaphore);
-	// //end of original state
 	struct thread *lock_holder = lock->holder;
    struct list *lock_list = &lock_holder->locks_have;
- 	list_remove(&lock->elem);
    lock->max_pri = 0;
+ 	list_remove(&lock->elem);
    lock->holder = NULL;
    if (!list_empty (&(&lock->semaphore)->waiters)){
       list_remove(&lock->w_elem);

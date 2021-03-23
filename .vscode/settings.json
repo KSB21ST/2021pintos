@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "intrinsic.h": "c",
+        "process.h": "c",
+        "*.inc": "c"
+    }
+}

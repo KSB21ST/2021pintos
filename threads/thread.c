@@ -258,6 +258,14 @@ thread_unblock (struct thread *t) {
 	ASSERT (t->status == THREAD_BLOCKED);
 	list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
+
+	// if(t->priority > thread_get_priority()){
+	// 	if(intr_context()){
+	// 		intr_yield_on_return();
+	// 	}else{
+	// 		thread_yield();
+	// 	}
+	// }
 	intr_set_level (old_level);
 }
 
@@ -733,4 +741,26 @@ void all_priority (void){
          }
        }
    }
+}
+
+void
+thread_preempt (void)
+{
+  enum intr_level old_level;
+  struct thread *temp;
+  old_level = intr_disable ();
+
+  // 대기 리스트가 비어 있으면 이 스레드를 제외하고 idle 스레드 하나 뿐입니다.
+  if(!list_empty(&ready_list)){
+  list_sort(&ready_list, &compare_priority, NULL);
+  temp = list_entry (list_front (&ready_list), struct thread, elem);
+	if(temp != NULL && temp->priority > thread_get_priority()){
+		if(intr_context()){
+			intr_yield_on_return();
+		}else{
+			thread_yield();
+		}
+	}
+  }
+ intr_set_level (old_level);
 }

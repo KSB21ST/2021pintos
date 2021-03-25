@@ -177,20 +177,20 @@ process_exec (void *f_name) {
 //    printf ("'%s'\n", token);
 
 
-	char *temp[40];
-	char *save_ptr = NULL;
-	int i = 0;
-	file_name = strtok_r(file_name, " ", &save_ptr);
-	while(file_name != NULL){
-		// printf("%s \n", file_name);
-		temp[i] = file_name;
-		file_name = strtok_r(NULL, " ", &save_ptr);
-		i++;
-	}
+	// char *temp[40];
+	// char *save_ptr = NULL;
+	// int i = 0;
+	// file_name = strtok_r(file_name, " ", &save_ptr);
+	// while(file_name != NULL){
+	// 	// printf("%s \n", file_name);
+	// 	temp[i] = file_name;
+	// 	file_name = strtok_r(NULL, " ", &save_ptr);
+	// 	i++;
+	// }
 
-	for(int j = 0;j<40;j++){
-		printf("temp %d: %c", j, temp[j]);
-	}
+	// for(int j = 0;j<40;j++){
+	// 	printf("temp %d: %c", j, temp[j]);
+	// }
 	// file_name = &temp;
 	//eof edit
 

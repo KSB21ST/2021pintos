@@ -169,5 +169,6 @@ int fp_round(int);
 #define F (1 << 14) //fixed point 1
 //edit
 static struct list sleep_list;
+void thread_preempt (void);
 //end of edit
 #endif /* threads/thread.h */

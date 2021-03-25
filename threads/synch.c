@@ -115,23 +115,8 @@ sema_up (struct semaphore *sema) {
 		thread_unblock (temp);
 	}
 	sema->value++;
-	if(temp != NULL && temp->priority > thread_get_priority()){
-		if(intr_context()){
-			intr_yield_on_return();
-		}else{
-			thread_yield();
-		}
-	}
+   thread_preempt();
    intr_set_level (old_level);
-	// thread_yield();
-   // #ifdef USERPROG
-      // if(thread_current()->pml4)                                                                       
-      //    thread_yield();
-   // #endif
-
-   // #ifndef USERPROG
-   //    thread_yield();
-   // #endif
 }
 
 static void sema_test_helper (void *sema_);
@@ -319,14 +304,6 @@ lock_release (struct lock *lock) {
    }else{
       lock_holder->donated_priority = false;
    }
-   // #ifdef USERPROG
-   //    if(thread_current()->pml4)                                                                       
-   //       thread_yield();
-   // #endif
-
-   // #ifndef USERPROG
-   //    thread_yield();
-   // #endif
    sema_up (&lock->semaphore);
    intr_set_level(old_level);
 }

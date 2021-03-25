@@ -1,4 +1,5 @@
 FAIL
+<<<<<<< HEAD
 Test output failed to match any acceptable form.
 
 Acceptable output:
@@ -22,3 +23,6 @@ Differences in `diff -u' format:
 + args-dbl-space 
 + two 
 + spaces! 
+=======
+Run didn't produce any output
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35

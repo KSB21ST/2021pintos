@@ -4,17 +4,22 @@ Kernel command line: -q run alarm-zero
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 Calibrating timer...  157,081,600 loops/s.
 =======
 Calibrating timer...  155,648,000 loops/s.
 >>>>>>> Stashed changes
+=======
+Calibrating timer...  130,867,200 loops/s.
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 Boot complete.
 Executing 'alarm-zero':
 (alarm-zero) begin
 (alarm-zero) PASS
 (alarm-zero) end
 Execution of 'alarm-zero' complete.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 Timer: 23 ticks
 Thread: 1 idle ticks, 22 kernel ticks, 0 user ticks
@@ -22,6 +27,10 @@ Thread: 1 idle ticks, 22 kernel ticks, 0 user ticks
 Timer: 26 ticks
 Thread: 1 idle ticks, 25 kernel ticks, 0 user ticks
 >>>>>>> Stashed changes
+=======
+Timer: 24 ticks
+Thread: 1 idle ticks, 23 kernel ticks, 0 user ticks
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 Console: 425 characters output
 Keyboard: 0 keys pressed
 Powering off...

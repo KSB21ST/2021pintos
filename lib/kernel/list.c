@@ -487,3 +487,14 @@ list_min (struct list *list, list_less_func *less, void *aux) {
 	}
 	return min;
 }
+
+//edit
+int
+list_size_int (struct list *list){
+	struct list_elem *e;
+	int cnt = 0;
+
+	for (e = list_begin (list); e != list_end (list); e = list_next (e))
+		cnt++;
+	return cnt;
+}

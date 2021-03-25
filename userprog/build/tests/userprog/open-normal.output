@@ -1,10 +1,18 @@
 Kernel command line: -q -f put open-normal put sample.txt run open-normal
+<<<<<<< HEAD
 good bye~~~0 ~ 9fc00 1
+=======
+0 ~ 9fc00 1
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 100000 ~ 13e0000 1
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+<<<<<<< HEAD
 Calibrating timer...  110,796,800 loops/s.
+=======
+Calibrating timer...  130,867,200 loops/s.
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 105 sector (52 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -13,6 +21,7 @@ Boot complete.
 Putting 'open-normal' into the file system...
 Putting 'sample.txt' into the file system...
 Executing 'open-normal':
+<<<<<<< HEAD
 open-normal 
 Page fault at 0x8: not present error writing page in kernel context.
 Interrupt 0x0e (#PF Page-Fault Exception) at rip=800421be82
@@ -35,3 +44,15 @@ hd0:1: 61 reads, 248 writes
 hd1:0: 105 reads, 0 writes
 Console: 1863 characters output
 Key
+=======
+Execution of 'open-normal' complete.
+Timer: 66 ticks
+Thread: 34 idle ticks, 32 kernel ticks, 0 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 61 reads, 248 writes
+hd1:0: 105 reads, 0 writes
+Console: 857 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35

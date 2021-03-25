@@ -160,11 +160,13 @@ error:
 
 /* Switch the current execution context to the f_name.
  * Returns -1 on fail. */
+
 int
 process_exec (void *f_name) {
 	char *file_name = f_name;
 	bool success;
 
+<<<<<<< HEAD
 	//edit
 	char *temp[40];
 	char *save_ptr = NULL;
@@ -178,6 +180,25 @@ process_exec (void *f_name) {
 	}
 	file_name = temp[0];
 	
+=======
+	//start edit
+	// char *temp[40];
+	// char *save_ptr = NULL;
+	// int i = 0;
+	// file_name = strtok_r(file_name, " ", &save_ptr);
+	// while(file_name != NULL){
+	// 	// printf("%s \n", file_name);
+	// 	temp[i] = file_name;
+	// 	file_name = strtok_r(NULL, " ", &save_ptr);
+	// 	i++;
+	// }
+
+	// for(int j = 0;j<40;j++){
+	// 	printf("temp %d: %c", j, temp[j]);
+	// }
+	// file_name = &temp;
+	//eof edit
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 
 	/* We cannot use the intr_frame in the thread structure.
 	 * This is because when current thread rescheduled,
@@ -430,6 +451,7 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
+<<<<<<< HEAD
 	
 	//edit
 	// calculate argc
@@ -442,6 +464,16 @@ load (const char *file_name, struct intr_frame *if_) {
 	struct gp_registers *REG = &(if_->R);
 	REG->rsi = (uint64_t)((if_->rsp) + 8); 	// to point argv[0]
 	REG->rdi = (uint64_t)argc;
+=======
+	//start edit
+   // calculate argc
+//    char *temp = file_name;
+//    int argc = 0;
+//    while(*(temp + argc) != NULL){
+//       argc++;
+//    }
+   //eof edit
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 
 	success = true;
 

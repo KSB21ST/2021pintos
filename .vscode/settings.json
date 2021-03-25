@@ -1,5 +1,11 @@
 {
     "files.associations": {
+<<<<<<< HEAD
         "interrupt.h": "c"
+=======
+        "intrinsic.h": "c",
+        "process.h": "c",
+        "*.inc": "c"
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
     }
 }

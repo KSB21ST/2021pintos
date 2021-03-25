@@ -1,4 +1,5 @@
 FAIL
+<<<<<<< HEAD
 Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
 Call stack: 0x8004218563 0x800421cc57 0x800421cdd6 0x8004209113 0x8004209531 0x800421bb9b 0x80042075ff
 Translation of call stack:
@@ -9,3 +10,11 @@ Translation of call stack:
 0x0000008004209531: intr_entry (threads/intr-stubs.o:?)
 0x000000800421bb9b: initd (userprog/process.c:69)
 0x00000080042075ff: kernel_thread (threads/thread.c:468)
+=======
+Kernel panic in run: PANIC at ../../userprog/process.c:70 in initd(): Fail to launch initd
+Call stack: 0x80042186a9 0x800421bd7f 0x80042075ab
+Translation of call stack:
+0x00000080042186a9: debug_panic (lib/kernel/debug.c:32)
+0x000000800421bd7f: initd (userprog/process.c:71)
+0x00000080042075ab: kernel_thread (threads/thread.c:447)
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35

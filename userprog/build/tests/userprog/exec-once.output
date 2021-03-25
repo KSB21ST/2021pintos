@@ -1,10 +1,18 @@
 Kernel command line: -q -f put exec-once put child-simple run exec-once
+<<<<<<< HEAD
 good bye~~~0 ~ 9fc00 1
+=======
+0 ~ 9fc00 1
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 100000 ~ 13e0000 1
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+<<<<<<< HEAD
 Calibrating timer...  209,510,400 loops/s.
+=======
+Calibrating timer...  117,760,000 loops/s.
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 203 sector (101 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -13,6 +21,7 @@ Boot complete.
 Putting 'exec-once' into the file system...
 Putting 'child-simple' into the file system...
 Executing 'exec-once':
+<<<<<<< HEAD
 exec-once 
 Page fault at 0x8: not present error writing page in kernel context.
 Interrupt 0x0e (#PF Page-Fault Exception) at rip=800421be82
@@ -35,3 +44,25 @@ hd0:1: 60 reads, 444 writes
 hd1:0: 203 reads, 0 writes
 Console: 1780 characters output
 Key
+=======
+Page fault at 0: not present error reading page in user context.
+exec-once: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=400133
+ cr2=0000000000000000 error=               4
+rax 0000000000000000 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
+rsp 000000004747ffc8 rbp 000000004747ffd8 rsi 0000000000000000 rdi 0000000000000000
+rip 0000000000400133 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000202
+es: 001b ds: 001b cs: 0023 ss: 001b
+Execution of 'exec-once' complete.
+Timer: 81 ticks
+Thread: 38 idle ticks, 38 kernel ticks, 5 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 107 reads, 444 writes
+hd1:0: 203 reads, 0 writes
+Console: 1494 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35

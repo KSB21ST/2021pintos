@@ -1,4 +1,5 @@
 Kernel command line: -q -threads-tests -f run priority-preempt
+<<<<<<< HEAD
 Kernel PANIC at ../../threads/mmu.c:206 in pml4_activate(): assertion `is_kernel_vaddr(pml4 ? pml4 : base_pml4)' failed.
 Call stack: 0x8004218528 0x800420d35a 0x800421bf2a 0x8004207c82 0x8004207b34 0x800420726f 0x800420a320 0x800420a97e 0x8004207d8c 0x8004206b2c 0x8004206068.
 The `backtrace' program can make call stacks useful.
@@ -7,6 +8,34 @@ of the Pintos documentation for more information.
 Timer: 0 ticks
 Thread: 0 idle ticks, 0 kernel ticks, 0 user ticks
 Console: 560 characters output
+=======
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  157,081,600 loops/s.
+hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+Formatting file system...done.
+Boot complete.
+Executing 'priority-preempt':
+(priority-preempt) begin
+(priority-preempt) Thread high-priority iteration 0
+(priority-preempt) Thread high-priority iteration 1
+(priority-preempt) Thread high-priority iteration 2
+(priority-preempt) Thread high-priority iteration 3
+(priority-preempt) Thread high-priority iteration 4
+(priority-preempt) Thread high-priority done!
+(priority-preempt) The high-priority thread should have already completed.
+(priority-preempt) end
+Execution of 'priority-preempt' complete.
+Timer: 59 ticks
+Thread: 30 idle ticks, 29 kernel ticks, 0 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 9 reads, 18 writes
+Console: 1084 characters output
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

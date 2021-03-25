@@ -4,11 +4,15 @@ Kernel command line: -q run priority-donate-multiple2
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 Calibrating timer...  157,081,600 loops/s.
 =======
 Calibrating timer...  150,732,800 loops/s.
 >>>>>>> Stashed changes
+=======
+Calibrating timer...  130,867,200 loops/s.
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 Boot complete.
 Executing 'priority-donate-multiple2':
 (priority-donate-multiple2) begin
@@ -24,6 +28,7 @@ Executing 'priority-donate-multiple2':
 (priority-donate-multiple2) Main thread should have priority 31.  Actual priority: 31.
 (priority-donate-multiple2) end
 Execution of 'priority-donate-multiple2' complete.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 Timer: 25 ticks
 Thread: 0 idle ticks, 25 kernel ticks, 0 user ticks
@@ -31,6 +36,10 @@ Thread: 0 idle ticks, 25 kernel ticks, 0 user ticks
 Timer: 30 ticks
 Thread: 0 idle ticks, 30 kernel ticks, 0 user ticks
 >>>>>>> Stashed changes
+=======
+Timer: 26 ticks
+Thread: 0 idle ticks, 26 kernel ticks, 0 user ticks
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 Console: 1165 characters output
 Keyboard: 0 keys pressed
 Powering off...

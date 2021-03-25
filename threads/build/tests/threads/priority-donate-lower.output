@@ -27,7 +27,10 @@ Thread: 0 idle ticks, 23 kernel ticks, 0 user ticks
 =======
 Timer: 24 ticks
 Thread: 0 idle ticks, 24 kernel ticks, 0 user ticks
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35
 Console: 905 characters output
 Keyboard: 0 keys pressed
 Powering off...

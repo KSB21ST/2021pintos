@@ -1,4 +1,5 @@
 FAIL
+<<<<<<< HEAD
 Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
 Call stack: 0x8004218563 0x800421cc57 0x800421cdd6 0x8004209113 0x8004209531 0x800421bb9b 0x80042075ff
 Translation of call stack:
@@ -9,3 +10,43 @@ Translation of call stack:
 0x0000008004209531: intr_entry (threads/intr-stubs.o:?)
 0x000000800421bb9b: initd (userprog/process.c:69)
 0x00000080042075ff: kernel_thread (threads/thread.c:468)
+=======
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (create-empty) begin
+  create-empty: exit(-1)
+Differences in `diff -u' format:
+- (create-empty) begin
+- create-empty: exit(-1)
++ Page fault at 0: not present error reading page in user context.
++ create-empty: dying due to interrupt 0x0e (#PF Page-Fault Exception).
++ Interrupt 0x0e (#PF Page-Fault Exception) at rip=40013d
++  cr2=0000000000000000 error=               4
++ rax 0000000000000000 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
++ rsp 000000004747ffc8 rbp 000000004747ffd8 rsi 0000000000000000 rdi 0000000000000000
++ rip 000000000040013d r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
++ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
++ r15 0000000000000000 rflags 00000202
++ es: 001b ds: 001b cs: 0023 ss: 001b
+Acceptable output:
+  (create-empty) begin
+  (create-empty) create(""): 0
+  (create-empty) end
+  create-empty: exit(0)
+Differences in `diff -u' format:
+- (create-empty) begin
+- (create-empty) create(""): 0
+- (create-empty) end
+- create-empty: exit(0)
++ Page fault at 0: not present error reading page in user context.
++ create-empty: dying due to interrupt 0x0e (#PF Page-Fault Exception).
++ Interrupt 0x0e (#PF Page-Fault Exception) at rip=40013d
++  cr2=0000000000000000 error=               4
++ rax 0000000000000000 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
++ rsp 000000004747ffc8 rbp 000000004747ffd8 rsi 0000000000000000 rdi 0000000000000000
++ rip 000000000040013d r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
++ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
++ r15 0000000000000000 rflags 00000202
++ es: 001b ds: 001b cs: 0023 ss: 001b
+>>>>>>> 2846c405db482b65a15d6a20c932df8e439faf35

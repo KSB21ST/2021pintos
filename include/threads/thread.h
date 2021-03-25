@@ -92,23 +92,8 @@ struct thread {
 	char name[16];                      /* Name (for debugging purposes). */
 	int priority;                       /* Priority. */
 
-
-	//edit - timer
-	int64_t stop_sleep;
-	bool donated_priority;
-	int original_priority;
-
-	struct list locks_wait;
-	struct list locks_have;
-
-	int nice;
-	int recent_cpu;
-	//end of edit
-
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
-	struct list_elem slpelem;
-	struct list_elem allelem;
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -157,15 +142,5 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void do_iret (struct intr_frame *tf);
-//edit
-bool compare_priority(struct list_elem *, struct list_elem *, void *);
-void all_recent_cpu (void);
-void all_priority (void);
-void mlfqs_load_avg (void);
-static struct thread *idle_thread;
-int fp_round(int);
-#define F (1 << 14) //fixed point 1
-//edit
-static struct list sleep_list;
-//end of edit
+
 #endif /* threads/thread.h */

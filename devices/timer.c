@@ -8,7 +8,6 @@
 #include "threads/synch.h"
 #include "threads/thread.h"
 
-
 /* See [8254] for hardware details of the 8254 timer chip. */
 
 #if TIMER_FREQ < 19
@@ -17,7 +16,6 @@
 #if TIMER_FREQ > 1000
 #error TIMER_FREQ <= 1000 recommended
 #endif
-
 
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
@@ -36,7 +34,6 @@ static void real_time_sleep (int64_t num, int32_t denom);
    corresponding interrupt. */
 void
 timer_init (void) {
-	list_init(&sleep_list);
 	/* 8254 input frequency divided by TIMER_FREQ, rounded to
 	   nearest. */
 	uint16_t count = (1193180 + TIMER_FREQ / 2) / TIMER_FREQ;
@@ -94,21 +91,10 @@ timer_elapsed (int64_t then) {
 void
 timer_sleep (int64_t ticks) {
 	int64_t start = timer_ticks ();
-	struct thread *current = thread_current();
+
 	ASSERT (intr_get_level () == INTR_ON);
-	enum intr_level old_level = intr_disable();
-	int64_t sleep_time = start + ticks;
-	add_sleep_list(sleep_time);
-   	intr_set_level(old_level);
-
-}
-
-void 
-add_sleep_list(int time){
-	struct thread *current = thread_current();
-	current->stop_sleep = time;
-	list_push_back(&sleep_list, &current->slpelem);
-	thread_block();
+	while (timer_elapsed (start) < ticks)
+		thread_yield ();
 }
 
 /* Suspends execution for approximately MS milliseconds. */
@@ -139,36 +125,6 @@ timer_print_stats (void) {
 static void
 timer_interrupt (struct intr_frame *args UNUSED) {
 	ticks++;
-	//thread_wake
-	if(!list_empty(&sleep_list)){
-      struct list_elem *e;
-      for (e = list_begin (&sleep_list); e != list_end (&sleep_list); e = list_next (e)) {
-         struct thread *f = list_entry(e, struct thread, slpelem);
-         if(ticks >= f->stop_sleep){
-            list_remove(&f->slpelem);
-            thread_unblock(f);
-         }
-		 continue;
-      }
-   }
-   //end of thread_wake
-	if(thread_mlfqs){
-      struct thread *current = thread_current();
-	  //increment recent_cpu
-	  if (current != idle_thread)
-      	current->recent_cpu = current->recent_cpu + 1*F;
-		  
-      int ticks = timer_ticks();
-      if ( ticks % TIMER_FREQ == 0){
-         mlfqs_load_avg();
-         all_recent_cpu();
-      }
-
-      if(ticks % 4 == 0){
-		all_priority();
-      }
-   }
-
 	thread_tick ();
 }
 
@@ -192,7 +148,6 @@ too_many_loops (unsigned loops) {
 
 /* Iterates through a simple loop LOOPS times, for implementing
    brief delays.
-
    Marked NO_INLINE because code alignment can significantly
    affect timings, so that if this function was inlined
    differently in different places the results would be difficult
@@ -207,7 +162,6 @@ busy_wait (int64_t loops) {
 static void
 real_time_sleep (int64_t num, int32_t denom) {
 	/* Convert NUM/DENOM seconds into timer ticks, rounding down.
-
 	   (NUM / DENOM) s
 	   ---------------------- = NUM * TIMER_FREQ / DENOM ticks.
 	   1 s / TIMER_FREQ ticks

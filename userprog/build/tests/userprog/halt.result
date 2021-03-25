@@ -1,12 +1,2 @@
 FAIL
-Kernel panic in run: PANIC at ../../lib/kernel/list.c:270 in list_front(): assertion `!list_empty (list)' failed.
-Call stack: 0x80042185b7 0x8004218f19 0x80042081ce 0x800420a323 0x800420ab36 0x8004207dc8 0x8004206b2c 0x8004206068
-Translation of call stack:
-0x00000080042185b7: debug_panic (lib/kernel/debug.c:32)
-0x0000008004218f19: list_front (lib/kernel/list.c:271)
-0x00000080042081ce: thread_preempt (threads/thread.c:755)
-0x000000800420a323: sema_up (threads/synch.c:126)
-0x000000800420ab36: lock_release (threads/synch.c:324)
-0x0000008004207dc8: allocate_tid (threads/thread.c:679)
-0x0000008004206b2c: thread_init (threads/thread.c:130)
-0x0000008004206068: main (threads/init.c:83)
+missing 'begin' message

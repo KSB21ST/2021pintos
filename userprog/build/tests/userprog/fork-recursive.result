@@ -1,0 +1,69 @@
+FAIL
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (fork-recursive) begin
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  (fork-recursive) child run
+  child: exit(10)
+  (fork-recursive) Parent: child exit status is 10
+  child: exit(10)
+  (fork-recursive) Parent: child exit status is 10
+  child: exit(9)
+  (fork-recursive) Parent: child exit status is 9
+  child: exit(8)
+  (fork-recursive) Parent: child exit status is 8
+  child: exit(7)
+  (fork-recursive) Parent: child exit status is 7
+  child: exit(6)
+  (fork-recursive) Parent: child exit status is 6
+  child: exit(5)
+  (fork-recursive) Parent: child exit status is 5
+  child: exit(4)
+  (fork-recursive) Parent: child exit status is 4
+  (fork-recursive) end
+  fork-recursive: exit(0)
+Differences in `diff -u' format:
+- (fork-recursive) begin
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- (fork-recursive) child run
+- child: exit(10)
+- (fork-recursive) Parent: child exit status is 10
+- child: exit(10)
+- (fork-recursive) Parent: child exit status is 10
+- child: exit(9)
+- (fork-recursive) Parent: child exit status is 9
+- child: exit(8)
+- (fork-recursive) Parent: child exit status is 8
+- child: exit(7)
+- (fork-recursive) Parent: child exit status is 7
+- child: exit(6)
+- (fork-recursive) Parent: child exit status is 6
+- child: exit(5)
+- (fork-recursive) Parent: child exit status is 5
+- child: exit(4)
+- (fork-recursive) Parent: child exit status is 4
+- (fork-recursive) end
+- fork-recursive: exit(0)
++ Page fault at 0: not present error reading page in user context.
++ fork-recursive: dying due to interrupt 0x0e (#PF Page-Fault Exception).
++ Interrupt 0x0e (#PF Page-Fault Exception) at rip=40020f
++  cr2=0000000000000000 error=               4
++ rax 0000000000000000 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
++ rsp 000000004747ffc8 rbp 000000004747ffd8 rsi 0000000000000000 rdi 0000000000000000
++ rip 000000000040020f r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
++ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
++ r15 0000000000000000 rflags 00000202
++ es: 001b ds: 001b cs: 0023 ss: 001b

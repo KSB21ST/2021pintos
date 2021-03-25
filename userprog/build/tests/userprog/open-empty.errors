@@ -1,15 +1,1 @@
-Failed to import the site module
-Traceback (most recent call last):
-  File "/usr/lib/python3.6/site.py", line 570, in <module>
-    main()
-  File "/usr/lib/python3.6/site.py", line 557, in main
-    known_paths = addsitepackages(known_paths)
-  File "/usr/lib/python3.6/site.py", line 345, in addsitepackages
-    addsitedir(sitedir, known_paths)
-  File "/usr/lib/python3.6/site.py", line 213, in addsitedir
-    addpackage(sitedir, name, known_paths)
-  File "/usr/lib/python3.6/site.py", line 165, in addpackage
-    f = open(fullname, "r")
-  File "/usr/lib/python3.6/_bootlocale.py", line 23, in getpreferredencoding
-    def getpreferredencoding(do_setlocale=True):
-KeyboardInterrupt
+qemu-system-x86_64: warning: TCG doesn't support requested feature: CPUID.01H:ECX.vmx [bit 5]

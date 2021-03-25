@@ -1,0 +1,12 @@
+Kernel command line: -q -threads-tests -f run priority-change
+Kernel PANIC at ../../threads/mmu.c:206 in pml4_activate(): assertion `is_kernel_vaddr(pml4 ? pml4 : base_pml4)' failed.
+Call stack: 0x8004218528 0x800420d35a 0x800421bf2a 0x8004207c82 0x8004207b34 0x800420726f 0x800420a320 0x800420a97e 0x8004207d8c 0x8004206b2c 0x8004206068.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 0 ticks
+Thread: 0 idle ticks, 0 kernel ticks, 0 user ticks
+Console: 559 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

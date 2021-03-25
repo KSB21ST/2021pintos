@@ -154,7 +154,6 @@ thread_start (void) {
 
    /* Start preemptive thread scheduling. */
    intr_enable ();
-
    /* Wait for the idle thread to initialize idle_thread. */
    sema_down (&idle_started);
 }
@@ -650,6 +649,8 @@ schedule (void) {
 #ifdef USERPROG
    /* Activate the new address space. */
    process_activate (next);
+
+   
 #endif
 
    if (curr != next) {

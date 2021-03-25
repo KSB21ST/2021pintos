@@ -1,0 +1,17 @@
+FAIL
+Kernel panic in run: PANIC at ../../lib/kernel/list.c:242 in list_remove(): assertion `is_interior (elem)' failed.
+Call stack: 0x8004218563 0x8004218db9 0x800420a96f 0x800421b827 0x800421b8d4 0x8004215a66 0x8004209345 0x800421cc22 0x800421cdd6 0x8004209113 0x8004209531 0x800421bb9b 0x80042075ff
+Translation of call stack:
+0x0000008004218563: debug_panic (lib/kernel/debug.c:32)
+0x0000008004218db9: list_remove (lib/kernel/list.c:243)
+0x000000800420a96f: lock_release (threads/synch.c:297)
+0x000000800421b827: release_console (lib/kernel/console.c:103)
+0x000000800421b8d4: vprintf (lib/kernel/console.c:125)
+0x0000008004215a66: printf (lib/stdio.c:80)
+0x0000008004209345: intr_dump_frame (threads/interrupt.c:390)
+0x000000800421cc22: kill (userprog/exception.c:97)
+0x000000800421cdd6: page_fault (userprog/exception.c:159 (discriminator 12))
+0x0000008004209113: intr_handler (threads/interrupt.c:352)
+0x0000008004209531: intr_entry (threads/intr-stubs.o:?)
+0x000000800421bb9b: initd (userprog/process.c:69)
+0x00000080042075ff: kernel_thread (threads/thread.c:468)

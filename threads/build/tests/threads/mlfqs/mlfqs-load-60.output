@@ -102,8 +102,13 @@ Executing 'mlfqs-load-60':
 (mlfqs-load-60) After 178 seconds, load average=5.20.
 (mlfqs-load-60) end
 Execution of 'mlfqs-load-60' complete.
+<<<<<<< Updated upstream
 Timer: 18822 ticks
 Thread: 12794 idle ticks, 6028 kernel ticks, 0 user ticks
+=======
+Timer: 18823 ticks
+Thread: 12786 idle ticks, 6037 kernel ticks, 0 user ticks
+>>>>>>> Stashed changes
 Console: 5406 characters output
 Keyboard: 0 keys pressed
 Powering off...

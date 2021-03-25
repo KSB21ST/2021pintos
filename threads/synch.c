@@ -127,7 +127,11 @@ sema_up (struct semaphore *sema) {
    }
    sema->value++;
    intr_set_level (old_level);
-   thread_yield();
+   #ifdef USERPROG
+      if(thread_current()->pml4)                                                                       
+         thread_yield();
+   #endif
+   
 }
 
 static void sema_test_helper (void *sema_);
@@ -224,7 +228,10 @@ lock_acquire (struct lock *lock) {
       list_push_back(&thread_current()->locks_wait, &lock->w_elem);
       rec_donate_pri(thread_current());
       donate_priority(lock);
-      thread_yield();
+   #ifdef USERPROG
+      if(thread_current()->pml4)                                                                       
+         thread_yield();
+   #endif
    }      
    sema_down(&lock->semaphore);
    //if the current thread can successfully acquire the lock:
@@ -284,6 +291,7 @@ lock_release (struct lock *lock) {
       //edit
       list_remove(&lock->w_elem);
    }
+ 
    sema_up (&lock->semaphore);
    int most_max_pri = 0;
 
@@ -319,8 +327,16 @@ lock_release (struct lock *lock) {
       }
    }else{
       lock_holder->dontaed_priority = false;
-   }                                                                       
-   thread_yield();
+   }           
+   #ifdef USERPROG
+      if(thread_current()->pml4)                                                                       
+         thread_yield();
+   #endif
+
+   #ifndef USERPROG
+      thread_yield();
+   #endif                                                            
+   
 }
 
 /* Returns true if the current thread holds LOCK, false

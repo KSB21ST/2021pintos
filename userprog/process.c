@@ -165,6 +165,20 @@ process_exec (void *f_name) {
 	char *file_name = f_name;
 	bool success;
 
+	//edit
+	char *temp[40];
+	char *save_ptr = NULL;
+	int i = 0;
+	file_name = strtok_r(file_name, " ", &save_ptr);
+	while(file_name != NULL){
+		temp[i] = file_name;
+		printf("%s \n", temp[i]);
+		file_name = strtok_r(NULL, " ", &save_ptr);
+		i++;
+	}
+	file_name = temp[0];
+	
+
 	/* We cannot use the intr_frame in the thread structure.
 	 * This is because when current thread rescheduled,
 	 * it stores the execution information to the member. */
@@ -416,6 +430,18 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
+	
+	//edit
+	// calculate argc
+	char *temp = file_name;
+	int argc = 0;
+	while(*(temp + argc) != NULL){
+		argc++;
+	}
+
+	struct gp_registers *REG = &(if_->R);
+	REG->rsi = (uint64_t)((if_->rsp) + 8); 	// to point argv[0]
+	REG->rdi = (uint64_t)argc;
 
 	success = true;
 

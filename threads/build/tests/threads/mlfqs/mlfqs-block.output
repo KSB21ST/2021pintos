@@ -4,7 +4,11 @@ Kernel command line: -q -mlfqs run mlfqs-block
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+<<<<<<< Updated upstream
 Calibrating timer...  155,648,000 loops/s.
+=======
+Calibrating timer...  209,510,400 loops/s.
+>>>>>>> Stashed changes
 Boot complete.
 Executing 'mlfqs-block':
 (mlfqs-block) begin
@@ -18,8 +22,13 @@ Executing 'mlfqs-block':
 (mlfqs-block) Block thread should have already acquired lock.
 (mlfqs-block) end
 Execution of 'mlfqs-block' complete.
+<<<<<<< Updated upstream
 Timer: 3027 ticks
 Thread: 500 idle ticks, 2527 kernel ticks, 0 user ticks
+=======
+Timer: 3023 ticks
+Thread: 500 idle ticks, 2523 kernel ticks, 0 user ticks
+>>>>>>> Stashed changes
 Console: 819 characters output
 Keyboard: 0 keys pressed
 Powering off...

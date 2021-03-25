@@ -239,10 +239,12 @@ uint64_t
 palloc_init (void) {
   /* End of the kernel as recorded by the linker.
      See kernel.lds.S. */
+
+	 
 	extern char _end;
 	struct area base_mem = { .size = 0 };
 	struct area ext_mem = { .size = 0 };
-
+	
 	resolve_area_info (&base_mem, &ext_mem);
 	printf ("Pintos booting with: \n");
 	printf ("\tbase_mem: 0x%llx ~ 0x%llx (Usable: %'llu kB)\n",

@@ -29,7 +29,11 @@ Executing 'priority-fifo':
 (priority-fifo) end
 Execution of 'priority-fifo' complete.
 Timer: 27 ticks
+<<<<<<< Updated upstream
 Thread: 0 idle ticks, 28 kernel ticks, 0 user ticks
+=======
+Thread: 0 idle ticks, 27 kernel ticks, 0 user ticks
+>>>>>>> Stashed changes
 Console: 1597 characters output
 Keyboard: 0 keys pressed
 Powering off...

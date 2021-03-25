@@ -1,0 +1,35 @@
+Kernel command line: -q -f put close-twice put sample.txt run close-twice
+good bye~~~0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  186,572,800 loops/s.
+hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 105 sector (52 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+Formatting file system...done.
+Boot complete.
+Putting 'close-twice' into the file system...
+Putting 'sample.txt' into the file system...
+Executing 'close-twice':
+close-twice 
+Page fault at 0x8: not present error writing page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=800421be82
+ cr2=0000000000000008 error=               2
+rax 0000000000000000 rbx 0000000000000000 rcx 00000080040b8000 rdx 0000000000000008
+rsp 000000800423feb0 rbp 000000800423ffb0 rsi 0000000000000000 rdi 0000008004224cfa
+rip 000000800421be82 r8 000000800423fe2c  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+Kernel PANIC at ../../lib/kernel/list.c:242 in list_remove(): assertion `is_interior (elem)' failed.
+Call stack: 0x8004218563 0x8004218db9 0x800420a96f 0x800421b827 0x800421b8d4 0x8004215a66 0x8004209411 0x800421cc22 0x800421cdd6 0x8004209113 0x8004209531 0x800421bb9b 0x80042075ff.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 72 ticks
+Thread: 31 idle ticks, 41 kernel ticks, 0 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 61 reads, 248 writes
+hd1:0: 105 reads, 0 writes
+Console: 1790 characters output
+Key

@@ -204,6 +204,7 @@ lock_acquire (struct lock *lock) {
       intr_set_level (old_level);
 		return;
 	}
+   int t;
    struct semaphore *sema = &lock->semaphore;
    //when the current thread tries to acquire lock, but the lock is owned by thread with smaller priority
    // if(lock->holder != NULL){
@@ -223,6 +224,10 @@ lock_acquire (struct lock *lock) {
    // lock->max_pri = thread_current()->priority;
    lock->holder =  thread_current();
    list_push_back(& thread_current()->locks_have, &lock->elem);  //push this lock to the list of locks that this thread has
+   if (!list_empty(&thread_current()->locks_wait) && lock_in_list(&thread_current()->locks_wait, &lock->w_elem)){
+      // int t = list_size_int(&thread_current()->locks_wait);
+      list_remove(&lock->w_elem);
+   }
    intr_set_level (old_level);
 
 }
@@ -270,10 +275,9 @@ lock_release (struct lock *lock) {
    lock->max_pri = 0;
  	list_remove(&lock->elem);
    lock->holder = NULL;
-   if (!list_empty (&(&lock->semaphore)->waiters)){
-      list_remove(&lock->w_elem);
-   }
-   // sema_up (&lock->semaphore);
+   // if (!list_empty (&(&lock->semaphore)->waiters)){
+   //    list_remove(&lock->w_elem);
+   // }
    int most_max_pri = -1;
 
    if(!list_empty(lock_list)){
@@ -449,4 +453,26 @@ bool compare_sema_pri(struct list_elem * a, struct list_elem * b, void *aux){
    }else{
       return false;
    }
+}
+
+bool lock_in_list(struct list *locks_list, struct list_elem *b){
+   if(!list_empty(locks_list)){
+      struct list_elem *e;
+      e = list_begin (locks_list);
+      while(e != list_end (locks_list)){
+          if(b == e)
+            return true;
+         if(e->next){
+            e = list_next (e);
+         }else{
+            break;
+         }
+            
+      }
+      // for (e = list_begin (locks_list); e != list_end (locks_list); e = list_next (e)) {
+      //    if(b == e)
+      //       return true;
+      // }
+   }
+   return false;
 }

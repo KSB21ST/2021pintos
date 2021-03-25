@@ -13,8 +13,8 @@ Boot complete.
 Putting 'sm-full' into the file system...
 Executing 'sm-full':
 Execution of 'sm-full' complete.
-Timer: 63 ticks
-Thread: 32 idle ticks, 31 kernel ticks, 0 user ticks
+Timer: 70 ticks
+Thread: 35 idle ticks, 35 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 33 reads, 240 writes
 hd1:0: 106 reads, 0 writes

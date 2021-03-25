@@ -12,13 +12,23 @@ Formatting file system...done.
 Boot complete.
 Putting 'bad-read' into the file system...
 Executing 'bad-read':
+Page fault at 0: not present error reading page in user context.
+bad-read: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=40013e
+ cr2=0000000000000000 error=               4
+rax 0000000000000000 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
+rsp 000000004747ffc8 rbp 000000004747ffd8 rsi 0000000000000000 rdi 0000000000000000
+rip 000000000040013e r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000202
+es: 001b ds: 001b cs: 0023 ss: 001b
 Execution of 'bad-read' complete.
-Timer: 70 ticks
-Thread: 36 idle ticks, 34 kernel ticks, 0 user ticks
+Timer: 65 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 5 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 34 reads, 234 writes
+hd0:1: 80 reads, 234 writes
 hd1:0: 103 reads, 0 writes
-Console: 782 characters output
+Console: 1422 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...

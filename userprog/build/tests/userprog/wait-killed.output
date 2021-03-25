@@ -14,8 +14,8 @@ Putting 'wait-killed' into the file system...
 Putting 'child-bad' into the file system...
 Executing 'wait-killed':
 Execution of 'wait-killed' complete.
-Timer: 75 ticks
-Thread: 39 idle ticks, 36 kernel ticks, 0 user ticks
+Timer: 69 ticks
+Thread: 35 idle ticks, 34 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 61 reads, 448 writes
 hd1:0: 205 reads, 0 writes

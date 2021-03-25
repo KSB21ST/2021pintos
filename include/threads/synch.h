@@ -48,6 +48,7 @@ void cond_broadcast (struct condition *, struct lock *);
 void donate_priority(struct lock *);
 void rec_donate_pri(struct thread *);
 bool compare_sema_pri(struct list_elem *, struct list_elem *, void *);
+bool lock_in_list(struct list *, struct list_elem *);
 //end of edit
 
 /* Optimization barrier.

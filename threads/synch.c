@@ -105,26 +105,33 @@ sema_try_down (struct semaphore *sema) {
 void
 sema_up (struct semaphore *sema) {
 	enum intr_level old_level;
-
+   struct thread *temp;
 	ASSERT (sema != NULL);
 	old_level = intr_disable ();
 	if (!list_empty (&sema->waiters)){
 		list_sort(&sema->waiters, &compare_priority, NULL);
-		
-		thread_unblock (list_entry (list_pop_front (&sema->waiters),
-					struct thread, elem));
+		temp = list_entry (list_pop_front (&sema->waiters),
+					struct thread, elem);
+		thread_unblock (temp);
 	}
 	sema->value++;
-	intr_set_level (old_level);
+	if(temp != NULL && temp->priority > thread_get_priority()){
+		if(intr_context()){
+			intr_yield_on_return();
+		}else{
+			thread_yield();
+		}
+	}
+   intr_set_level (old_level);
 	// thread_yield();
-   #ifdef USERPROG
-      if(thread_current()->pml4)                                                                       
-         thread_yield();
-   #endif
+   // #ifdef USERPROG
+      // if(thread_current()->pml4)                                                                       
+      //    thread_yield();
+   // #endif
 
-   #ifndef USERPROG
-      thread_yield();
-   #endif
+   // #ifndef USERPROG
+   //    thread_yield();
+   // #endif
 }
 
 static void sema_test_helper (void *sema_);
@@ -204,28 +211,34 @@ lock_acquire (struct lock *lock) {
 	ASSERT (!intr_context ());
 	ASSERT (!lock_held_by_current_thread (lock));
 
+   enum intr_level old_level = intr_disable();
+
 	if(thread_mlfqs){
 		sema_down (&lock->semaphore);
 		lock->holder = thread_current ();
+      intr_set_level (old_level);
 		return;
 	}
    struct semaphore *sema = &lock->semaphore;
    //when the current thread tries to acquire lock, but the lock is owned by thread with smaller priority
-   if(lock->holder != NULL){
+   // if(lock->holder != NULL){
+   if(!sema_try_down(sema)){
       if(thread_get_priority() > lock->holder->priority){ 
          /*for donate-priority-nest: acquire 하려는 lock을 가지고 있는 holder가
          기다리고 있는 lock 이 있다면 그 lock의 holder에게도 priority를 donate 해준다*/
          list_push_back(&thread_current()->locks_wait, &lock->w_elem);
          rec_donate_pri(thread_current());
          donate_priority(lock);
-         thread_yield();
+         // thread_yield();
       }
+      lock->max_pri = thread_current()->priority;
+      sema_down(&lock->semaphore);
    }
-   sema_down(&lock->semaphore);
    //if the current thread can successfully acquire the lock:
-   lock->max_pri = thread_current()->priority;
+   // lock->max_pri = thread_current()->priority;
    lock->holder =  thread_current();
    list_push_back(& thread_current()->locks_have, &lock->elem);  //push this lock to the list of locks that this thread has
+   intr_set_level (old_level);
 
 }
 
@@ -259,9 +272,12 @@ lock_release (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (lock_held_by_current_thread (lock));
 
+   enum intr_level old_level = intr_disable();
+
 	if(thread_mlfqs){
 		lock->holder = NULL;
 		sema_up (&lock->semaphore);
+      intr_set_level(old_level);
 		return;
 	}
 	struct thread *lock_holder = lock->holder;
@@ -272,8 +288,8 @@ lock_release (struct lock *lock) {
    if (!list_empty (&(&lock->semaphore)->waiters)){
       list_remove(&lock->w_elem);
    }
-   sema_up (&lock->semaphore);
-   int most_max_pri = 0;
+   // sema_up (&lock->semaphore);
+   int most_max_pri = -1;
 
    if(!list_empty(lock_list)){
       struct list_elem *e ;
@@ -303,15 +319,16 @@ lock_release (struct lock *lock) {
    }else{
       lock_holder->donated_priority = false;
    }
-   #ifdef USERPROG
-      if(thread_current()->pml4)                                                                       
-         thread_yield();
-   #endif
+   // #ifdef USERPROG
+   //    if(thread_current()->pml4)                                                                       
+   //       thread_yield();
+   // #endif
 
-   #ifndef USERPROG
-      thread_yield();
-   #endif
-
+   // #ifndef USERPROG
+   //    thread_yield();
+   // #endif
+   sema_up (&lock->semaphore);
+   intr_set_level(old_level);
 }
 
 /* Returns true if the current thread holds LOCK, false

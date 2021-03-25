@@ -167,16 +167,6 @@ process_exec (void *f_name) {
 	bool success;
 
 	//start edit
-
-	
-//    char s[] = file_name;
-//    char *token, *save_ptr;
-
-//    for (token = strtok_r (s, " ", &save_ptr); token != NULL;
-//    token = strtok_r (NULL, " ", &save_ptr))
-//    printf ("'%s'\n", token);
-
-
 	// char *temp[40];
 	// char *save_ptr = NULL;
 	// int i = 0;

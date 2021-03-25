@@ -469,10 +469,6 @@ bool lock_in_list(struct list *locks_list, struct list_elem *b){
          }
             
       }
-      // for (e = list_begin (locks_list); e != list_end (locks_list); e = list_next (e)) {
-      //    if(b == e)
-      //       return true;
-      // }
    }
    return false;
 }

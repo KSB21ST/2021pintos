@@ -8,21 +8,29 @@ Calibrating timer...  130,867,200 loops/s.
 hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 113 sector (56 kB) disk, model "QEMU HARDDISK", serial "QM00003"
-Formatting file system...done.
+Formatting file system...inode.c 126 
+inode.c 128 
+done.
+inode.c 126 
+inode.c 128 
 Boot complete.
 Putting 'multi-recurse' into the file system...
+inode.c 126 
+inode.c 128 
+inode.c 126 
+inode.c 128 
+inode.c 126 
+inode.c 128 
 Executing 'multi-recurse 15':
-load: multi-recurse 15: open failed
-Kernel PANIC at ../../userprog/process.c:70 in initd(): Fail to launch initd
-
-Call stack: 0x80042186a9 0x800421bd7f 0x80042075ab.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 70 ticks
-Thread: 31 idle ticks, 38 kernel ticks, 1 user ticks
+Execution of 'multi-recurse 15' complete.
+inode.c 126 
+Timer: 68 ticks
+inode.c 128 
+Thread: 33 idle ticks, 35 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 51 reads, 254 writes
+hd0:1: 35 reads, 254 writes
 hd1:0: 113 reads, 0 writes
-Console: 1096 characters output
-Key
+Console: 974 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

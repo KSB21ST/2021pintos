@@ -167,21 +167,17 @@ process_exec (void *f_name) {
 	bool success;
 
 	//start edit
-	// char *temp[40];
-	// char *save_ptr = NULL;
-	// int i = 0;
-	// file_name = strtok_r(file_name, " ", &save_ptr);
-	// while(file_name != NULL){
-	// 	// printf("%s \n", file_name);
-	// 	temp[i] = file_name;
-	// 	file_name = strtok_r(NULL, " ", &save_ptr);
-	// 	i++;
-	// }
-
-	// for(int j = 0;j<40;j++){
-	// 	printf("temp %d: %c", j, temp[j]);
-	// }
-	// file_name = &temp;
+	char *temp[100];
+	char *save_ptr = NULL;
+	int i = 0;
+	file_name = strtok_r(file_name, " ", &save_ptr);
+	while(file_name != NULL){
+		temp[i] = file_name;
+		// printf("%s \n", temp[i]);
+		file_name = strtok_r(NULL, " ", &save_ptr);
+		i++;
+	}
+	file_name = &temp[0];
 	//eof edit
 
 	/* We cannot use the intr_frame in the thread structure.
@@ -354,12 +350,14 @@ load (const char *file_name, struct intr_frame *if_) {
 		goto done;
 	process_activate (thread_current ());
 
+
 	/* Open executable file. */
 	file = filesys_open (file_name);
 	if (file == NULL) {
 		printf ("load: %s: open failed\n", file_name);
 		goto done;
 	}
+	printf("-----------------file opend2 \n");
 
 	/* Read and verify executable header. */
 	if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr

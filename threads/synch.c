@@ -222,10 +222,10 @@ lock_acquire (struct lock *lock) {
    }
    //if the current thread can successfully acquire the lock:
    // lock->max_pri = thread_current()->priority;
+   lock->max_pri = thread_current()->priority;
    lock->holder =  thread_current();
    list_push_back(& thread_current()->locks_have, &lock->elem);  //push this lock to the list of locks that this thread has
    if (!list_empty(&thread_current()->locks_wait) && lock_in_list(&thread_current()->locks_wait, &lock->w_elem)){
-      // int t = list_size_int(&thread_current()->locks_wait);
       list_remove(&lock->w_elem);
    }
    intr_set_level (old_level);
@@ -414,6 +414,7 @@ cond_broadcast (struct condition *cond, struct lock *lock) {
 void
 donate_priority(struct lock *lock){
    struct thread *lock_holder = lock->holder;
+   struct thread *curr = thread_current();
    if(lock_holder != NULL){
       if(lock_holder->original_priority == -1){
          lock_holder->original_priority = lock_holder->priority;

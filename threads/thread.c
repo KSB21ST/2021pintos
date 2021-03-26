@@ -256,7 +256,8 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	list_push_back (&ready_list, &t->elem);
+	if(t != idle_thread)
+		list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
@@ -346,6 +347,7 @@ thread_set_priority (int new_priority) {
 /* Returns the current thread's priority. */
 int
 thread_get_priority (void) {
+	struct thread *temp = thread_current();
 	return thread_current ()->priority;
 }
 
@@ -548,6 +550,7 @@ static void
 thread_launch (struct thread *th) {
 	uint64_t tf_cur = (uint64_t) &running_thread ()->tf;
 	uint64_t tf = (uint64_t) &th->tf;
+	struct thread *curr = running_thread();
 	ASSERT (intr_get_level () == INTR_OFF);
 
 	/* The main switching logic.
@@ -601,6 +604,7 @@ thread_launch (struct thread *th) {
 			"out_iret:\n"
 			: : "g"(tf_cur), "g" (tf) : "memory"
 			);
+		struct thread *temp = running_thread();
 }
 
 /* Schedules a new process. At entry, interrupts must be off.
@@ -740,13 +744,14 @@ thread_preempt (void)
 {
   enum intr_level old_level;
   struct thread *temp;
+  struct thread *curr = thread_current();
   old_level = intr_disable ();
 
   // 대기 리스트가 비어 있으면 이 스레드를 제외하고 idle 스레드 하나 뿐입니다.
   if(!list_empty(&ready_list)){
   list_sort(&ready_list, &compare_priority, NULL);
   temp = list_entry (list_front (&ready_list), struct thread, elem);
-	if(temp != NULL && temp->priority > thread_get_priority()){
+	if(temp != NULL && temp->priority >= thread_get_priority()){
 		if(intr_context()){
 			intr_yield_on_return();
 		}else{

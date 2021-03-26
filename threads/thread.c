@@ -751,7 +751,7 @@ thread_preempt (void)
   if(!list_empty(&ready_list)){
   list_sort(&ready_list, &compare_priority, NULL);
   temp = list_entry (list_front (&ready_list), struct thread, elem);
-	if(temp != NULL && temp->priority >= thread_get_priority()){
+	if(temp != NULL && temp->priority > thread_get_priority()){
 		if(intr_context()){
 			intr_yield_on_return();
 		}else{

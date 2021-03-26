@@ -112,6 +112,8 @@ inode_open (disk_sector_t sector) {
 			inode_reopen (inode);
 			return inode; 
 		}
+		if(e->next)
+			break;
 	}
 	/* Allocate memory. */
 	inode = malloc (sizeof *inode);
@@ -123,9 +125,7 @@ inode_open (disk_sector_t sector) {
 	inode->open_cnt = 1;
 	inode->deny_write_cnt = 0;
 	inode->removed = false;
-	printf("inode.c 126 \n");
 	disk_read (filesys_disk, inode->sector, &inode->data);
-	printf("inode.c 128 \n");
 	return inode;
 }
 

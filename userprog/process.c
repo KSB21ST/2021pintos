@@ -167,17 +167,17 @@ process_exec (void *f_name) {
 	bool success;
 
 	//start edit
-	char *temp[100];
-	char *save_ptr = NULL;
-	int i = 0;
-	file_name = strtok_r(file_name, " ", &save_ptr);
-	while(file_name != NULL){
-		temp[i] = file_name;
-		// printf("%s \n", temp[i]);
-		file_name = strtok_r(NULL, " ", &save_ptr);
-		i++;
-	}
-	file_name = &temp[0];
+	// char *temp[100];
+	// char *save_ptr = NULL;
+	// int i = 0;
+	// file_name = strtok_r(file_name, " ", &save_ptr);
+	// while(file_name != NULL){
+	// 	temp[i] = file_name;
+	// 	// printf("%s \n", temp[i]);
+	// 	file_name = strtok_r(NULL, " ", &save_ptr);
+	// 	i++;
+	// }
+	// file_name = &temp[0];
 	//eof edit
 
 	/* We cannot use the intr_frame in the thread structure.

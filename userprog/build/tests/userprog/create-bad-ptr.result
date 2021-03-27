@@ -1,2 +1,10 @@
 FAIL
-Run didn't produce any output
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (create-bad-ptr) begin
+  create-bad-ptr: exit(-1)
+Differences in `diff -u' format:
+- (create-bad-ptr) begin
+- create-bad-ptr: exit(-1)
++ create-bad-ptr 

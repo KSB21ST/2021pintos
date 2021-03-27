@@ -22,7 +22,6 @@ struct lock {
 	struct semaphore semaphore; /* Binary semaphore controlling access. */
 
 	//edit
-	struct list_elem w_elem;
 	struct list_elem elem;
 	int max_pri;
 	//end of edit
@@ -46,7 +45,7 @@ void cond_broadcast (struct condition *, struct lock *);
 
 //edit
 void donate_priority(struct lock *);
-void rec_donate_pri(struct thread *);
+void rec_donate_pri2(struct thread *);
 bool compare_sema_pri(struct list_elem *, struct list_elem *, void *);
 bool lock_in_list(struct list *, struct list_elem *);
 //end of edit

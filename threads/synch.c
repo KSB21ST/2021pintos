@@ -105,7 +105,7 @@ sema_try_down (struct semaphore *sema) {
 void
 sema_up (struct semaphore *sema) {
 	enum intr_level old_level;
-   struct thread *temp;
+   struct thread *temp = NULL;
 	ASSERT (sema != NULL);
    bool changed_pri = false;
 	old_level = intr_disable ();
@@ -118,7 +118,7 @@ sema_up (struct semaphore *sema) {
 	}
 	sema->value++;
    if(changed_pri && !intr_context())
-      thread_preempt();
+      thread_preempt(temp);
    intr_set_level (old_level);
 }
 
@@ -200,6 +200,8 @@ lock_acquire (struct lock *lock) {
 	ASSERT (!lock_held_by_current_thread (lock));
 
    enum intr_level old_level = intr_disable();
+   struct thread *curr = thread_current();
+   int priority_curr = thread_get_priority();
 
 	if(thread_mlfqs){
 		sema_down (&lock->semaphore);
@@ -209,30 +211,23 @@ lock_acquire (struct lock *lock) {
 	}
    int t;
    struct semaphore *sema = &lock->semaphore;
-   //when the current thread tries to acquire lock, but the lock is owned by thread with smaller priority
-   // if(lock->holder != NULL){
+
    if(!sema_try_down(sema)){
       if(thread_get_priority() > lock->holder->priority){ 
-         /*for donate-priority-nest: acquire 하려는 lock을 가지고 있는 holder가
-         기다리고 있는 lock 이 있다면 그 lock의 holder에게도 priority를 donate 해준다*/
-         list_push_back(&thread_current()->locks_wait, &lock->w_elem);
-         rec_donate_pri(thread_current());
+         curr->wait_lock = lock;
+         rec_donate_pri2(curr);
          donate_priority(lock);
-         // thread_yield();
       }
       lock->max_pri = thread_current()->priority;
       sema_down(&lock->semaphore);
    }
-   //if the current thread can successfully acquire the lock:
-   // lock->max_pri = thread_current()->priority;
-   lock->max_pri = thread_current()->priority;
-   lock->holder =  thread_current();
-   list_push_back(& thread_current()->locks_have, &lock->elem);  //push this lock to the list of locks that this thread has
-   if (!list_empty(&thread_current()->locks_wait) && lock_in_list(&thread_current()->locks_wait, &lock->w_elem)){
-      list_remove(&lock->w_elem);
-   }
-   intr_set_level (old_level);
 
+   lock->holder =  thread_current();
+   thread_current()->wait_lock = NULL;
+   lock->max_pri = thread_current()->priority;
+   list_push_back(& thread_current()->locks_have, &lock->elem);
+
+   intr_set_level (old_level);
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -273,14 +268,13 @@ lock_release (struct lock *lock) {
       intr_set_level(old_level);
 		return;
 	}
+
 	struct thread *lock_holder = lock->holder;
    struct list *lock_list = &lock_holder->locks_have;
+
    lock->max_pri = 0;
  	list_remove(&lock->elem);
    lock->holder = NULL;
-   // if (!list_empty (&(&lock->semaphore)->waiters)){
-   //    list_remove(&lock->w_elem);
-   // }
    int most_max_pri = -1;
 
    if(!list_empty(lock_list)){
@@ -308,9 +302,8 @@ lock_release (struct lock *lock) {
          lock_holder->donated_priority = false;
          lock_holder->original_priority = -1;
       }
-   }else{
-      lock_holder->donated_priority = false;
    }
+   
    sema_up (&lock->semaphore);
    intr_set_level(old_level);
 }
@@ -429,21 +422,33 @@ donate_priority(struct lock *lock){
 }
 
 //edit
-void
-rec_donate_pri(struct thread *t){
-   struct list *waiting_l = &t->locks_wait;
-   if(!list_empty(waiting_l)){
-      struct list_elem *e;
-      for (e = list_begin (waiting_l); e != list_end (waiting_l); e = list_next (e)) {
-         struct lock *tp_lock = list_entry(e, struct lock, w_elem); 
-         struct thread *lock_holder = tp_lock->holder;
-         donate_priority(tp_lock);
+// void
+// rec_donate_pri(struct thread *t){
+//    struct list *waiting_l = &t->locks_wait;
+//    if(!list_empty(waiting_l)){
+//       struct list_elem *e;
+//       for (e = list_begin (waiting_l); e != list_end (waiting_l); e = list_next (e)) {
+//          struct lock *tp_lock = list_entry(e, struct lock, w_elem); 
+//          struct thread *lock_holder = tp_lock->holder;
+//          donate_priority(tp_lock);
 
-         //recursively donate priority
-         rec_donate_pri(lock_holder);
-      }
-   return;
+//          //recursively donate priority
+//          rec_donate_pri(lock_holder);
+//       }
+//    return;
+//    }
+// }
+
+void
+rec_donate_pri2(struct thread *t){
+   struct lock *lock = t->wait_lock;
+   struct thread *temp = NULL;
+   if(lock != NULL && lock->holder != NULL){
+      donate_priority(lock);
+      temp = lock->holder;
+      rec_donate_pri2(temp);
    }
+   return;
 }
 
 //edit

@@ -100,8 +100,9 @@ struct thread {
 	bool donated_priority;
 	int original_priority;
 
-	struct list locks_wait;
+	// struct list locks_wait;
 	struct list locks_have;
+	struct lock *wait_lock;
 
 	int nice;
 	int recent_cpu;
@@ -169,6 +170,6 @@ int fp_round(int);
 #define F (1 << 14) //fixed point 1
 //edit
 static struct list sleep_list;
-void thread_preempt (void);
+void thread_preempt (struct thread *);
 //end of edit
 #endif /* threads/thread.h */

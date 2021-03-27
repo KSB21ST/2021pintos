@@ -1,20 +1,10 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (exit) begin
-  exit: exit(57)
-Differences in `diff -u' format:
-- (exit) begin
-- exit: exit(57)
-+ -----------------file opend2 
-+ Page fault at 0: not present error reading page in user context.
-+ exit: dying due to interrupt 0x0e (#PF Page-Fault Exception).
-+ Interrupt 0x0e (#PF Page-Fault Exception) at rip=400110
-+  cr2=0000000000000000 error=               4
-+ rax 0000000000000000 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
-+ rsp 000000004747ffc8 rbp 000000004747ffd8 rsi 0000000000000000 rdi 0000000000000000
-+ rip 0000000000400110 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-+ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-+ r15 0000000000000000 rflags 00000202
-+ es: 001b ds: 001b cs: 0023 ss: 001b
+Kernel panic in run: PANIC at ../../threads/palloc.c:305 in palloc_free_multiple(): assertion `pg_ofs (pages) == 0' failed.
+Call stack: 0x8004218673 0x800420bd66 0x800420bf09 0x800421c084 0x800421bd10 0x80042075d0
+Translation of call stack:
+0x0000008004218673: debug_panic (lib/kernel/debug.c:32)
+0x000000800420bd66: palloc_free_multiple (threads/palloc.c:306)
+0x000000800420bf09: palloc_free_page (threads/palloc.c:329)
+0x000000800421c084: process_exec (userprog/process.c:199)
+0x000000800421bd10: initd (userprog/process.c:69)
+0x00000080042075d0: kernel_thread (threads/thread.c:449)

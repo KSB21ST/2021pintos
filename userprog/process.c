@@ -173,7 +173,7 @@ process_exec (void *f_name) {
 	// file_name = strtok_r(file_name, " ", &save_ptr);
 	// while(file_name != NULL){
 	// 	temp[i] = file_name;
-	// 	// printf("%s \n", temp[i]);
+	// 	printf("%s \n", temp[i]);
 	// 	file_name = strtok_r(NULL, " ", &save_ptr);
 	// 	i++;
 	// }

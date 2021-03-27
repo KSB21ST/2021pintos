@@ -8,29 +8,17 @@ Calibrating timer...  130,867,200 loops/s.
 hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 102 sector (51 kB) disk, model "QEMU HARDDISK", serial "QM00003"
-Formatting file system...inode.c 126 
-inode.c 128 
-done.
-inode.c 126 
-inode.c 128 
+Formatting file system...done.
 Boot complete.
 Putting 'read-stdout' into the file system...
-inode.c 126 
-inode.c 128 
-inode.c 126 
-inode.c 128 
-inode.c 126 
-inode.c 128 
 Executing 'read-stdout':
 Execution of 'read-stdout' complete.
-inode.c 126 
-Timer: 70 ticks
-inode.c 128 
-Thread: 32 idle ticks, 38 kernel ticks, 0 user ticks
+Timer: 66 ticks
+Thread: 35 idle ticks, 31 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 35 reads, 232 writes
+hd0:1: 34 reads, 232 writes
 hd1:0: 102 reads, 0 writes
-Console: 953 characters output
+Console: 797 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

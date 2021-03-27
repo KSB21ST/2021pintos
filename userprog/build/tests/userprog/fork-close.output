@@ -4,40 +4,33 @@ Kernel command line: -q -f put fork-close put sample.txt run fork-close
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  151,347,200 loops/s.
 hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 110 sector (55 kB) disk, model "QEMU HARDDISK", serial "QM00003"
-Formatting file system...inode.c 126 
-inode.c 128 
-done.
-inode.c 126 
-inode.c 128 
+Formatting file system...done.
 Boot complete.
 Putting 'fork-close' into the file system...
-inode.c 126 
-inode.c 128 
-inode.c 126 
-inode.c 128 
-inode.c 126 
-inode.c 128 
 Putting 'sample.txt' into the file system...
-inode.c 126 
-inode.c 128 
-inode.c 126 
-inode.c 128 
-inode.c 126 
-inode.c 128 
 Executing 'fork-close':
+-----------------file opend2 
+Page fault at 0: not present error reading page in user context.
+fork-close: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=40039e
+ cr2=0000000000000000 error=               4
+rax 0000000000000000 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
+rsp 000000004747ffc8 rbp 000000004747ffd8 rsi 0000000000000000 rdi 0000000000000000
+rip 000000000040039e r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000202
+es: 001b ds: 001b cs: 0023 ss: 001b
 Execution of 'fork-close' complete.
-inode.c 126 
-Timer: 66 ticks
-Thread: 30 idle ticks, 36 kernel ticks, 0 user ticks
-inode.c 128 
+Timer: 70 ticks
+Thread: 30 idle ticks, 35 kernel ticks, 5 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 62 reads, 258 writes
+hd0:1: 117 reads, 258 writes
 hd1:0: 110 reads, 0 writes
-Console: 1086 characters output
+Console: 1525 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...

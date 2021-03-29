@@ -11,6 +11,23 @@
 #include "vm/vm.h"
 #endif
 
+// #ifdef USERPROG
+#include "threads/synch.h"
+// #endif
+
+//start 20180109
+
+struct process{
+    struct list children; /*list of child processes*/
+
+	struct list_elem child_elem; /*ist element to go inside child process list of my parent*/
+	struct thread *parent; /*my parent thread*/
+	int status; /*my state when I exit - status of 0 indicates success and nonzero values indicate errors.*/
+
+	struct semaphore wait_child;
+};
+//eof 20180109
+
 
 /* States in a thread's life cycle. */
 enum thread_status {
@@ -113,10 +130,15 @@ struct thread {
 	struct list_elem slpelem;
 	struct list_elem allelem;
 
-#ifdef USERPROG
+// #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */
-#endif
+
+	//start 20180109
+	struct process t_process;
+	//eof 20180109
+
+// #endif
 #ifdef VM
 	/* Table for whole virtual memory owned by thread. */
 	struct supplemental_page_table spt;

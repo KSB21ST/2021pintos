@@ -165,22 +165,6 @@ int
 process_exec (void *f_name) {
 	char *file_name = f_name;
 	bool success;
-	// struct file *file = NULL;
-	// file = filesys_open (file_name);
-
-	//start edit
-	// char *temp[100];
-	// char *save_ptr = NULL;
-	// int i = 0;
-	// file_name = strtok_r(file_name, " ", &save_ptr);
-	// while(file_name != NULL){
-	// 	temp[i] = file_name;
-	// 	printf("%s \n", temp[i]);
-	// 	file_name = strtok_r(NULL, " ", &save_ptr);
-	// 	i++;
-	// }
-	// file_name = &temp[0];
-	//eof edit
 
 	/* We cannot use the intr_frame in the thread structure.
 	 * This is because when current thread rescheduled,
@@ -221,6 +205,7 @@ process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
+	while(1);
 	return -1;
 }
 

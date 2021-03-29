@@ -165,6 +165,8 @@ int
 process_exec (void *f_name) {
 	char *file_name = f_name;
 	bool success;
+	// struct file *file = NULL;
+	// file = filesys_open (file_name);
 
 	//start edit
 	// char *temp[100];

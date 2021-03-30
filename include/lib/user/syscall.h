@@ -5,9 +5,22 @@
 #include <debug.h>
 #include <stddef.h>
 
+#include "threads/synch.h"
+
 /* Process identifier. */
 typedef int pid_t;
 #define PID_ERROR ((pid_t) -1)
+
+struct process{
+   pid_t pid;
+    struct list children; /*list of child processes*/
+
+   struct list_elem child_elem; /*ist element to go inside child process list of my parent*/
+   struct thread *parent; /*my parent thread*/
+   int status; /*my state when I exit - status of 0 indicates success and nonzero values indicate errors.*/
+
+   struct semaphore wait_child;
+};
 
 /* Map region identifier. */
 typedef int off_t;

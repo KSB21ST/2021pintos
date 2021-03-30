@@ -42,6 +42,8 @@ tid_t
 process_create_initd (const char *file_name) {
 	char *fn_copy;
 	tid_t tid;
+	struct thread *curr = thread_current();
+	// struct process *curr_process = &curr->process;
 
 	/* Make a copy of FILE_NAME.
 	 * Otherwise there's a race between the caller and load(). */
@@ -52,6 +54,11 @@ process_create_initd (const char *file_name) {
 
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
+	
+	//start 20180109
+	// sema_down(&curr_process->wait_child);
+	//eof 20180109
+
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
 	return tid;
@@ -76,8 +83,18 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
+	//start 20180109
+	struct thread *curr = thread_current();
+	// struct process *curr_process = &curr->process;
+	//eof 20180109
+	
 	return thread_create (name,
 			PRI_DEFAULT, __do_fork, thread_current ());
+		
+	//start 20180109
+	// sema_down(&curr_process->wait_child);
+	//eof 20180109
+
 }
 
 #ifndef VM
@@ -217,8 +234,9 @@ process_exit (void) {
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
-
 	process_cleanup ();
+	thread_exit();
+	NOT_REACHED();
 }
 
 /* Free the current process's resources. */
@@ -420,15 +438,6 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
-	//start edit
-   // calculate argc
-//    char *temp = file_name;
-//    int argc = 0;
-//    while(*(temp + argc) != NULL){
-//       argc++;
-//    }
-   //eof edit
-
 	success = true;
 
 done:

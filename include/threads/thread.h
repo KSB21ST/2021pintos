@@ -12,21 +12,8 @@
 #endif
 
 // #ifdef USERPROG
-#include "threads/synch.h"
+#include "lib/user/syscall.h"
 // #endif
-
-//start 20180109
-
-struct process{
-    struct list children; /*list of child processes*/
-
-	struct list_elem child_elem; /*ist element to go inside child process list of my parent*/
-	struct thread *parent; /*my parent thread*/
-	int status; /*my state when I exit - status of 0 indicates success and nonzero values indicate errors.*/
-
-	struct semaphore wait_child;
-};
-//eof 20180109
 
 
 /* States in a thread's life cycle. */
@@ -135,7 +122,7 @@ struct thread {
 	uint64_t *pml4;                     /* Page map level 4 */
 
 	//start 20180109
-	struct process t_process;
+	struct process process;
 	//eof 20180109
 
 // #endif

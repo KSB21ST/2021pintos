@@ -8,6 +8,7 @@
 #include "threads/flags.h"
 #include "intrinsic.h"
 
+
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
@@ -69,23 +70,22 @@ void halt (void){
 
 //Conventionally, a status of 0 indicates success and nonzero values indicate errors.
 void exit (int status){
-	//todo
 	printf ("%s: exit(%d)\n", thread_current()->name, status);
-	thread_exit();
-	NOT_REACHED();
+	process_exit();
+	return;
 }
 
-pid_t fork (const char *thread_name){
+tid_t fork (const char *thread_name){
 	struct thread *curr = thread_current();
 	struct intr_frame *parent_if_ = &curr->tf;
 	return process_fork(thread_name, parent_if_);
 }
 
 int exec (const char *file){
-  	return process_execute(file);
+  	return process_exec(file);
 }
 
-int sys_wait (pid_t pid){
+int wait (tid_t pid){
 	return process_wait(pid);
 }
 bool create (const char *file, unsigned initial_size);

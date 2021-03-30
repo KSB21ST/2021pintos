@@ -8,7 +8,7 @@
 #include "threads/interrupt.h"
 #include "threads/intr-stubs.h"
 #include "threads/palloc.h"
-// #include "threads/synch.h"
+#include "threads/synch.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
 #ifdef USERPROG
@@ -207,6 +207,11 @@ thread_create (const char *name, int priority,
 	/* Initialize thread. */
 	init_thread (t, name, priority);
 	tid = t->tid = allocate_tid ();
+
+	// #ifdef USERPROG
+	// struct process *t_process = &t->process;
+	// t_process->pid = tid;
+	// #endif
 
 	/* Call the kernel_thread if it scheduled.
 	 * Note) rdi is 1st argument, and rsi is 2nd argument. */
@@ -477,14 +482,14 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 	//start 20180109 _ project2-2
 	// #ifdef USERPROG
-		struct process *t_process = &t->t_process;
-		struct thread *t_parent = t_process->parent;
-		list_init(&t_process->children); /*initialize t's children list*/
-		t_parent = running_thread(); 
-		list_push_back(&(&t_parent->t_process)->children, &t_process->child_elem); /*push t to it's parent's children list*/
-		t_process->status = 0;  //status of 0 indicates success and nonzero values indicate errors.
+		// struct process *t_process = &t->process;
+		// struct thread *t_parent = t_process->parent;
+		// list_init(&t_process->children); /*initialize t's children list*/
+		// t_parent = running_thread(); 
+		// list_push_back(&(&t_parent->process)->children, &t_process->child_elem); /*push t to it's parent's children list*/
+		// t_process->status = EXIT_FAILURE;  //status of 0 indicates success and nonzero values indicate errors.
 	
-		sema_init(&t_process->wait_child, 1);
+		// sema_init(&t_process->wait_child, 1);
 	// #endif
 	//eof 20180109 _ project2-2
 

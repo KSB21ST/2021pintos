@@ -54,10 +54,6 @@ process_create_initd (const char *file_name) {
 
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
-	
-	//start 20180109
-	sema_down(&curr_process->kernel_lock);
-	//eof 20180109
 
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
@@ -90,10 +86,6 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	
 	return thread_create (name,
 			PRI_DEFAULT, __do_fork, thread_current ());
-		
-	//start 20180109
-	// sema_down(&curr_process->wait_child);
-	//eof 20180109
 
 }
 
@@ -222,7 +214,22 @@ process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
-	while(1);
+	struct thread *curr = thread_current();
+	struct process *curr_p = &curr->process;
+	struct list *child_list = &curr_p->children;
+	int child_pid = -1;
+
+	struct list_elem *e;
+	for (e = list_begin (&child_list); e != list_end (&child_list); e = list_next (e)) {
+		struct process *child_p = list_entry(e, struct process, child_elem);
+		if(child_p->pid == child_tid){
+			if(!child_p->exit || !child_p->call_exit)
+				return -1;
+			child_pid = child_p->status;
+			palloc_free_page (child_p->name);
+			return child_pid;
+		}
+  	}
 	return -1;
 }
 
@@ -230,12 +237,16 @@ process_wait (tid_t child_tid UNUSED) {
 void
 process_exit (void) {
 	struct thread *curr = thread_current ();
+	struct process *curr_p = &curr->process;
+	struct thread *parent = curr_p->parent;
 	/* TODO: Your code goes here.
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
+	sema_up(&curr_p->kernel_lock);
+	list_remove(&curr_p->child_elem); //remove from parent's child list
 	process_cleanup ();
-	thread_exit();
+	// thread_exit();
 	NOT_REACHED();
 }
 

@@ -4,4 +4,5 @@ tests/filesys/base/lg-random.o: ../../tests/filesys/base/lg-random.c \
  ../../include/lib/debug.h ../../include/lib/stdarg.h \
  ../../include/lib/stdbool.h ../../include/lib/stdint.h \
  ../../include/lib/kernel/stdio.h ../../include/lib/string.h \
- ../../include/lib/user/syscall.h ../../tests/lib.h ../../tests/main.h
+ ../../include/lib/user/syscall.h ../../include/threads/synch.h \
+ ../../include/lib/kernel/list.h ../../tests/lib.h ../../tests/main.h

@@ -13,11 +13,14 @@ typedef int pid_t;
 
 struct process{
    pid_t pid;
-    struct list children; /*list of child processes*/
+   char name[16];    
+   struct list children; /*list of child processes*/
 
    struct list_elem child_elem; /*ist element to go inside child process list of my parent*/
    struct thread *parent; /*my parent thread*/
-   int status; /*my state when I exit - status of 0 indicates success and nonzero values indicate errors.*/
+   int status; /*my status when I exit - for prcess wait*/
+   bool call_exit; /*check if the thread called exit*/
+   bool exit; /*check if the thread exited*/
 
    struct semaphore kernel_lock;
 };

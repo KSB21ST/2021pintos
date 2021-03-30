@@ -70,8 +70,12 @@ void halt (void){
 
 //Conventionally, a status of 0 indicates success and nonzero values indicate errors.
 void exit (int status){
+	struct thread *curr = thread_current();
+	struct process *curr_p = &curr->process;
+	curr_p->status = status;
+	curr_p->call_exit = true;
 	printf ("%s: exit(%d)\n", thread_current()->name, status);
-	process_exit();
+	thread_exit();
 	return;
 }
 

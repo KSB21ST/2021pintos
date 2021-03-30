@@ -16,6 +16,7 @@
 #endif
 //THIS IS A TEST For SB
 bool compare_priority(struct list_elem *, struct list_elem *, void *);
+static void process_init(struct thread *t);
 int load_avg;
 struct list all_list;
 
@@ -303,12 +304,18 @@ void
 thread_exit (void) {
 	ASSERT (!intr_context ());
 
+	struct thread *curr = thread_current();
+	struct process *curr_p = &curr->process;
+
+	curr_p->exit = true;
+
 	//edit
 	list_remove(&thread_current()->allelem);
 
-#ifdef USERPROG
-	process_exit ();
-#endif
+
+	#ifdef USERPROG
+		process_exit ();
+	#endif
 
 	/* Just set our status to dying and schedule another process.
 	   We will be destroyed during the call to schedule_tail(). */
@@ -482,14 +489,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 	//start 20180109 _ project2-2
 	// #ifdef USERPROG
-		struct process *t_process = &t->process;
-		struct thread *t_parent = t_process->parent;
-		list_init(&t_process->children); /*initialize t's children list*/
-		t_parent = running_thread(); 
-		list_push_back(&(&t_parent->process)->children, &t_process->child_elem); /*push t to it's parent's children list*/
-		t_process->status = EXIT_FAILURE;  //status of 0 indicates success and nonzero values indicate errors.
-	
-		sema_init(&t_process->kernel_lock, 1);
+		process_init(t);
 	// #endif
 	//eof 20180109 _ project2-2
 
@@ -782,4 +782,19 @@ thread_preempt (struct thread *temp)
 		}
   	}
  intr_set_level (old_level);
+}
+
+static void
+process_init(struct thread *t){
+	struct process *t_process = &t->process;
+	struct thread *t_parent = t_process->parent;
+	list_init(&t_process->children); /*initialize t's children list*/
+	t_parent = running_thread(); 
+	list_push_back(&(&t_parent->process)->children, &t_process->child_elem); /*push t to it's parent's children list*/
+	t_process->status = EXIT_FAILURE;  //status of 0 indicates success and nonzero values indicate errors.
+	t_process->call_exit = false;
+	t_process->exit = false;
+	strlcpy (t_process->name, t->name, sizeof t->name);
+
+	sema_init(&t_process->kernel_lock, 0);
 }

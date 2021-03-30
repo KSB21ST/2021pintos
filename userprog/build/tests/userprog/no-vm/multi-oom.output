@@ -1,0 +1,40 @@
+Kernel command line: -q -f put multi-oom run multi-oom
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  107,929,600 loops/s.
+hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 107 sector (53 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+Formatting file system...done.
+Boot complete.
+Putting 'multi-oom' into the file system...
+Executing 'multi-oom':
+-----------------file opend2 
+system call!
+Kernel PANIC at ../../userprog/process.c:250 in process_exit(): executed an unreachable statement
+Call stack: 0x800421879e 0x800421c315 0x80042071b3 0x800421d263 0x800421d174Page fault at 0x35: not present error reading page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=800421c1e7
+ cr2=0000000000000035 error=               0
+rax 0000000000000035 rbx 0000000000204400 rcx 0000008004000060 rdx 0000008004241000
+rsp 0000008004000f30 rbp 0000008004000f70 rsi 0000008004240060 rdi 0000008004000f40
+rip 000000800421c1e7 r8 0000008004000efcPage fault at 0x4747fef8: not present error reading page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=80042157d8
+ cr2=0000000000000035 error=               0
+rax 000000004747fef8 rbx 00000000000003ef rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004240e30 rbp 0000008004240e40 rsi 000000000000cc0f rdi 0000000000000000
+rip 00000080042157d8 r8 0000008004240d48  r9 000000800421bc7c r10 0000000000000000
+r11 000  r9 000000800421bc7c r10 0000000000000000
+r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00200206
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
+Timer: 82 ticks
+Thread: 30 idle ticks, 50 kernel ticks, 2 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 83 reads, 242 writes
+hd1:0: 107 reads, 0 writes
+Console: 2058 characters output
+Key

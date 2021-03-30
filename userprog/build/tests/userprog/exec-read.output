@@ -1,0 +1,52 @@
+Kernel command line: -q -f put exec-read put sample.txt put child-read run exec-read
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  106,291,200 loops/s.
+hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 229 sector (114 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+Formatting file system...done.
+Boot complete.
+Putting 'exec-read' into the file system...
+Putting 'sample.txt' into the file system...
+Putting 'child-read' into the file system...
+Executing 'exec-read':
+-----------------file opend2 
+Page fault at 0: not present error reading page in user context.
+exec-read: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=400426
+ cr2=0000000000000000 error=               4
+rax 0000000000000000 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
+rsp 000000004747ffc8 rbp 000000004747ffd8 rsi 0000000000000000 rdi 0000000000000000
+rip 0000000000400426 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000202
+es: 001b ds: 001b cs: 0023 ss: 001b
+Kernel PANIC at ../../userprog/process.c:250 in process_exit(): executed an unreachable statement
+Call stack: 0x800421879e 0x800421c315 0x80042071b3 0x800421cf38 0x800421d0ff 0x80042092bf 0x80042096ddPage fault at 0x4747ffd8: not present error reading page iPage fault at 0x2c: not present error reading page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=800421c1e7
+ cr2=000000004747ffd8 error=               0
+rax 000000000000002c rbx 0000000000204400 rcx 0000008004000060 rdx 0000008004241000
+rsp 0000008004000f30 rbp 0000008004000f70 rsi 0000008004240060 rdi 0000008004000f40
+rip 000000800421c1e7 r8 0000008004000efc  r9 000000800421bc7c r10 0000000000000000
+r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000n kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=80042157d8
+ cr2=000000004747ffd8 error=               0
+rax 000000004747ffd8 rbx 000000000000000e rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004240db0 rbp 0000008004240dc0 rsi 000000000000960f rdi 0000000000000000
+rip 00000080042157d8 r8 0000008004240cc8  r9 000000800421bc7c r10 0000000000000000
+r11 0000000000000000 r12 00000080042253e2 r13 0000000000000000 r14 0000000000000000
+000
+r15 0000000000000000 rflags 00200202
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
+Timer: 99 ticks
+Thread: 30 idle ticks, 63 kernel ticks, 6 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 139 reads, 506 writes
+hd1:0: 229 reads, 0 writes
+Console: 2911 characters output
+Key

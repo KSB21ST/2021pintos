@@ -1,0 +1,9 @@
+FAIL
+Kernel panic in run: PANIC at ../../userprog/process.c:250 in process_exit(): executed an unreachable statement
+Call stack: 0x800421879e 0x800421c315 0x80042071b3 0x800421d263 0x800421d174
+Translation of call stack:
+0x000000800421879e: debug_panic (lib/kernel/debug.c:32)
+0x000000800421c315: process_cleanup (userprog/process.c:255)
+0x00000080042071b3: thread_exit (threads/thread.c:322)
+0x000000800421d263: halt (userprog/syscall.c:65)
+0x000000800421d174: no_sti (userprog/syscall-entry.o:?)

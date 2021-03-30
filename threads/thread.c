@@ -489,7 +489,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 		list_push_back(&(&t_parent->process)->children, &t_process->child_elem); /*push t to it's parent's children list*/
 		t_process->status = EXIT_FAILURE;  //status of 0 indicates success and nonzero values indicate errors.
 	
-		// sema_init(&t_process->wait_child, 1);
+		sema_init(&t_process->kernel_lock, 1);
 	// #endif
 	//eof 20180109 _ project2-2
 

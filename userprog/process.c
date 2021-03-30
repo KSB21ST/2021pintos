@@ -43,7 +43,7 @@ process_create_initd (const char *file_name) {
 	char *fn_copy;
 	tid_t tid;
 	struct thread *curr = thread_current();
-	// struct process *curr_process = &curr->process;
+	struct process *curr_process = &curr->process;
 
 	/* Make a copy of FILE_NAME.
 	 * Otherwise there's a race between the caller and load(). */
@@ -56,7 +56,7 @@ process_create_initd (const char *file_name) {
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
 	
 	//start 20180109
-	// sema_down(&curr_process->wait_child);
+	sema_down(&curr_process->kernel_lock);
 	//eof 20180109
 
 	if (tid == TID_ERROR)
@@ -85,7 +85,7 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
 	//start 20180109
 	struct thread *curr = thread_current();
-	// struct process *curr_process = &curr->process;
+	struct process *curr_process = &curr->process;
 	//eof 20180109
 	
 	return thread_create (name,

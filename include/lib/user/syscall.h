@@ -19,7 +19,7 @@ struct process{
    struct thread *parent; /*my parent thread*/
    int status; /*my state when I exit - status of 0 indicates success and nonzero values indicate errors.*/
 
-   struct semaphore wait_child;
+   struct semaphore kernel_lock;
 };
 
 /* Map region identifier. */

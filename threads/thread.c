@@ -16,7 +16,7 @@
 #endif
 //THIS IS A TEST For SB
 bool compare_priority(struct list_elem *, struct list_elem *, void *);
-static void process_init(struct thread *t);
+static void process_inthread(struct thread *t);
 int load_avg;
 struct list all_list;
 
@@ -489,7 +489,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 	//start 20180109 _ project2-2
 	// #ifdef USERPROG
-		process_init(t);
+		process_inthread(t);
 	// #endif
 	//eof 20180109 _ project2-2
 
@@ -785,7 +785,7 @@ thread_preempt (struct thread *temp)
 }
 
 static void
-process_init(struct thread *t){
+process_inthread(struct thread *t){
 	struct process *t_process = &t->process;
 	struct thread *t_parent = t_process->parent;
 	list_init(&t_process->children); /*initialize t's children list*/

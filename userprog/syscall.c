@@ -43,6 +43,8 @@ void
 syscall_handler (struct intr_frame *f UNUSED) {
 	// TODO: Your implementation goes here.
 	printf ("system call!\n");
+  // check_user_sp(pointer);
+  // thread_current()->esp = pointer;
 	//todo
 	// SYS_HALT,                   /* Halt the operating system. */
 	// SYS_EXIT,                   /* Terminate this process. */
@@ -62,36 +64,41 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	thread_exit ();
 }
 
-void halt (void){
-	power_off ();
-	NOT_REACHED ();
-}
+void halt (void);
+//{
+// 	power_off ();
+// 	NOT_REACHED ();
+// }
 
 
-//Conventionally, a status of 0 indicates success and nonzero values indicate errors.
-void exit (int status){
-	struct thread *curr = thread_current();
-	struct process *curr_p = &curr->process;
-	curr_p->status = status;
-	curr_p->call_exit = true;
-	printf ("%s: exit(%d)\n", thread_current()->name, status);
-	thread_exit();
-	return;
-}
+// //Conventionally, a status of 0 indicates success and nonzero values indicate errors.
+void exit (int status);
+//{
+// 	struct thread *curr = thread_current();
+// 	struct process *curr_p = &curr->process;
+// 	curr_p->status = status;
+// 	curr_p->call_exit = true;
+// 	printf ("%s: exit(%d)\n", thread_current()->name, status);
+// 	thread_exit();
+// 	return;
+// }
 
-tid_t fork (const char *thread_name){
-	struct thread *curr = thread_current();
-	struct intr_frame *parent_if_ = &curr->tf;
-	return process_fork(thread_name, parent_if_);
-}
+tid_t fork (const char *thread_name);
+//{
+// 	struct thread *curr = thread_current();
+// 	struct intr_frame *parent_if_ = &curr->tf;
+// 	return process_fork(thread_name, parent_if_);
+// }
 
-int exec (const char *file){
-  	return process_exec(file);
-}
+int exec (const char *file);
+//{
+//   	return process_exec(file);
+// }
 
-int wait (tid_t pid){
-	return process_wait(pid);
-}
+int wait (tid_t pid);
+//{
+// 	return process_wait(pid);
+// }
 bool create (const char *file, unsigned initial_size);
 bool remove (const char *file);
 int open (const char *file);

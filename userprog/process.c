@@ -216,20 +216,23 @@ process_wait (tid_t child_tid UNUSED) {
 	 * XXX:       implementing the process_wait. */
 	struct thread *curr = thread_current();
 	struct process *curr_p = &curr->process;
-	struct list *child_list = &curr_p->children;
-	int child_pid = -1;
+	//start 20180109
+	// struct list *child_list = &curr_p->children;
+	// int child_pid = -1;
 
-	struct list_elem *e;
-	for (e = list_begin (&child_list); e != list_end (&child_list); e = list_next (e)) {
-		struct process *child_p = list_entry(e, struct process, child_elem);
-		if(child_p->pid == child_tid){
-			if(!child_p->exit || !child_p->call_exit)
-				return -1;
-			child_pid = child_p->status;
-			palloc_free_page (child_p->name);
-			return child_pid;
-		}
-  	}
+	// struct list_elem *e;
+	// for (e = list_begin (&child_list); e != list_end (&child_list); e = list_next (e)) {
+	// 	struct process *child_p = list_entry(e, struct process, child_elem);
+	// 	if(child_p->pid == child_tid){
+	// 		if(!child_p->exit || !child_p->call_exit)
+	// 			return -1;
+	// 		child_pid = child_p->status;
+	// 		palloc_free_page (child_p->name);
+	// 		return child_pid;
+	// 	}
+  	// }
+	//end 20180109
+	while(1);
 	return -1;
 }
 
@@ -243,11 +246,14 @@ process_exit (void) {
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
-	sema_up(&curr_p->kernel_lock);
-	list_remove(&curr_p->child_elem); //remove from parent's child list
+	//start 20180109
+	// sema_up(&curr_p->kernel_lock);
+	// list_remove(&curr_p->child_elem); //remove from parent's child list
+	//end 20180109
 	process_cleanup ();
 	// thread_exit();
 	NOT_REACHED();
+	return;
 }
 
 /* Free the current process's resources. */
@@ -360,6 +366,22 @@ load (const char *file_name, struct intr_frame *if_) {
 	bool success = false;
 	int i;
 
+	//start 20180109
+   	// char *temp[32];
+   	// char *save_ptr = NULL;
+   	// int argc = 0;
+   	// temp[argc] = strtok_r(file_name, " ", &save_ptr);
+   	// while(temp[argc] != NULL){
+    //   //printf("%s \n", temp[argc]);
+    //   argc++;
+    //   temp[argc] = strtok_r(NULL, " ", &save_ptr);
+   	// }
+   	// //이때의 i는 토큰의 개수
+   	// //printf("argc: %d\n", argc);
+   	// file_name = temp[0];
+	//eof 20180109
+
+
 	/* Allocate and activate page directory. */
 	t->pml4 = pml4_create ();
 	if (t->pml4 == NULL)
@@ -373,7 +395,6 @@ load (const char *file_name, struct intr_frame *if_) {
 		printf ("load: %s: open failed\n", file_name);
 		goto done;
 	}
-	printf("-----------------file opend2 \n");
 
 	/* Read and verify executable header. */
 	if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
@@ -449,6 +470,34 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
+	
+	//start 20180109
+    
+	// for(int i = 1; i <= argc; i++){
+	// 	if_->rsp = if_->rsp - (strlen(temp[argc-i]) + 1); //NULL 까지 포함해서
+	// 	memcpy(if_->rsp, temp[argc-i], strlen(temp[argc-i]) + 1);
+	// 	//printf("length of args-none: %d\n", strlen(temp[argc-i])+1 );
+	// }
+	
+	// while(if_->rsp % 8 != 0){
+	// 	if_->rsp--;
+	// 	if_->rsp = (uint8_t *)0;
+	// }
+
+	// for(int i = 0; i <= argc; i++){
+	// 	if_->rsp = if_->rsp - sizeof(char *);
+	// 	if_->rsp = temp[argc-i];
+	// }
+
+	// if_->R.rsi = if_->rsp;
+	// if_->R.rdi = argc;
+
+	// if_->rsp = if_->rsp - sizeof(char *);
+	// memset(if_->rsp, 0, sizeof(void *));
+	// eOF 20180109
+
+	
+	
 	success = true;
 
 done:

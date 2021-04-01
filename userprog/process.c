@@ -42,19 +42,23 @@ tid_t
 process_create_initd (const char *file_name) {
 	char *fn_copy;
 	tid_t tid;
-	struct thread *curr = thread_current();
-	struct process *curr_process = &curr->process;
+
+	//start 20180109
+   	char *save_ptr = NULL;
+   	file_name = strtok_r(file_name, " ", &save_ptr); //first string parsing
+	//end 20180109
 
 	/* Make a copy of FILE_NAME.
 	 * Otherwise there's a race between the caller and load(). */
 	fn_copy = palloc_get_page (0);
+
 	if (fn_copy == NULL)
 		return TID_ERROR;
 	strlcpy (fn_copy, file_name, PGSIZE);
 
+
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
-
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
 	return tid;
@@ -79,14 +83,8 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
-	//start 20180109
-	struct thread *curr = thread_current();
-	struct process *curr_process = &curr->process;
-	//eof 20180109
-	
 	return thread_create (name,
 			PRI_DEFAULT, __do_fork, thread_current ());
-
 }
 
 #ifndef VM
@@ -169,7 +167,6 @@ error:
 
 /* Switch the current execution context to the f_name.
  * Returns -1 on fail. */
-
 int
 process_exec (void *f_name) {
 	char *file_name = f_name;
@@ -190,7 +187,7 @@ process_exec (void *f_name) {
 	success = load (file_name, &_if);
 
 	/* If load failed, quit. */
-	palloc_free_page (file_name);
+	// palloc_free_page (file_name);
 	if (!success)
 		return -1;
 
@@ -214,24 +211,7 @@ process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
-	struct thread *curr = thread_current();
-	struct process *curr_p = &curr->process;
-	//start 20180109
-	// struct list *child_list = &curr_p->children;
-	// int child_pid = -1;
-
-	// struct list_elem *e;
-	// for (e = list_begin (&child_list); e != list_end (&child_list); e = list_next (e)) {
-	// 	struct process *child_p = list_entry(e, struct process, child_elem);
-	// 	if(child_p->pid == child_tid){
-	// 		if(!child_p->exit || !child_p->call_exit)
-	// 			return -1;
-	// 		child_pid = child_p->status;
-	// 		palloc_free_page (child_p->name);
-	// 		return child_pid;
-	// 	}
-  	// }
-	//end 20180109
+	// while(1);
 	while(1);
 	return -1;
 }
@@ -240,20 +220,12 @@ process_wait (tid_t child_tid UNUSED) {
 void
 process_exit (void) {
 	struct thread *curr = thread_current ();
-	struct process *curr_p = &curr->process;
-	struct thread *parent = curr_p->parent;
 	/* TODO: Your code goes here.
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
-	//start 20180109
-	// sema_up(&curr_p->kernel_lock);
-	// list_remove(&curr_p->child_elem); //remove from parent's child list
-	//end 20180109
+
 	process_cleanup ();
-	// thread_exit();
-	NOT_REACHED();
-	return;
 }
 
 /* Free the current process's resources. */
@@ -367,27 +339,24 @@ load (const char *file_name, struct intr_frame *if_) {
 	int i;
 
 	//start 20180109
-   	// char *temp[32];
-   	// char *save_ptr = NULL;
-   	// int argc = 0;
-   	// temp[argc] = strtok_r(file_name, " ", &save_ptr);
-   	// while(temp[argc] != NULL){
-    //   //printf("%s \n", temp[argc]);
-    //   argc++;
-    //   temp[argc] = strtok_r(NULL, " ", &save_ptr);
-   	// }
-   	// //이때의 i는 토큰의 개수
-   	// //printf("argc: %d\n", argc);
-   	// file_name = temp[0];
-	//eof 20180109
-
+   	char *temp[128];
+	//   char **temp;
+	char *save_ptr = NULL;
+	int argc = 0;
+	temp[argc] = strtok_r(file_name, " ", &save_ptr);
+	while(temp[argc] != NULL){
+		// printf("%s \n", temp[argc]);
+		argc++;
+		temp[argc] = strtok_r(NULL, " ", &save_ptr);
+	}
+	file_name = temp[0];
+	//end 20180109
 
 	/* Allocate and activate page directory. */
 	t->pml4 = pml4_create ();
 	if (t->pml4 == NULL)
 		goto done;
 	process_activate (thread_current ());
-
 
 	/* Open executable file. */
 	file = filesys_open (file_name);
@@ -468,36 +437,44 @@ load (const char *file_name, struct intr_frame *if_) {
 	/* Start address. */
 	if_->rip = ehdr.e_entry;
 
+	//start 20180109
+	palloc_free_page (file_name);
+
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
-	
+	 
 	//start 20180109
-    
-	// for(int i = 1; i <= argc; i++){
-	// 	if_->rsp = if_->rsp - (strlen(temp[argc-i]) + 1); //NULL 까지 포함해서
-	// 	memcpy(if_->rsp, temp[argc-i], strlen(temp[argc-i]) + 1);
-	// 	//printf("length of args-none: %d\n", strlen(temp[argc-i])+1 );
-	// }
+	printf("start edit, argument number: %d \n", argc);
+	for(int i = 1; i <= argc; i++){
+		printf("start argument: %#x \n", if_->rsp);
+		if_->rsp = if_->rsp - (strlen(temp[argc-i]) + 1); //NULL 까지 포함해서
+		memcpy(if_->rsp, temp[argc-i], strlen(temp[argc-i]) + 1);
+	//printf("length of args-none: %d\n", strlen(temp[argc-i])+1 );
+	}
 	
-	// while(if_->rsp % 8 != 0){
-	// 	if_->rsp--;
-	// 	if_->rsp = (uint8_t *)0;
-	// }
+	while(if_->rsp % 8 != 0){
+		printf("start word align: %#x \n", if_->rsp);
+		if_->rsp--;
+		*(uintptr_t *)if_->rsp = 0;
+	}
 
-	// for(int i = 0; i <= argc; i++){
-	// 	if_->rsp = if_->rsp - sizeof(char *);
-	// 	if_->rsp = temp[argc-i];
-	// }
+	for(int i = 0; i <= argc; i++){
+		printf("start argument address: %#x \n", if_->rsp);
+		if_->rsp = if_->rsp - sizeof(char *);
+		// if_->rsp = temp[argc-i];
+		memcpy(if_->rsp, &temp[argc-i], sizeof(char **));
+	}
 
-	// if_->R.rsi = if_->rsp;
-	// if_->R.rdi = argc;
+	if_->R.rsi = if_->rsp;
+	if_->R.rdi = argc;
 
-	// if_->rsp = if_->rsp - sizeof(char *);
-	// memset(if_->rsp, 0, sizeof(void *));
-	// eOF 20180109
+	printf("rsp: %#x \n", if_->rsp);
+	printf("rsi: %#x \n", if_->R.rsi);
 
-	
-	
+	if_->rsp = if_->rsp - sizeof(char *);
+	memset(if_->rsp, 0, sizeof(void *)); 
+	//end 20180109
+
 	success = true;
 
 done:

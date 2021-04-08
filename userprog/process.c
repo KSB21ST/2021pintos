@@ -22,6 +22,11 @@
 #include "vm/vm.h"
 #endif
 
+//start 20180109
+void argument_stack(char **argv, int argc, struct intr_frame *if_);
+// void argument_stack(char **argv, int argc, void **);
+//end 20180109
+
 static void process_cleanup (void);
 static bool load (const char *file_name, struct intr_frame *if_);
 static void initd (void *f_name);
@@ -43,11 +48,6 @@ process_create_initd (const char *file_name) {
 	char *fn_copy;
 	tid_t tid;
 
-	//start 20180109
-   	char *save_ptr = NULL;
-   	file_name = strtok_r(file_name, " ", &save_ptr); //first string parsing
-	//end 20180109
-
 	/* Make a copy of FILE_NAME.
 	 * Otherwise there's a race between the caller and load(). */
 	fn_copy = palloc_get_page (0);
@@ -56,6 +56,10 @@ process_create_initd (const char *file_name) {
 		return TID_ERROR;
 	strlcpy (fn_copy, file_name, PGSIZE);
 
+	//start 20180109
+   	char *save_ptr = NULL;
+   	file_name = strtok_r(file_name, " ", &save_ptr); //first string parsing
+	//end 20180109
 
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
@@ -183,11 +187,33 @@ process_exec (void *f_name) {
 	/* We first kill the current context */
 	process_cleanup ();
 
+	//start 20180109
+    // char *file_name_copy[48];
+    // memcpy(file_name_copy, file_name, strlen(file_name) + 1);
+	// char *token, *last;
+    // int token_count = 0;
+    // char *arg_list[64];
+    // token = strtok_r(file_name_copy, " ", &last);
+    // char *tmp_save = token;
+    // arg_list[token_count] = token;
+    // while (token != NULL)
+    // {
+    //     token = strtok_r(NULL, " ", &last);
+    //     token_count++;
+    //     arg_list[token_count] = token;
+    // }
+	//end 20180109
+
 	/* And then load the binary */
+	// success = load(tmp_save, &_if);
 	success = load (file_name, &_if);
 
+	//start 20180109
+	// argument_stack(arg_list, token_count, &_if);
+	// hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
+	//end 20180109
 	/* If load failed, quit. */
-	// palloc_free_page (file_name);
+	palloc_free_page (file_name);
 	if (!success)
 		return -1;
 
@@ -339,17 +365,20 @@ load (const char *file_name, struct intr_frame *if_) {
 	int i;
 
 	//start 20180109
-   	char *temp[128];
-	//   char **temp;
-	char *save_ptr = NULL;
-	int argc = 0;
-	temp[argc] = strtok_r(file_name, " ", &save_ptr);
-	while(temp[argc] != NULL){
-		// printf("%s \n", temp[argc]);
-		argc++;
-		temp[argc] = strtok_r(NULL, " ", &save_ptr);
-	}
-	file_name = temp[0];
+	char *file_name_copy[48];
+    memcpy(file_name_copy, file_name, strlen(file_name) + 1);
+	char *token, *last;
+    int token_count = 0;
+    char *arg_list[64];
+    token = strtok_r(file_name_copy, " ", &last);
+    char *tmp_save = token;
+    arg_list[token_count] = token;
+    while (token != NULL)
+    {
+        token = strtok_r(NULL, " ", &last);
+        token_count++;
+        arg_list[token_count] = token;
+    }
 	//end 20180109
 
 	/* Allocate and activate page directory. */
@@ -359,7 +388,8 @@ load (const char *file_name, struct intr_frame *if_) {
 	process_activate (thread_current ());
 
 	/* Open executable file. */
-	file = filesys_open (file_name);
+	// file = filesys_open (file_name);
+	file = filesys_open (file_name_copy);
 	if (file == NULL) {
 		printf ("load: %s: open failed\n", file_name);
 		goto done;
@@ -437,42 +467,11 @@ load (const char *file_name, struct intr_frame *if_) {
 	/* Start address. */
 	if_->rip = ehdr.e_entry;
 
-	//start 20180109
-	palloc_free_page (file_name);
-
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
-	 
 	//start 20180109
-	printf("start edit, argument number: %d \n", argc);
-	for(int i = 1; i <= argc; i++){
-		printf("start argument: %#x \n", if_->rsp);
-		if_->rsp = if_->rsp - (strlen(temp[argc-i]) + 1); //NULL 까지 포함해서
-		memcpy(if_->rsp, temp[argc-i], strlen(temp[argc-i]) + 1);
-	//printf("length of args-none: %d\n", strlen(temp[argc-i])+1 );
-	}
-	
-	while(if_->rsp % 8 != 0){
-		printf("start word align: %#x \n", if_->rsp);
-		if_->rsp--;
-		*(uintptr_t *)if_->rsp = 0;
-	}
-
-	for(int i = 0; i <= argc; i++){
-		printf("start argument address: %#x \n", if_->rsp);
-		if_->rsp = if_->rsp - sizeof(char *);
-		// if_->rsp = temp[argc-i];
-		memcpy(if_->rsp, &temp[argc-i], sizeof(char **));
-	}
-
-	if_->R.rsi = if_->rsp;
-	if_->R.rdi = argc;
-
-	printf("rsp: %#x \n", if_->rsp);
-	printf("rsi: %#x \n", if_->R.rsi);
-
-	if_->rsp = if_->rsp - sizeof(char *);
-	memset(if_->rsp, 0, sizeof(void *)); 
+	argument_stack(arg_list, token_count, if_);
+	hex_dump(if_->rsp, if_->rsp, USER_STACK - if_->rsp, true);
 	//end 20180109
 
 	success = true;
@@ -695,3 +694,54 @@ setup_stack (struct intr_frame *if_) {
 	return success;
 }
 #endif /* VM */
+
+
+void argument_stack(char **argv, int argc, struct intr_frame *if_)
+{
+    /* insert arguments' address */
+    char *argu_address[128];
+	// void **esp = if_->rsp;
+	// printf("base user stack : %#x \n", if_->rsp);
+    for (int i = argc - 1; i >= 0; i--)
+    {
+		int argv_len = strlen(argv[i]);
+        if_->rsp = if_->rsp - (argv_len + 1);
+        memcpy(if_->rsp, argv[i], argv_len + 1);
+        argu_address[i] = if_->rsp;
+		// printf("%d  &argu_address[i]: %#x, if_->rsp: %s %#x \n", i, &argu_address[i], if_->rsp,if_->rsp);
+    }
+    
+    /* insert padding for word-align */
+    while (if_->rsp % 8 != 0)
+    {
+        if_->rsp--;
+        *(uint8_t *)(if_->rsp) = 0;
+		// printf("if_->rsp: %s %#x \n", if_->rsp, if_->rsp);
+    }
+    
+    /* insert address of strings including sentinel */
+    for (int i = argc; i >= 0; i--)
+    {
+        if_->rsp = if_->rsp - 8;
+        if (i == argc){
+            memset(if_->rsp, 0, sizeof(char **));
+			// printf("%d: if_rsp value: %#x addr: %#x \n", i, *(uintptr_t  *)if_->rsp, if_->rsp);
+		}
+        else{
+			memcpy(if_->rsp, &argu_address[i], sizeof(char *));
+			// printf("%d: if_rsp addr: %#x %#x %#x \n", i, *(uintptr_t  *)if_->rsp, argu_address[i], if_->rsp);
+		}
+            
+    }
+
+	if_->R.rdi = argc;
+    if_->R.rsi = if_->rsp;
+
+    /* fake return address */
+    if_->rsp = if_->rsp - 8;
+    memset(if_->rsp, 0, sizeof(void *));
+	// printf("final if_rsp : %s addr: %#x \n", *(uintptr_t  *)if_->rsp, if_->rsp);
+	// printf("rsi: %#x %#x, %s \n", if_->R.rsi, *(uint64_t *)if_->R.rsi,  *(uint64_t *)if_->R.rsi);
+	// printf("rdi: %#x %#x, %s \n", if_->R.rdi, *(uint64_t *)if_->R.rdi,  *(uint64_t *)if_->R.rdi);
+}
+// void hex_dump (uintptr_t ofs, const void *, size_t size, bool ascii);

@@ -131,6 +131,7 @@ struct thread {
 	int exit_status; /*my status when I exit - for prcess wait*/
 	struct semaphore child_lock;
 	struct semaphore exit_lock;
+	struct file* fd[128]; 
 	//end 20180109
 #endif
 

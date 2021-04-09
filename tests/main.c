@@ -5,7 +5,6 @@
 int
 main (int argc UNUSED, char *argv[]) 
 {
-  printf("main in tests>main.c \n");
   test_name = argv[0];
 
   msg ("begin");

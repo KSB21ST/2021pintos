@@ -1,11 +1,2 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/process.c:250 in process_exit(): executed an unreachable statement
-Call stack: 0x800421879e 0x800421c315 0x80042071b3 0x800421cf38 0x800421d0ff 0x80042092bf 0x80042096dd
-Translation of call stack:
-0x000000800421879e: debug_panic (lib/kernel/debug.c:32)
-0x000000800421c315: process_cleanup (userprog/process.c:255)
-0x00000080042071b3: thread_exit (threads/thread.c:322)
-0x000000800421cf38: kill (userprog/exception.c:96)
-0x000000800421d0ff: page_fault (userprog/exception.c:159 (discriminator 12))
-0x00000080042092bf: intr_handler (threads/interrupt.c:352)
-0x00000080042096dd: intr_entry (threads/intr-stubs.o:?)
+run: should have exited with -1: FAILED

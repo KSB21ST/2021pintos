@@ -1,12 +1,19 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x800421879e 0x800421cf80 0x800421d0ff 0x80042092bf 0x80042096dd 0x8004206780 0x80042068cd 0x800420617a
-Translation of call stack:
-0x000000800421879e: debug_panic (lib/kernel/debug.c:32)
-0x000000800421cf80: kill (userprog/exception.c:103)
-0x000000800421d0ff: page_fault (userprog/exception.c:159 (discriminator 12))
-0x00000080042092bf: intr_handler (threads/interrupt.c:352)
-0x00000080042096dd: intr_entry (threads/intr-stubs.o:?)
-0x0000008004206780: run_task (threads/init.c:254)
-0x00000080042068cd: run_actions (threads/init.c:299)
-0x000000800420617a: main (threads/init.c:125)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (sm-create) begin
+  (sm-create) create "blargle"
+  (sm-create) open "blargle" for verification
+  (sm-create) verified contents of "blargle"
+  (sm-create) close "blargle"
+  (sm-create) end
+Differences in `diff -u' format:
+  (sm-create) begin
+  (sm-create) create "blargle"
+  (sm-create) open "blargle" for verification
+- (sm-create) verified contents of "blargle"
+- (sm-create) close "blargle"
+- (sm-create) end
+
+(Process exit codes are excluded for matching purposes.)

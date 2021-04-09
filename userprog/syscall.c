@@ -112,6 +112,11 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		f->R.rax = ans;
 		break;
 	case SYS_READ:
+		check_user_sp(f->R.rdi);
+		check_user_sp(f->R.rsi);
+		check_user_sp(f->R.rdx);
+		// printf("f->R.rdi = %d, f->R.rsi = %d, f->R.rdx= %d\n" ,f->R.rdi,f->R.rsi, f->R.rdx);
+		ans = read(f->R.rdi, f->R.rsi, f->R.rdx);
 		break;
 	case SYS_WRITE:
 		// printf("write \n");
@@ -174,9 +179,9 @@ bool
 create (const char *file, unsigned initial_size)
 {
 	if (file == NULL) exit(-1);
-	sema_down(&file_lock);
+	// sema_down(&file_lock);
     bool result = (filesys_create (file, initial_size));
-	sema_up(&file_lock);
+	// sema_up(&file_lock);
     return result;
 }
 
@@ -186,9 +191,9 @@ remove (const char *file)
 	if(file==NULL||*file==NULL){
     	exit(-1);
   	}
- 	sema_down(&file_lock);
+ 	// sema_down(&file_lock);
   	bool success = filesys_remove(file);
-  	sema_up(&file_lock);
+  	// sema_up(&file_lock);
   	return success;
 }
 
@@ -198,17 +203,24 @@ open (const char *file)
 	if(file==NULL) exit(-1);
 	struct file* opened_file;
 	struct thread *cur =thread_current();
-	int fd;
-	sema_down(&file_lock);
+	int fd_num;
 	opened_file = filesys_open (file);
-	if(opened_file==NULL){
-		sema_up(&file_lock);
+	if(opened_file==NULL)
 		return -1;
-	}
 	/* if file is current process, deny write */
 	if(!strcmp(file,cur->name))
 		file_deny_write(opened_file);
-	sema_up(&file_lock);
+	/* number of opened files should be less than 128 */
+	/* check vacant room of fd_table */
+	#ifdef USERPROG
+	for(int i =2;i<130;i++){
+		if(cur->fd[i]==NULL){
+			cur->fd[i]=opened_file;
+			fd_num=i;
+			return fd_num;
+		}
+	}
+	#endif
 	return -1;
 }
 

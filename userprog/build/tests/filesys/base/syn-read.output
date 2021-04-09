@@ -4,24 +4,29 @@ Kernel command line: -q -f put syn-read put child-syn-read run syn-read
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  130,867,200 loops/s.
-hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+Calibrating timer...  157,081,600 loops/s.
+hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 226 sector (113 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 225 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 Formatting file system...done.
 Boot complete.
 Putting 'syn-read' into the file system...
 Putting 'child-syn-read' into the file system...
 Executing 'syn-read':
-Kernel PANIC at ../../lib/kernel/list.c:78 in list_next(): assertion `is_head (elem) || is_interior (elem)' failed.
-Call stack: 0x800421879e 0x8004218a1a 0x800421c24c 0x8004206780 0x80042068cd 0x800420617a.
+(syn-read) begin
+(syn-read) create "data"
+(syn-read) open "data"
+(syn-read) write "data"
+(syn-read) close "data"
+Kernel PANIC at ../../threads/mmu.c:235 in pml4_set_page(): assertion `pg_ofs (kpage) == 0' failed.
+Call stack: 0x8004218748 0x800420d733 0x800421bf40 0x800420d09f 0x800420d151 0x800420d1f6 0x800420d28e 0x800421bff9 0x80042075e4.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 76 ticks
-Thread: 38 idle ticks, 38 kernel ticks, 0 user ticks
+Timer: 81 ticks
+Thread: 41 idle ticks, 37 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 61 reads, 490 writes
-hd1:0: 226 reads, 0 writes
-Console: 1178 characters output
+hd0:1: 137 reads, 502 writes
+hd1:0: 225 reads, 0 writes
+Console: 1315 characters output
 Key

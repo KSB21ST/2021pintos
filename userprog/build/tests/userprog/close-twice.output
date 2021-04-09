@@ -13,18 +13,19 @@ Boot complete.
 Putting 'close-twice' into the file system...
 Putting 'sample.txt' into the file system...
 Executing 'close-twice':
-main in tests>main.c 
 (close-twice) begin
 (close-twice) open "sample.txt"
-Kernel PANIC at ../../lib/kernel/list.c:158 in list_insert(): assertion `is_interior (before) || is_tail (before)' failed.
-Call stack: 0x800421871e 0x8004218c67 0x8004218f0f 0x800420a279 0x800421d9dc 0x800421d67d 0x800421d3bb 0x400121 0x400211 0x400cb2.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 71 ticks
-Thread: 30 idle ticks, 38 kernel ticks, 3 user ticks
+(close-twice) close "sample.txt"
+(close-twice) close "sample.txt" again
+(close-twice) end
+close-twice: exit(0)
+Execution of 'close-twice' complete.
+Timer: 75 ticks
+Thread: 33 idle ticks, 39 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 107 reads, 248 writes
+hd0:1: 111 reads, 248 writes
 hd1:0: 105 reads, 0 writes
-Console: 1303 characters output
-Key
+Console: 1021 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

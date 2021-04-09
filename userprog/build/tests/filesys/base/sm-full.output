@@ -4,30 +4,28 @@ Kernel command line: -q -f put sm-full run sm-full
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  107,929,600 loops/s.
-hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+Calibrating timer...  130,867,200 loops/s.
+hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 107 sector (53 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 106 sector (53 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 Formatting file system...done.
 Boot complete.
 Putting 'sm-full' into the file system...
 Executing 'sm-full':
------------------file opend2 
-Page fault at 0: not present error reading page in user context.
-sm-full: dying due to interrupt 0x0e (#PF Page-Fault Exception).
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=400dd2
- cr2=0000000000000000 error=               4
-rax 0000000000000000 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
-rsp 000000004747ffc8 rbp 000000004747ffd8 rsi 0000000000000000 rdi 0000000000000000
-rip 00000000Kernel PANIC at ../../lib/kernel/list.c:78 in list_next(): assertion `is_head (elem) || is_interior (elem)' failed.
-Call stack: 0x800421879e 0x8004218a1a 0x800421c24c 0x8004206780 0x80042068cd 0x800420617a.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 71 ticks
-Thread: 30 idle ticks, 37 kernel ticks, 4 user ticks
+(sm-full) begin
+(sm-full) create "quux"
+(sm-full) open "quux"
+(sm-full) writing "quux"
+(sm-full) close "quux"
+(sm-full) open "quux" for verification
+sm-full: exit(-1)
+Execution of 'sm-full' complete.
+Timer: 78 ticks
+Thread: 35 idle ticks, 35 kernel ticks, 8 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 81 reads, 242 writes
-hd1:0: 107 reads, 0 writes
-Console: 1546 characters output
-Key
+hd0:1: 112 reads, 264 writes
+hd1:0: 106 reads, 0 writes
+Console: 945 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

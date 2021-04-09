@@ -381,6 +381,7 @@ intr_dump_frame (const struct intr_frame *f) {
 	   See [IA32-v2a] "MOV--Move to/from Control Registers" and
 	   [IA32-v3a] 5.14 "Interrupt 14--Page Fault Exception
 	   (#PF)". */
+	// hex_dump(f->rip, f->rip, 100, true);
 	uint64_t cr2 = rcr2();
 	printf ("Interrupt %#04llx (%s) at rip=%llx\n",
 			f->vec_no, intr_names[f->vec_no], f->rip);

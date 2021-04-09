@@ -1,11 +1,14 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/process.c:250 in process_exit(): executed an unreachable statement
-Call stack: 0x800421879e 0x800421c315 0x80042071b3 0x800421cf38 0x800421d0ff 0x80042092bf 0x80042096dd
+Kernel panic in run: PANIC at ../../lib/kernel/list.c:158 in list_insert(): assertion `is_interior (before) || is_tail (before)' failed.
+Call stack: 0x800421871e 0x8004218c67 0x8004218f0f 0x800420a279 0x800421d9dc 0x800421d67d 0x800421d3bb 0x400121 0x4001e5 0x400c86
 Translation of call stack:
-0x000000800421879e: debug_panic (lib/kernel/debug.c:32)
-0x000000800421c315: process_cleanup (userprog/process.c:255)
-0x00000080042071b3: thread_exit (threads/thread.c:322)
-0x000000800421cf38: kill (userprog/exception.c:96)
-0x000000800421d0ff: page_fault (userprog/exception.c:159 (discriminator 12))
-0x00000080042092bf: intr_handler (threads/interrupt.c:352)
-0x00000080042096dd: intr_entry (threads/intr-stubs.o:?)
+0x000000800421871e: debug_panic (lib/kernel/debug.c:32)
+0x0000008004218c67: list_insert (lib/kernel/list.c:159)
+0x0000008004218f0f: list_push_back (lib/kernel/list.c:204)
+0x000000800420a279: sema_down (threads/synch.c:70)
+0x000000800421d9dc: open (userprog/syscall.c:203)
+0x000000800421d67d: syscall_handler (userprog/syscall.c:105)
+0x000000800421d3bb: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400121: (unknown)
+0x00000000004001e5: (unknown)
+0x0000000000400c86: (unknown)

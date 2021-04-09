@@ -188,13 +188,13 @@ process_exec (void *f_name) {
 	process_cleanup ();
 
 	//start 20180109
-    // char *file_name_copy[48];
+    // char *file_name_copy[128];
     // memcpy(file_name_copy, file_name, strlen(file_name) + 1);
 	// char *token, *last;
     // int token_count = 0;
-    // char *arg_list[64];
-    // token = strtok_r(file_name_copy, " ", &last);
-    // char *tmp_save = token;
+    // char *arg_list[128];
+    // token = strtok_r(file_name, " ", &last);
+    // // char *tmp_save = token;
     // arg_list[token_count] = token;
     // while (token != NULL)
     // {
@@ -210,7 +210,7 @@ process_exec (void *f_name) {
 
 	//start 20180109
 	// argument_stack(arg_list, token_count, &_if);
-	// hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
+	// hex_dump(_if.rsp, _if.rsp, USER_STACK-_if.rsp, true);
 	//end 20180109
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
@@ -238,8 +238,26 @@ process_wait (tid_t child_tid UNUSED) {
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
 	// while(1);
-	while(1);
-	return -1;
+	//start 20180109
+	#ifdef USERPROG
+	struct list_elem* e;
+	struct thread* t = NULL;
+	int exit_status;
+	
+	for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
+	{
+		t = list_entry(e, struct thread, child_elem);
+		if (child_tid == t->tid) {
+			sema_down(&(t->child_lock));
+			exit_status = t->exit_status;
+			list_remove(&t->child_elem);
+			sema_up(&t->exit_lock);
+			return exit_status;
+		}   
+	}
+	#endif
+	//end 20180109
+  return -1;
 }
 
 /* Exit the process. This function is called by thread_exit (). */
@@ -250,8 +268,16 @@ process_exit (void) {
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
+	struct thread *cur = thread_current ();
 
 	process_cleanup ();
+
+	//start 20180109
+	#ifdef USERPROG
+	sema_up(&cur->child_lock);
+	sema_down(&cur->exit_lock);
+	#endif
+	//end 20180109
 }
 
 /* Free the current process's resources. */
@@ -365,13 +391,13 @@ load (const char *file_name, struct intr_frame *if_) {
 	int i;
 
 	//start 20180109
-	char *file_name_copy[48];
-    memcpy(file_name_copy, file_name, strlen(file_name) + 1);
+	// char *file_name_copy[48];
+    // memcpy(file_name_copy, file_name, strlen(file_name) + 1);
 	char *token, *last;
     int token_count = 0;
     char *arg_list[64];
-    token = strtok_r(file_name_copy, " ", &last);
-    char *tmp_save = token;
+    token = strtok_r(file_name, " ", &last);
+    // char *tmp_save = token;
     arg_list[token_count] = token;
     while (token != NULL)
     {
@@ -388,8 +414,8 @@ load (const char *file_name, struct intr_frame *if_) {
 	process_activate (thread_current ());
 
 	/* Open executable file. */
-	// file = filesys_open (file_name);
-	file = filesys_open (file_name_copy);
+	file = filesys_open (file_name);
+	// file = filesys_open (file_name_copy);
 	if (file == NULL) {
 		printf ("load: %s: open failed\n", file_name);
 		goto done;
@@ -464,6 +490,11 @@ load (const char *file_name, struct intr_frame *if_) {
 	if (!setup_stack (if_))
 		goto done;
 
+	//start 20180109
+	// argument_stack(arg_list, token_count, if_);
+	// hex_dump(if_->rsp, if_->rsp, USER_STACK - if_->rsp, true);
+	//end 20180109
+
 	/* Start address. */
 	if_->rip = ehdr.e_entry;
 
@@ -471,7 +502,7 @@ load (const char *file_name, struct intr_frame *if_) {
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
 	//start 20180109
 	argument_stack(arg_list, token_count, if_);
-	hex_dump(if_->rsp, if_->rsp, USER_STACK - if_->rsp, true);
+	// hex_dump(if_->rsp, if_->rsp, USER_STACK - if_->rsp, true);
 	//end 20180109
 
 	success = true;
@@ -708,14 +739,15 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
         if_->rsp = if_->rsp - (argv_len + 1);
         memcpy(if_->rsp, argv[i], argv_len + 1);
         argu_address[i] = if_->rsp;
-		// printf("%d  &argu_address[i]: %#x, if_->rsp: %s %#x \n", i, &argu_address[i], if_->rsp,if_->rsp);
+		// printf("%d if_->rsp: %s %#x \n", i, if_->rsp, if_->rsp);
     }
-    
+
     /* insert padding for word-align */
     while (if_->rsp % 8 != 0)
     {
         if_->rsp--;
         *(uint8_t *)(if_->rsp) = 0;
+		// memset(if_->rsp, 0, sizeof(uint8_t *));
 		// printf("if_->rsp: %s %#x \n", if_->rsp, if_->rsp);
     }
     
@@ -724,18 +756,20 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     {
         if_->rsp = if_->rsp - 8;
         if (i == argc){
-            memset(if_->rsp, 0, sizeof(char **));
+            // memset(if_->rsp, 0, sizeof(char **));
+			*(char *)(if_->rsp) = 0;
 			// printf("%d: if_rsp value: %#x addr: %#x \n", i, *(uintptr_t  *)if_->rsp, if_->rsp);
 		}
         else{
-			memcpy(if_->rsp, &argu_address[i], sizeof(char *));
+			memcpy(if_->rsp, &argu_address[i], sizeof(char **));
 			// printf("%d: if_rsp addr: %#x %#x %#x \n", i, *(uintptr_t  *)if_->rsp, argu_address[i], if_->rsp);
 		}
             
     }
-
+	
 	if_->R.rdi = argc;
-    if_->R.rsi = if_->rsp;
+    if_->R.rsi =  if_->rsp;
+	// memcpy(if_->R.rsi, &(if_->rsp), sizeof(uintptr_t *));
 
     /* fake return address */
     if_->rsp = if_->rsp - 8;
@@ -743,5 +777,6 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
 	// printf("final if_rsp : %s addr: %#x \n", *(uintptr_t  *)if_->rsp, if_->rsp);
 	// printf("rsi: %#x %#x, %s \n", if_->R.rsi, *(uint64_t *)if_->R.rsi,  *(uint64_t *)if_->R.rsi);
 	// printf("rdi: %#x %#x, %s \n", if_->R.rdi, *(uint64_t *)if_->R.rdi,  *(uint64_t *)if_->R.rdi);
+	//if->rip = if->rsp;
 }
 // void hex_dump (uintptr_t ofs, const void *, size_t size, bool ascii);

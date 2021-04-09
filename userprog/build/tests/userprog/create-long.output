@@ -1,0 +1,28 @@
+Kernel command line: -q -f put create-long run create-long
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  130,867,200 loops/s.
+hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 103 sector (51 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+Formatting file system...done.
+Boot complete.
+Putting 'create-long' into the file system...
+Executing 'create-long':
+main in tests>main.c 
+(create-long) begin
+Kernel PANIC at ../../lib/kernel/list.c:158 in list_insert(): assertion `is_interior (before) || is_tail (before)' failed.
+Call stack: 0x800421871e 0x8004218c67 0x8004218f0f 0x800420a279 0x800421d8d0 0x800421d5fd 0x800421d3bb 0x400138 0x4001cc 0x400c6d.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 73 ticks
+Thread: 39 idle ticks, 31 kernel ticks, 3 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 80 reads, 234 writes
+hd1:0: 103 reads, 0 writes
+Console: 1210 characters output
+Key

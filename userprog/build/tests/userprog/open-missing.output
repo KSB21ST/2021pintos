@@ -4,32 +4,25 @@ Kernel command line: -q -f put open-missing run open-missing
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  130,867,200 loops/s.
-hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+Calibrating timer...  157,081,600 loops/s.
+hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 103 sector (51 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 Formatting file system...done.
 Boot complete.
 Putting 'open-missing' into the file system...
 Executing 'open-missing':
-Page fault at 0x676e693b: not present error reading page in kernel context.
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=800421c1e7
- cr2=00000000676e693b error=               0
-rax 00000000676e693b rbx 0000000000204400 rcx 0000008004000060 rdx 0000008004241000
-rsp 0000008004000f30 rbp 0000008004000f70 rsi 0000008004240060 rdi 0000008004000f40
-rip 000000800421c1e7 r8 0000008004000efc  r9 000000800421bc7c r10 0000000000000000
-r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00200202
-es: 0010 ds: 0010 cs: 0008 ss: 0010
-Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x800421879e 0x800421cf80 0x800421d0ff 0x80042092bf 0x80042096dd 0x8004206780 0x80042068cd 0x800420617a.
+main in tests>main.c 
+(open-missing) begin
+Kernel PANIC at ../../lib/kernel/list.c:158 in list_insert(): assertion `is_interior (before) || is_tail (before)' failed.
+Call stack: 0x800421871e 0x8004218c67 0x8004218f0f 0x800420a279 0x800421d9dc 0x800421d67d 0x800421d3bb 0x400106 0x4001a3 0x400c44.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 81 ticks
-Thread: 34 idle ticks, 47 kernel ticks, 0 user ticks
+Timer: 64 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 36 reads, 234 writes
+hd0:1: 80 reads, 234 writes
 hd1:0: 103 reads, 0 writes
-Console: 1725 characters output
+Console: 1215 characters output
 Key

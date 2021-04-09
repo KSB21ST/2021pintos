@@ -16,7 +16,6 @@
 #endif
 //THIS IS A TEST For SB
 bool compare_priority(struct list_elem *, struct list_elem *, void *);
-static void process_inthread(struct thread *t);
 int load_avg;
 struct list all_list;
 
@@ -209,11 +208,6 @@ thread_create (const char *name, int priority,
 	init_thread (t, name, priority);
 	tid = t->tid = allocate_tid ();
 
-	// #ifdef USERPROG
-	struct process *t_process = &t->process;
-	t_process->pid = tid;
-	// #endif
-
 	/* Call the kernel_thread if it scheduled.
 	 * Note) rdi is 1st argument, and rsi is 2nd argument. */
 	t->tf.rip = (uintptr_t) kernel_thread;
@@ -305,9 +299,6 @@ thread_exit (void) {
 	ASSERT (!intr_context ());
 
 	struct thread *curr = thread_current();
-	struct process *curr_p = &curr->process;
-
-	curr_p->exit = true;
 
 	//edit
 	list_remove(&thread_current()->allelem);
@@ -487,11 +478,16 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->recent_cpu = 0;
 	t->wait_lock = NULL;
 
-	//start 20180109 _ project2-2
-	// #ifdef USERPROG
-		process_inthread(t);
-	// #endif
-	//eof 20180109 _ project2-2
+	//start 20180109
+	#ifdef USERPROG
+	t->exit_status = 0;
+	list_init(&(t->child_list));
+	sema_init(&(t->child_lock), 0);    
+	sema_init(&(t->exit_lock), 0);        
+	list_push_back(&running_thread()->child_list, &t->child_elem);
+	#endif
+	//end 20180109
+
 
 	//edit-for mlfqs
    t->nice = running_thread()->nice;
@@ -782,19 +778,4 @@ thread_preempt (struct thread *temp)
 		}
   	}
  intr_set_level (old_level);
-}
-
-static void
-process_inthread(struct thread *t){
-	struct process *t_process = &t->process;
-	struct thread *t_parent = t_process->parent;
-	list_init(&t_process->children); /*initialize t's children list*/
-	t_parent = running_thread(); 
-	list_push_back(&(&t_parent->process)->children, &t_process->child_elem); /*push t to it's parent's children list*/
-	t_process->status = EXIT_FAILURE;  //status of 0 indicates success and nonzero values indicate errors.
-	t_process->call_exit = false;
-	t_process->exit = false;
-	strlcpy (t_process->name, t->name, sizeof t->name);
-
-	sema_init(&t_process->kernel_lock, 0);
 }

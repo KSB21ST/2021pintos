@@ -1,12 +1,14 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x800421879e 0x800421cf80 0x800421d0ff 0x80042092bf 0x80042096dd 0x8004206780 0x80042068cd 0x800420617a
+Kernel panic in run: PANIC at ../../lib/kernel/list.c:158 in list_insert(): assertion `is_interior (before) || is_tail (before)' failed.
+Call stack: 0x800421871e 0x8004218c67 0x8004218f0f 0x800420a279 0x800421d8d0 0x800421d5fd 0x800421d3bb 0x400116 0x400278 0x400d19
 Translation of call stack:
-0x000000800421879e: debug_panic (lib/kernel/debug.c:32)
-0x000000800421cf80: kill (userprog/exception.c:103)
-0x000000800421d0ff: page_fault (userprog/exception.c:159 (discriminator 12))
-0x00000080042092bf: intr_handler (threads/interrupt.c:352)
-0x00000080042096dd: intr_entry (threads/intr-stubs.o:?)
-0x0000008004206780: run_task (threads/init.c:254)
-0x00000080042068cd: run_actions (threads/init.c:299)
-0x000000800420617a: main (threads/init.c:125)
+0x000000800421871e: debug_panic (lib/kernel/debug.c:32)
+0x0000008004218c67: list_insert (lib/kernel/list.c:159)
+0x0000008004218f0f: list_push_back (lib/kernel/list.c:204)
+0x000000800420a279: sema_down (threads/synch.c:70)
+0x000000800421d8d0: create (userprog/syscall.c:178)
+0x000000800421d5fd: syscall_handler (userprog/syscall.c:94)
+0x000000800421d3bb: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400116: (unknown)
+0x0000000000400278: (unknown)
+0x0000000000400d19: (unknown)

@@ -31,16 +31,49 @@ Differences in `diff -u' format:
 - (fork-multiple) child run
 - child: exit(7)
 - (fork-multiple) Parent: child exit status is 7
-- (fork-multiple) end
-- fork-multiple: exit(0)
 + Page fault at 0x4033d2: not present error reading page in user context.
 + child: dying due to interrupt 0x0e (#PF Page-Fault Exception).
 + Interrupt 0x0e (#PF Page-Fault Exception) at rip=4033d2
 +  cr2=00000000004033d2 error=               4
-+ rax 0000000000000004 rbx 0000000000000000 rcx 00000000004033d2 rdx 0000000000000000
++ rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
 + rsp 000000004747ff18 rbp 000000004747ff60 rsi 0000000000000000 rdi 00000000004043d0
 + rip 00000000004033d2 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-+ r11 0000000000000216 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
++ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
 + r15 0000000000000000 rflags 00000216
 + es: 001b ds: 001b cs: 0023 ss: 001b
-+ fork-multiple: exit(-1)
++ (fork-multiple) Parent: child exit status is 0
++ Page fault at 0x4033d2: not present error reading page in user context.
++ child: dying due to interrupt 0x0e (#PF Page-Fault Exception).
++ Interrupt 0x0e (#PF Page-Fault Exception) at rip=4033d2
++  cr2=00000000004033d2 error=               4
++ rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
++ rsp 000000004747ff18 rbp 000000004747ff60 rsi 0000000000000000 rdi 00000000004043d0
++ rip 00000000004033d2 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
++ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
++ r15 0000000000000000 rflags 00000216
++ es: 001b ds: 001b cs: 0023 ss: 001b
++ (fork-multiple) Parent: child exit status is 0
++ Page fault at 0x4033d2: not present error reading page in user context.
++ child: dying due to interrupt 0x0e (#PF Page-Fault Exception).
++ Interrupt 0x0e (#PF Page-Fault Exception) at rip=4033d2
++  cr2=00000000004033d2 error=               4
++ rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
++ rsp 000000004747ff18 rbp 000000004747ff60 rsi 0000000000000000 rdi 00000000004043d0
++ rip 00000000004033d2 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
++ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
++ r15 0000000000000000 rflags 00000216
++ es: 001b ds: 001b cs: 0023 ss: 001b
++ (fork-multiple) Parent: child exit status is 0
++ Page fault at 0x4033d2: not present error reading page in user context.
++ child: dying due to interrupt 0x0e (#PF Page-Fault Exception).
++ Interrupt 0x0e (#PF Page-Fault Exception) at rip=4033d2
++  cr2=00000000004033d2 error=               4
++ rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
++ rsp 000000004747ff18 rbp 000000004747ff60 rsi 0000000000000000 rdi 00000000004043d0
++ rip 00000000004033d2 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
++ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
++ r15 0000000000000000 rflags 00000216
++ es: 001b ds: 001b cs: 0023 ss: 001b
++ (fork-multiple) Parent: child exit status is 0
+  (fork-multiple) end
+  fork-multiple: exit(0)

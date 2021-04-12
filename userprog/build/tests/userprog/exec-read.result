@@ -27,17 +27,16 @@ Differences in `diff -u' format:
 - (child-read) Child success
 - (child-read) end
 - child-read: exit(0)
-- (exec-read) Parent success
-- (exec-read) end
-- exec-read: exit(0)
 + Page fault at 0x40362d: not present error reading page in user context.
 + child-read: dying due to interrupt 0x0e (#PF Page-Fault Exception).
 + Interrupt 0x0e (#PF Page-Fault Exception) at rip=40362d
 +  cr2=000000000040362d error=               4
-+ rax 0000000000000004 rbx 0000000000000000 rcx 000000000040362d rdx 0000000000000000
++ rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
 + rsp 000000004747fe98 rbp 000000004747fee0 rsi 0000000000000000 rdi 0000000000404689
 + rip 000000000040362d r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-+ r11 0000000000000212 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
++ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
 + r15 0000000000000000 rflags 00000212
 + es: 001b ds: 001b cs: 0023 ss: 001b
-+ exec-read: exit(-1)
+  (exec-read) Parent success
+  (exec-read) end
+  exec-read: exit(0)

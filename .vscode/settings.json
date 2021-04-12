@@ -6,6 +6,8 @@
         "syscall.h": "c",
         "synch.h": "c",
         "interrupt.h": "c",
-        "thread.h": "c"
+        "thread.h": "c",
+        "syscall-nr.h": "c",
+        "file.h": "c"
     }
 }

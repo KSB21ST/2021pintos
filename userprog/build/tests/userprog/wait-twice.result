@@ -14,17 +14,17 @@ Differences in `diff -u' format:
 - (child-simple) run
 - child-simple: exit(81)
 - (wait-twice) wait(exec()) = 81
-- (wait-twice) wait(exec()) = -1
-- (wait-twice) end
-- wait-twice: exit(0)
 + Page fault at 0x40338a: not present error reading page in user context.
 + child-simple: dying due to interrupt 0x0e (#PF Page-Fault Exception).
 + Interrupt 0x0e (#PF Page-Fault Exception) at rip=40338a
 +  cr2=000000000040338a error=               4
-+ rax 0000000000000004 rbx 0000000000000000 rcx 000000000040338a rdx 0000000000000000
++ rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
 + rsp 000000004747ff28 rbp 000000004747ff70 rsi 0000000000000000 rdi 0000000000404380
 + rip 000000000040338a r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-+ r11 0000000000000216 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
++ r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
 + r15 0000000000000000 rflags 00000216
 + es: 001b ds: 001b cs: 0023 ss: 001b
-+ wait-twice: exit(-1)
++ (wait-twice) wait(exec()) = 0
+  (wait-twice) wait(exec()) = -1
+  (wait-twice) end
+  wait-twice: exit(0)

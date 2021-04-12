@@ -1,24 +1,2 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (multi-oom) begin
-  (multi-oom) Spawned at least 10 children.
-  (multi-oom) success. Program forked 10 iterations.
-  (multi-oom) end
-Differences in `diff -u' format:
-  (multi-oom) begin
-- (multi-oom) Spawned at least 10 children.
-- (multi-oom) success. Program forked 10 iterations.
-- (multi-oom) end
-+ Interrupt 0x0e (#PF Page-Fault Exception) at rip=4036b8
-+ rax 0000000000000004 rbx 0000000000000000 rcx 00000000004036b8 rdx 0000000000000000
-+ rsp 000000004747fe98 rbp 000000004747fee0 rsi 0000000000000000 rdi 000000004747fef4
-+ rip 00000000004036b8 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-+ r11 0000000000000212 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-+ r15 0000000000000000 rflags 00000212
-+ es: 001b ds: 001b cs: 0023 ss: 001b
-
-(Process exit codes are excluded for matching purposes.)
-
-(User fault messages are excluded for matching purposes.)
+run: Should return > 0.: FAILED

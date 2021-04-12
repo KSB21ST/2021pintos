@@ -59,6 +59,8 @@ syscall_init (void) {
 	sema_init(&file_lock, 1);
 }
 
+
+
 /* The main system call interface */
 void
 syscall_handler (struct intr_frame *f UNUSED) {
@@ -82,7 +84,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	case SYS_FORK:
 		//printf("fork! \n");
 		check_user_sp(f->R.rdi);
-		f->R.rax = fork(f->R.rdi);
+		f->R.rax = fork(f->R.rdi, f);
 		break;
 	case SYS_EXEC:
 		//printf("exec \n");
@@ -144,11 +146,9 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		check_user_sp(f->R.rdi);
 		f->R.rax = tell(f->R.rdi);
 		break;
-		break;
 	case SYS_CLOSE:
 		check_user_sp(f->R.rdi);
 		close(f->R.rdi);
-		break;
 		break;
 	}
 	//printf("syscall is done\n");
@@ -173,10 +173,10 @@ exit (int status)
 	thread_exit();
 }
 
-pid_t 
-fork (const char *thread_name)
+int
+fork (const char *thread_name, struct intr_frame *f)
 {
-	tid_t num = process_fork(thread_name);
+	tid_t num = process_fork(thread_name, f);
 	return num;
 }
 
@@ -188,7 +188,7 @@ exec (const char *file)
 }
 
 int 
-wait (pid_t pid){
+wait (int pid){
 	int ans = process_wait(pid);
 	return ans;
 }
@@ -223,32 +223,29 @@ open (const char *file)
 	//printf("in open\n");
 	if(file==NULL) exit(-1);
 
-	//sema_down(&file_lock);
+	sema_down(&file_lock);
 	struct file* opened_file;
 	struct thread *cur =thread_current();
-	int fd_num;
 	opened_file = filesys_open (file);
 	//printf("file pointer: %#x\n", opened_file);
-	if(opened_file==NULL)
-		//sema_up(&file_lock);
+	if(opened_file==NULL){
+		sema_up(&file_lock);
 		return -1;
+	}
 	/* if file is current process, deny write */
 	if(!strcmp(file,cur->name))
 		file_deny_write(opened_file);
 	/* number of opened files should be less than 128 */
 	/* check vacant room of fd_table */
-	#ifdef USERPROG
-		for(int i =2;i<128;i++){
-			if(cur->fd_table[i]==NULL){
-				cur->fd_table[i]=opened_file;
-				fd_num=i;
-				//printf("fd in open syscall: %d \n", fd_num);
-				//sema_up(&file_lock);
-				return fd_num;
-			}
+	for(int i =2;i<128;i++){
+		if(cur->fd_table[i]==NULL){
+			cur->fd_table[i]=opened_file;
+			//printf("fd in open syscall: %d \n", fd_num);
+			sema_up(&file_lock);
+			return i;
 		}
-	#endif
-	//sema_up(&file_lock);
+	}
+	sema_up(&file_lock);
 	return -1;
 }
 
@@ -307,7 +304,9 @@ write (int fd, const void *buffer, unsigned length)
 		putbuf(buffer, length);
 		return length;
 	}else{
+		if(fd == 0) return;
 		struct thread *cur = thread_current();
+		if(cur->fd_table[fd] == NULL) return;
 		if(length > 0){
 			cnt = file_write(cur->fd_table[fd], buffer, length);
 		}

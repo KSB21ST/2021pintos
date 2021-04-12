@@ -92,9 +92,11 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	// 		PRI_DEFAULT, __do_fork, thread_current ());
 	//start 20180109
 	//원래는 aux 에 thread_current()를 넣어줬는데, frame으로 바꿨다.
-	struct intr_frame *parent_if = &thread_current()->tf;
-	return thread_create(name, PRI_DEFAULT, __do_fork, parent_if);
-	sema_down(&thread_current()->child_fork);
+	struct thread *curr = thread_current();
+	// struct intr_frame *parent_if = &curr->tf;
+	int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
+	// sema_down(&thread_current()->child_fork);
+	return ans;
 	//end 20180109
 }
 
@@ -169,7 +171,23 @@ __do_fork (void *aux) {
 	bool succ = true;
 
 	/* 1. Read the cpu context to local stack. */
-	memcpy (&if_, parent_if, sizeof (struct intr_frame));
+	// memcpy (&if_, parent_if, sizeof (struct intr_frame));
+	//start 20180109 - for forking
+	// current->tf.R.rbx = (uint64_t) parent_if->R.rbx;
+	// current->tf.rsp = (uintptr_t) parent_if->rsp;
+	// current->tf.R.rbp = (uint64_t) parent_if->R.rbp;
+	// current->tf.R.r12 = (uint64_t) parent_if->R.r12;
+	// current->tf.R.r13 = (uint64_t) parent_if->R.r13;
+	// current->tf.R.r14 = (uint64_t) parent_if->R.r14;
+	// current->tf.R.r15 = (uint64_t) parent_if->R.r15;
+	memcpy(&current->tf.R.rbx, parent_if->R.rbx, sizeof(uint64_t));
+	memcpy(&current->tf.rsp, parent_if->rsp, sizeof(uintptr_t));
+	memcpy(&current->tf.R.rbp, parent_if->R.rbp, sizeof(uint64_t));
+	memcpy(&current->tf.R.r12, parent_if->R.r12, sizeof(uint64_t));
+	memcpy(&current->tf.R.r13, parent_if->R.r13, sizeof(uint64_t));
+	memcpy(&current->tf.R.r14, parent_if->R.r14, sizeof(uint64_t));
+	memcpy(&current->tf.R.r15, parent_if->R.r15, sizeof(uint64_t));
+	//end 20180109
 
 	/* 2. Duplicate PT */
 	current->pml4 = pml4_create();
@@ -208,7 +226,7 @@ __do_fork (void *aux) {
 		child_fd_table[i] = child_f;
 
 	}	
-	sema_up(&parent->child_fork);
+	// sema_up(&parent->child_fork);
 	//end 20180109
 
 	process_init ();
@@ -219,7 +237,7 @@ error:
 	//start 20180109
 	// current->child_exit_status=-1;
 	// parent->child_exit_status = -1;
-	sema_up(&parent->child_fork);
+	// sema_up(&parent->child_fork);
 	//end 20180109
 	thread_exit ();
 }

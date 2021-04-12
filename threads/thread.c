@@ -207,6 +207,9 @@ thread_create (const char *name, int priority,
 	/* Initialize thread. */
 	init_thread (t, name, priority);
 	tid = t->tid = allocate_tid ();
+	//start 20180109
+	t->file_dt = palloc_get_page(PAL_ZERO);
+	//end 20180109
 
 	/* Call the kernel_thread if it scheduled.
 	 * Note) rdi is 1st argument, and rsi is 2nd argument. */
@@ -300,7 +303,7 @@ thread_exit (void) {
 
 	struct thread *curr = thread_current();
 
-	//edit
+	//edit_proj1
 	list_remove(&thread_current()->allelem);
 
 
@@ -479,16 +482,19 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->wait_lock = NULL;
 
 	//start 20180109
-	#ifdef USERPROG
+	// #ifdef USERPROG
 	t->exit_status = 0;
 	list_init(&(t->child_list));
 	sema_init(&(t->child_lock), 0);    
-	sema_init(&(t->exit_lock), 0);        
+	sema_init(&(t->exit_lock), 0); 
+	sema_init(&(t->load_lock), 1);       
 	list_push_back(&running_thread()->child_list, &t->child_elem);
-	for (int i = 0; i < 128; i++) {                                                         
-		t->fd[i] = NULL;                                                                
-  	} 
-	#endif
+	t->parent = running_thread();
+	t->next_fd = 2;
+	for (int j = 0; j<128; j++){
+		t->fd_table[j] = 0;
+	}
+	// #endif
 	//end 20180109
 
 

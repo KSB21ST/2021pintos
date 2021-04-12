@@ -6,6 +6,12 @@
         "syscall.h": "c",
         "synch.h": "c",
         "interrupt.h": "c",
-        "thread.h": "c"
+        "thread.h": "c",
+        "loader.h": "c",
+        "flags.h": "c",
+        "mmu.h": "c",
+        "malloc.h": "c",
+        "debug.h": "c",
+        "inode.h": "c"
     }
 }

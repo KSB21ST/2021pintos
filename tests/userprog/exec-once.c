@@ -8,5 +8,6 @@ void
 test_main (void) 
 {
   msg ("I'm your father");
-  exec ("child-simple");
+  // exec ("child-simple");
+  exec("child-simple");
 }

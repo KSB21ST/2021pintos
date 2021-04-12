@@ -116,24 +116,26 @@ struct thread {
 	struct list_elem slpelem;
 	struct list_elem allelem;
 
-// #ifdef USERPROG
+#ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */
-
-
-
-#ifdef USERPROG
+#endif
 	//start 20180109
-	//for process
+	//for proj2
 	struct list child_list; /*list of child processes*/
 	struct list_elem child_elem; /*ist element to go inside child process list of my parent*/
 	struct thread *parent; /*my parent thread*/
 	int exit_status; /*my status when I exit - for prcess wait*/
 	struct semaphore child_lock;
 	struct semaphore exit_lock;
-	struct file* fd[128]; 
+	struct semaphore load_lock;
+	struct file** file_dt;
+	int next_fd; 
+	struct file *exec_file;
+	//this part! by hk
+	struct file *fd_table[128];
 	//end 20180109
-#endif
+// #endif
 
 
 

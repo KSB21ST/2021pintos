@@ -4,7 +4,7 @@ Kernel command line: -q -f put lg-full run lg-full
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  104,755,200 loops/s.
+Calibrating timer...  91,648,000 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 106 sector (53 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -18,14 +18,17 @@ Executing 'lg-full':
 (lg-full) writing "quux"
 (lg-full) close "quux"
 (lg-full) open "quux" for verification
-lg-full: exit(-1)
+(lg-full) verified contents of "quux"
+(lg-full) close "quux"
+(lg-full) end
+lg-full: exit(0)
 Execution of 'lg-full' complete.
-Timer: 73 ticks
-Thread: 36 idle ticks, 31 kernel ticks, 6 user ticks
+Timer: 76 ticks
+Thread: 42 idle ticks, 26 kernel ticks, 8 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 112 reads, 400 writes
+hd0:1: 262 reads, 548 writes
 hd1:0: 106 reads, 0 writes
-Console: 945 characters output
+Console: 1018 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

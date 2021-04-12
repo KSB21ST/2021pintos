@@ -63,6 +63,13 @@ process_create_initd (const char *file_name) {
 
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
+
+	// //start 20180109
+	// #ifdef USERPROG
+	// sema_down(&thread_current()->load_lock);
+	// #endif
+	// //end 20180109
+
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
 	return tid;
@@ -87,8 +94,14 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
-	return thread_create (name,
+	tid_t ans = thread_create (name,
 			PRI_DEFAULT, __do_fork, thread_current ());
+	// //start 20180109
+	// #ifdef USERPROG
+	// sema_down(&thread_current()->load_lock);
+	// #endif
+	// //end 20180109
+	return ans;
 }
 
 #ifndef VM
@@ -103,23 +116,45 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	bool writable;
 
 	/* 1. TODO: If the parent_page is kernel page, then return immediately. */
+	//start 20180109
+	// if(is_kern_pte(pte)) return true;
+	if(is_kernel_vaddr(va)) return true;
+	//end 20180109
 
 	/* 2. Resolve VA from the parent's page map level 4. */
 	parent_page = pml4_get_page (parent->pml4, va);
 
 	/* 3. TODO: Allocate new PAL_USER page for the child and set result to
 	 *    TODO: NEWPAGE. */
+	//start 20180109
+	newpage = palloc_get_page (PAL_USER);
+	if (newpage == NULL){
+		palloc_free_page(newpage);
+		return true;
+	}
 
 	/* 4. TODO: Duplicate parent's page to the new page and
 	 *    TODO: check whether parent's page is writable or not (set WRITABLE
 	 *    TODO: according to the result). */
+	memcpy(newpage, parent_page, sizeof(parent_page));
+	writable = is_writable(pte);
+	//end 20180109
 
 	/* 5. Add new page to child's page table at address VA with WRITABLE
 	 *    permission. */
-	if (!pml4_set_page (current->pml4, va, newpage, writable)) {
-		/* 6. TODO: if fail to insert page, do error handling. */
-	}
-	return true;
+	// if (!pml4_set_page (current->pml4, va, newpage, writable)) {
+	// 	/* 6. TODO: if fail to insert page, do error handling. */
+	// 	//start 20180109
+	// 	return TID_ERROR;
+	// 	//end 20180109
+	// }
+	// return true;
+	//start 20180109
+	if(pml4_set_page (current->pml4, va, newpage, writable)) return true;
+
+	palloc_free_page(newpage);
+	return false;
+	//end 20180109
 }
 #endif
 
@@ -133,7 +168,12 @@ __do_fork (void *aux) {
 	struct thread *parent = (struct thread *) aux;
 	struct thread *current = thread_current ();
 	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
+	//start 20180109
 	struct intr_frame *parent_if;
+	#ifdef USERPROG
+	parent_if = &(current->parent)->tf;
+	#endif
+	//end 20180109
 	bool succ = true;
 
 	/* 1. Read the cpu context to local stack. */
@@ -160,6 +200,12 @@ __do_fork (void *aux) {
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
 
+	//start 20180109
+	// for (int i = 0; i < 128; i++) {                                                         
+	// 	t->file_dt[i] = NULL;                                                                
+  	// } 
+	//end 20180109
+
 	process_init ();
 
 	/* Finally, switch to the newly created process. */
@@ -184,17 +230,11 @@ process_exec (void *f_name) {
 	_if.cs = SEL_UCSEG;
 	_if.eflags = FLAG_IF | FLAG_MBS;
 
-	/* We first kill the current context */
-	process_cleanup ();
-
 	//start 20180109
-    // char *file_name_copy[128];
-    // memcpy(file_name_copy, file_name, strlen(file_name) + 1);
 	// char *token, *last;
     // int token_count = 0;
-    // char *arg_list[128];
+    // char *arg_list[64];
     // token = strtok_r(file_name, " ", &last);
-    // // char *tmp_save = token;
     // arg_list[token_count] = token;
     // while (token != NULL)
     // {
@@ -202,20 +242,58 @@ process_exec (void *f_name) {
     //     token_count++;
     //     arg_list[token_count] = token;
     // }
+	 /* Make a copy of FILE_NAME.
+     Otherwise there's a race between the caller and load(). */
+	char *fn_copy;
+	char *fn_copy2;
+	fn_copy = palloc_get_page (0);
+	fn_copy2 = palloc_get_page (0);
+	if (fn_copy == NULL){
+    	return TID_ERROR;
+  	}
+	strlcpy (fn_copy, file_name, PGSIZE);
+  	strlcpy (fn_copy2, file_name, PGSIZE);
+	char *next_ptr;
+	char * realname;
+	realname = strtok_r(fn_copy2," ", &next_ptr);
+	if (filesys_open(realname)==NULL){
+    	return -1;
+  	}
 	//end 20180109
 
+	/* We first kill the current context */
+	process_cleanup ();
+	sema_down(&thread_current()->load_lock);
 	/* And then load the binary */
-	// success = load(tmp_save, &_if);
-	success = load (file_name, &_if);
+	// success = load(file_name, &_if);
+	success = load(fn_copy, &_if);
+
+	// //start 20180109
+	// #ifdef USERPROG
+	// sema_up(&thread_current()->load_lock);
+	// #endif
+	// //end 20180109
 
 	//start 20180109
 	// argument_stack(arg_list, token_count, &_if);
-	// hex_dump(_if.rsp, _if.rsp, USER_STACK-_if.rsp, true);
 	//end 20180109
+
 	/* If load failed, quit. */
-	palloc_free_page (file_name);
-	if (!success)
+	// palloc_free_page (file_name);
+	if(success){
+		palloc_free_page (fn_copy); 
+		palloc_free_page(fn_copy2);
+		sema_up(&thread_current()->load_lock);
+	}
+	else{
+		thread_current()->exit_status = 1;
+		palloc_free_page (fn_copy); 
+		palloc_free_page(fn_copy2);
+		sema_up(&thread_current()->load_lock);
+		exit(-1);
 		return -1;
+	}
+		
 
 	/* Start switched process. */
 	do_iret (&_if);
@@ -243,14 +321,16 @@ process_wait (tid_t child_tid UNUSED) {
 	struct list_elem* e;
 	struct thread* t = NULL;
 	int exit_status;
-	
-	for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
+	struct list *children = &thread_current()->child_list;
+	for (e = list_begin(children); e != list_end(children); e = list_next(e)) 
 	{
 		t = list_entry(e, struct thread, child_elem);
 		if (child_tid == t->tid) {
 			sema_down(&(t->child_lock));
+			//after child process exec has ended
 			exit_status = t->exit_status;
 			list_remove(&t->child_elem);
+			//releasing the remains of the child process
 			sema_up(&t->exit_lock);
 			return exit_status;
 		}   
@@ -274,8 +354,8 @@ process_exit (void) {
 
 	//start 20180109
 	#ifdef USERPROG
-	sema_up(&cur->child_lock);
-	sema_down(&cur->exit_lock);
+	sema_up(&cur->child_lock); //release the parent thread
+	sema_down(&cur->exit_lock); //not yet completely exited, until parent remove this thread
 	#endif
 	//end 20180109
 }
@@ -392,6 +472,7 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	//start 20180109
 	// char *file_name_copy[48];
+	char *file_name2 = file_name;
     // memcpy(file_name_copy, file_name, strlen(file_name) + 1);
 	char *token, *last;
     int token_count = 0;

@@ -27,4 +27,8 @@ void file_seek (struct file *, off_t);
 off_t file_tell (struct file *);
 off_t file_length (struct file *);
 
+//start 20180109
+_Bool file_get_deny_write(struct file *);
+//end 20180109
+
 #endif /* filesys/file.h */

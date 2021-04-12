@@ -4,7 +4,7 @@ Kernel command line: -q -f put exec-read put sample.txt put child-read run exec-
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  111,206,400 loops/s.
+Calibrating timer...  130,867,200 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 229 sector (114 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -18,15 +18,34 @@ Executing 'exec-read':
 test_main in test?userprog?exec-read.c
 (exec-read) open "sample.txt"
 (exec-read) read "sample.txt" first 20 bytes
-(exec-read) read "sample.txt" first 20 bytes: FAILED
-exec-read: exit(1)
-Execution of 'exec-read' complete.
-Timer: 84 ticks
-Thread: 45 idle ticks, 37 kernel ticks, 2 user ticks
+Page fault at 0x4: not present error reading page in user context.
+child-read: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=40362d
+ cr2=0000000000000004 error=               4
+rax 0000000000000004 rbx 0000000000000000 rcx 000000000040362d rdx 0000000000000000
+rsp 000000004747fe98 rbp 000000004747fee0 rsi 0000000000000000 rdi 0000000000404689
+rip 000000000040362d r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000212 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000212
+es: 001b ds: 001b cs: 0023 ss: 001b
+Page fault at 0x6: not present error reading page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=6
+ cr2=0000000000000006 error=               0
+rax 0000008004242000 rbx 0000000000000000 rcx 0000008004242060 rdx 0000008004246000
+rsp 0000008004242df0 rbp 0000008004242e10 rsi 0000008004245060 rdi 0000008004245000
+rip 0000000000000006 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000212 r12 000000800421d763 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000006
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x80042187b2 0x800421d493 0x800421d612 0x80042092d3 0x80042096f1 0x4207d57 0x80042072c6 0x8004206e46 0x800421bf31 0x800421dba4 0x800421d808 0x800421d687 0x4001e6 0x400484 0x400f25.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 93 ticks
+Thread: 41 idle ticks, 43 kernel ticks, 9 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 143 reads, 506 writes
+hd0:1: 147 reads, 506 writes
 hd1:0: 229 reads, 0 writes
-Console: 1113 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 2671 characters output
+Key

@@ -3,7 +3,7 @@
 #include "filesys/inode.h"
 #include "threads/malloc.h"
 
-/* An open file. */
+// /* An open file. */
 struct file {
 	struct inode *inode;        /* File's inode. */
 	off_t pos;                  /* Current position. */
@@ -159,3 +159,12 @@ file_tell (struct file *file) {
 	ASSERT (file != NULL);
 	return file->pos;
 }
+
+//start 20180109
+bool
+file_get_deny_write(struct file *file)
+{
+	ASSERT (file != NULL);
+	return file->deny_write;
+}
+//end 20180109

@@ -13,59 +13,27 @@ Boot complete.
 Putting 'fork-multiple' into the file system...
 Executing 'fork-multiple':
 (fork-multiple) begin
-Page fault at 0x4033d2: not present error reading page in user context.
-child: dying due to interrupt 0x0e (#PF Page-Fault Exception).
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=4033d2
- cr2=00000000004033d2 error=               4
-rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
-rsp 000000004747ff18 rbp 000000004747ff60 rsi 0000000000000000 rdi 00000000004043d0
-rip 00000000004033d2 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00000216
-es: 001b ds: 001b cs: 0023 ss: 001b
-(fork-multiple) Parent: child exit status is 0
-Page fault at 0x4033d2: not present error reading page in user context.
-child: dying due to interrupt 0x0e (#PF Page-Fault Exception).
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=4033d2
- cr2=00000000004033d2 error=               4
-rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
-rsp 000000004747ff18 rbp 000000004747ff60 rsi 0000000000000000 rdi 00000000004043d0
-rip 00000000004033d2 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00000216
-es: 001b ds: 001b cs: 0023 ss: 001b
-(fork-multiple) Parent: child exit status is 0
-Page fault at 0x4033d2: not present error reading page in user context.
-child: dying due to interrupt 0x0e (#PF Page-Fault Exception).
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=4033d2
- cr2=00000000004033d2 error=               4
-rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
-rsp 000000004747ff18 rbp 000000004747ff60 rsi 0000000000000000 rdi 00000000004043d0
-rip 00000000004033d2 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00000216
-es: 001b ds: 001b cs: 0023 ss: 001b
-(fork-multiple) Parent: child exit status is 0
-Page fault at 0x4033d2: not present error reading page in user context.
-child: dying due to interrupt 0x0e (#PF Page-Fault Exception).
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=4033d2
- cr2=00000000004033d2 error=               4
-rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
-rsp 000000004747ff18 rbp 000000004747ff60 rsi 0000000000000000 rdi 00000000004043d0
-rip 00000000004033d2 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00000216
-es: 001b ds: 001b cs: 0023 ss: 001b
-(fork-multiple) Parent: child exit status is 0
+(fork-multiple) child run
+child: exit(4)
+(fork-multiple) Parent: child exit status is 4
+(fork-multiple) child run
+child: exit(5)
+(fork-multiple) Parent: child exit status is 5
+(fork-multiple) child run
+child: exit(6)
+(fork-multiple) Parent: child exit status is 6
+(fork-multiple) child run
+child: exit(7)
+(fork-multiple) Parent: child exit status is 7
 (fork-multiple) end
 fork-multiple: exit(0)
 Execution of 'fork-multiple' complete.
-Timer: 90 ticks
-Thread: 30 idle ticks, 34 kernel ticks, 26 user ticks
+Timer: 77 ticks
+Thread: 36 idle ticks, 34 kernel ticks, 7 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 87 reads, 236 writes
 hd1:0: 104 reads, 0 writes
-Console: 3637 characters output
+Console: 1224 characters output
 Keyboard: 0 keys pressed
-Exception: 4 page faults
+Exception: 0 page faults
 Powering off...

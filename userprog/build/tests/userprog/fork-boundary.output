@@ -13,27 +13,19 @@ Boot complete.
 Putting 'fork-boundary' into the file system...
 Executing 'fork-boundary':
 (fork-boundary) begin
-Page fault at 0x4034ab: not present error reading page in user context.
-child-simple: dying due to interrupt 0x0e (#PF Page-Fault Exception).
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=4034ab
- cr2=00000000004034ab error=               4
-rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
-rsp 000000004747ff28 rbp 000000004747ff70 rsi 0000000000000000 rdi 0000000000605ffa
-rip 00000000004034ab r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00000216
-es: 001b ds: 001b cs: 0023 ss: 001b
+(fork-boundary) child run
+child-simple: exit(54)
 (fork-boundary) fork
 (fork-boundary) wait
-(fork-boundary) wait: FAILED
-fork-boundary: exit(1)
+(fork-boundary) end
+fork-boundary: exit(0)
 Execution of 'fork-boundary' complete.
-Timer: 71 ticks
-Thread: 36 idle ticks, 31 kernel ticks, 4 user ticks
+Timer: 68 ticks
+Thread: 30 idle ticks, 34 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 240 writes
 hd1:0: 106 reads, 0 writes
-Console: 1574 characters output
+Console: 963 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...

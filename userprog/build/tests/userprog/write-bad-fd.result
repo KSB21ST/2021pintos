@@ -1,1 +1,14 @@
-PASS
+FAIL
+Kernel panic in run: PANIC at ../../threads/thread.c:283 in thread_current(): assertion `is_thread (t)' failed.
+Call stack: 0x800421879e 0x800420708d 0x8004206bc8 0x800421266f 0x80042092bf 0x80042096dd 0x800421ca32 0x800421c2cc 0x800421be6b 0x80042075e4
+Translation of call stack:
+0x000000800421879e: debug_panic (lib/kernel/debug.c:32)
+0x000000800420708d: thread_current (threads/thread.c:284)
+0x0000008004206bc8: thread_tick (threads/thread.c:155)
+0x000000800421266f: timer_interrupt (devices/timer.c:173)
+0x00000080042092bf: intr_handler (threads/interrupt.c:352)
+0x00000080042096dd: intr_entry (threads/intr-stubs.o:?)
+0x000000800421ca32: load (userprog/process.c:585)
+0x000000800421c2cc: process_exec (userprog/process.c:269)
+0x000000800421be6b: initd (userprog/process.c:81)
+0x00000080042075e4: kernel_thread (threads/thread.c:452)

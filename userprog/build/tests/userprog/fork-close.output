@@ -15,26 +15,19 @@ Putting 'sample.txt' into the file system...
 Executing 'fork-close':
 (fork-close) begin
 (fork-close) open "sample.txt"
-Page fault at 0x40358f: not present error reading page in user context.
-child: dying due to interrupt 0x0e (#PF Page-Fault Exception).
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=40358f
- cr2=000000000040358f error=               4
-rax 0000000000000002 rbx 0000000000000000 rcx 0000000000000000 rdx 0000000000000000
-rsp 000000004747ff18 rbp 000000004747ff60 rsi 0000000000000000 rdi 00000000004045ad
-rip 000000000040358f r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00000216
-es: 001b ds: 001b cs: 0023 ss: 001b
+(fork-close) child run
+(fork-close) end
+child: exit(0)
 (fork-close) Parent success
 (fork-close) end
 fork-close: exit(0)
 Execution of 'fork-close' complete.
-Timer: 81 ticks
-Thread: 39 idle ticks, 35 kernel ticks, 7 user ticks
+Timer: 67 ticks
+Thread: 37 idle ticks, 28 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 122 reads, 258 writes
 hd1:0: 110 reads, 0 writes
-Console: 1612 characters output
+Console: 1023 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...

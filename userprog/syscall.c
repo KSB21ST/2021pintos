@@ -63,7 +63,7 @@ syscall_init (void) {
 
 /* The main system call interface */
 void
-syscall_handler (struct intr_frame *f UNUSED) {
+syscall_handler (struct intr_frame *f) {
 	// TODO: Your implementation goes here.
 	//printf ("system call!\n");
 	int sys_num = f->R.rax;

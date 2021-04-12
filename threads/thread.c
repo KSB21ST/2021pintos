@@ -486,26 +486,28 @@ init_thread (struct thread *t, const char *name, int priority) {
 	sema_init(&(t->exit_lock), 0);        
 	list_push_back(&running_thread()->child_list, &t->child_elem);
 	for (int i = 0; i < 128; i++) {                                                         
-		t->fd[i] = NULL;                                                                
+		t->fd_table[i] = NULL;                                                                
   	} 
 	#endif
 	//end 20180109
 
+	
+
 
 	//edit-for mlfqs
-   t->nice = running_thread()->nice;
-   t->recent_cpu = running_thread()->recent_cpu;
-   if(thread_mlfqs){
-	   //calculate priority 
-	   if(t != idle_thread){
-		   struct thread *current = t;
-		   int new_priority = fp_round((PRI_MAX*F - (current->recent_cpu / 4)) - (current->nice * 2)*F);
-      		if ((new_priority > PRI_MAX) || (new_priority < PRI_MIN))
-         		new_priority = new_priority > PRI_MAX ? PRI_MAX : PRI_MIN;
-      		current->priority = new_priority;
-	   }
-       
-   }
+	t->nice = running_thread()->nice;
+	t->recent_cpu = running_thread()->recent_cpu;
+	if(thread_mlfqs){
+		//calculate priority 
+		if(t != idle_thread){
+			struct thread *current = t;
+			int new_priority = fp_round((PRI_MAX*F - (current->recent_cpu / 4)) - (current->nice * 2)*F);
+				if ((new_priority > PRI_MAX) || (new_priority < PRI_MIN))
+					new_priority = new_priority > PRI_MAX ? PRI_MAX : PRI_MIN;
+				current->priority = new_priority;
+		}
+		
+	}
 
 
       //edit

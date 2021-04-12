@@ -1,7 +1,7 @@
 #ifndef THREADS_THREAD_H
 #define THREADS_THREAD_H
 
-// #define USERPROG
+#define USERPROG
 
 #include <debug.h>
 #include <list.h>
@@ -131,7 +131,7 @@ struct thread {
 	int exit_status; /*my status when I exit - for prcess wait*/
 	struct semaphore child_lock;
 	struct semaphore exit_lock;
-	struct file* fd[128]; 
+	struct file* fd_table[128]; /*fd table*/
 	//end 20180109
 #endif
 

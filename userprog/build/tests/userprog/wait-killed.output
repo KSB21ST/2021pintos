@@ -4,10 +4,10 @@ Kernel command line: -q -f put wait-killed put child-bad run wait-killed
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  111,206,400 loops/s.
+Calibrating timer...  209,510,400 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 205 sector (102 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 206 sector (103 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 Formatting file system...done.
 Boot complete.
 Putting 'wait-killed' into the file system...
@@ -19,10 +19,10 @@ Call stack: 0x8004218748 0x800420d733 0x800421bf40 0x800420d09f 0x800420d151 0x8
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 74 ticks
-Thread: 35 idle ticks, 38 kernel ticks, 1 user ticks
+Timer: 68 ticks
+Thread: 33 idle ticks, 33 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 107 reads, 448 writes
-hd1:0: 205 reads, 0 writes
+hd0:1: 107 reads, 450 writes
+hd1:0: 206 reads, 0 writes
 Console: 1224 characters output
 Key

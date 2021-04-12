@@ -9,8 +9,7 @@ int
 main (int argc, char *argv[]) 
 {
   int i;
-  // printf("%d \n",argc);
-  // printf(argc); 
+  //printf(argc); 
 
   test_name = "args";
 

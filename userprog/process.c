@@ -257,7 +257,7 @@ process_wait (tid_t child_tid UNUSED) {
 	}
 	#endif
 	//end 20180109
-  return -1;
+  	return -1;
 }
 
 /* Exit the process. This function is called by thread_exit (). */

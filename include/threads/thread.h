@@ -134,6 +134,7 @@ struct thread {
 	struct semaphore child_lock;
 	struct semaphore exit_lock;/*lock to hold child until I remove child from child_list*/
 	struct semaphore child_fork; /*lock for forking child*/
+	// struct semaphore load_sema;
 	struct file* fd_table[128]; /*fd table*/
 	//end 20180109
 // #endif

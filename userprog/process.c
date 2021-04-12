@@ -244,38 +244,55 @@ process_exec (void *f_name) {
 	_if.cs = SEL_UCSEG;
 	_if.eflags = FLAG_IF | FLAG_MBS;
 
+	//start 20180109
+	char *fn_copy;
+	char *fn_copy2;
+	fn_copy = palloc_get_page (0);
+	fn_copy2 = palloc_get_page (0);
+	if (fn_copy == NULL){
+    	return TID_ERROR;
+  	}
+	strlcpy (fn_copy, file_name, PGSIZE);
+  	strlcpy (fn_copy2, file_name, PGSIZE);
+	char *next_ptr;
+	char * realname;
+	realname = strtok_r(fn_copy2," ", &next_ptr);
+	if (filesys_open(realname)==NULL){
+    	return -1;
+  	}
+	//end 20180109
+
 	/* We first kill the current context */
 	process_cleanup ();
 
-	//start 20180109
-    // char *file_name_copy[128];
-    // memcpy(file_name_copy, file_name, strlen(file_name) + 1);
-	// char *token, *last;
-    // int token_count = 0;
-    // char *arg_list[128];
-    // token = strtok_r(file_name, " ", &last);
-    // // char *tmp_save = token;
-    // arg_list[token_count] = token;
-    // while (token != NULL)
-    // {
-    //     token = strtok_r(NULL, " ", &last);
-    //     token_count++;
-    //     arg_list[token_count] = token;
-    // }
-	//end 20180109
-
-	/* And then load the binary */
-	// success = load(tmp_save, &_if);
-	success = load (file_name, &_if);
+	// success = load (file_name, &_if);
+	// sema_down(&thread_current()->load_sema);
+	success = load(fn_copy, &_if);
 
 	//start 20180109
 	// argument_stack(arg_list, token_count, &_if);
 	// hex_dump(_if.rsp, _if.rsp, USER_STACK-_if.rsp, true);
 	//end 20180109
 	/* If load failed, quit. */
-	palloc_free_page (file_name);
-	if (!success)
+	// palloc_free_page (file_name);
+	// if (!success)
+	// 	return -1;
+	
+	//start 20180109
+	if(success){
+		palloc_free_page (fn_copy); 
+		palloc_free_page(fn_copy2);
+		// sema_up(&thread_current()->load_sema);
+	}
+	else{
+		thread_current()->exit_status = 1;
+		palloc_free_page (fn_copy); 
+		palloc_free_page(fn_copy2);
+		// sema_up(&thread_current()->load_sema);
+		exit(-1);
 		return -1;
+	}
+	//end 20180109
 
 	/* Start switched process. */
 	do_iret (&_if);

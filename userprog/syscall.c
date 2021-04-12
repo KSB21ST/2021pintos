@@ -27,8 +27,9 @@ void syscall_handler (struct intr_frame *);
 
 //start 20180109
 void check_user_sp(const void* sp);
-struct semaphore file_lock; /*syncrhonization for file open, create, remove*/
+// struct semaphore file_lock; /*syncrhonization for file open, create, remove*/
 int ans = -1;
+static struct lock file_lock;
 //end 20180109
 
 /* System call.
@@ -56,7 +57,8 @@ syscall_init (void) {
 	write_msr(MSR_SYSCALL_MASK,
 			FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
 	//edit
-	sema_init(&file_lock, 1);
+	// sema_init(&file_lock, 1);
+	lock_init(&file_lock);
 }
 
 
@@ -199,8 +201,10 @@ create (const char *file, unsigned initial_size)
 	//printf("in create\n");
 	if (file == NULL) exit(-1);
 	// sema_down(&file_lock);
+	lock_acquire(&file_lock);
     bool result = (filesys_create (file, initial_size));
 	// sema_up(&file_lock);
+	lock_release(&file_lock);
     return result;
 }
 
@@ -212,8 +216,10 @@ remove (const char *file)
     	exit(-1);
   	}
  	// sema_down(&file_lock);
+	lock_acquire(&file_lock);
   	bool success = filesys_remove(file);
   	// sema_up(&file_lock);
+	lock_release(&file_lock);
   	return success;
 }
 
@@ -223,13 +229,15 @@ open (const char *file)
 	//printf("in open\n");
 	if(file==NULL) exit(-1);
 
-	sema_down(&file_lock);
 	struct file* opened_file;
 	struct thread *cur =thread_current();
+	// sema_down(&file_lock);
+	lock_acquire(&file_lock);
 	opened_file = filesys_open (file);
 	//printf("file pointer: %#x\n", opened_file);
 	if(opened_file==NULL){
-		sema_up(&file_lock);
+		// sema_up(&file_lock);
+		lock_release(&file_lock);
 		return -1;
 	}
 	/* if file is current process, deny write */
@@ -241,24 +249,34 @@ open (const char *file)
 		if(cur->fd_table[i]==NULL){
 			cur->fd_table[i]=opened_file;
 			//printf("fd in open syscall: %d \n", fd_num);
-			sema_up(&file_lock);
+			// sema_up(&file_lock);
+			lock_release(&file_lock);
 			return i;
 		}
 	}
-	sema_up(&file_lock);
-	return -1;
+	// sema_up(&file_lock);
+	lock_release(&file_lock);
+	return;
 }
 
 int 
 filesize (int fd)
 {
 	//printf("fd in filesize syscall: %d \n", fd);
+	// sema_down(&file_lock);
+	lock_acquire(&file_lock);
   	struct thread *cur =thread_current();
 	if(cur->fd_table[fd] == NULL){
+		// sema_up(&file_lock);
+		lock_release(&file_lock);
 		exit(-1);
 	}else{
+		// sema_up(&file_lock);
+		lock_release(&file_lock);
 		return file_length(cur->fd_table[fd]);
 	}
+	// sema_up(&file_lock);
+	lock_release(&file_lock);
 }
 
 int 
@@ -267,11 +285,13 @@ read (int fd, void *buffer, unsigned length)
 	check_user_sp(buffer);
 	int cnt = 0;
 	struct thread *cur =thread_current();
-	sema_down(&file_lock);
+	// sema_down(&file_lock);
+	lock_acquire(&file_lock);
 	//printf("fd: %d\n", fd);
 	if (fd > 1){
 		if(cur->fd_table[fd] == NULL){
-			sema_up(&file_lock);
+			// sema_up(&file_lock);
+			lock_release(&file_lock);
 			exit(-1);
 		}
 		if(length > 0){
@@ -285,9 +305,12 @@ read (int fd, void *buffer, unsigned length)
 			cnt++;
 		}
 	}else{
+		// sema_up(&file_lock);
+		lock_release(&file_lock);
 		return -1;
 	}
-	sema_up(&file_lock);
+	// sema_up(&file_lock);
+	lock_release(&file_lock);
 
 	return cnt;
 
@@ -299,37 +322,59 @@ write (int fd, const void *buffer, unsigned length)
 	/* check the validity of buffer pointer */
 	check_user_sp(buffer);
 	int cnt = 0;
+	// sema_down(&file_lock);
+	lock_acquire(&file_lock);
 	/* Fd 1 means standard output(ex)printf) */
 	if(fd == 1){
 		putbuf(buffer, length);
+		// sema_up(&file_lock);
+		lock_release(&file_lock);
 		return length;
 	}else{
-		if(fd == 0) return;
+		if(fd == 0) {
+			// sema_up(&file_lock);
+			lock_release(&file_lock);
+			return;
+		}
 		struct thread *cur = thread_current();
-		if(cur->fd_table[fd] == NULL) return;
+		if(cur->fd_table[fd] == NULL) {
+			// sema_up(&file_lock);
+			lock_release(&file_lock);
+			return;
+		}
 		if(length > 0){
 			cnt = file_write(cur->fd_table[fd], buffer, length);
 		}
 	}
+	// sema_up(&file_lock);
+	lock_release(&file_lock);
 	return cnt;
 }
 
 void
 seek (int fd, unsigned position) {
 	#ifdef USERPROG
-	sema_down(&file_lock);
-	if (thread_current()->fd_table[fd] == NULL) exit(-1);
+	// sema_down(&file_lock);
+	lock_acquire(&file_lock);
+	if (thread_current()->fd_table[fd] == NULL) {
+		// sema_up(&file_lock);
+		lock_release(&file_lock);
+		exit(-1);
+	}
 	file_seek(thread_current()->fd_table[fd], position);
-	sema_up(&file_lock);
+	// sema_up(&file_lock);
+	lock_release(&file_lock);
 	#endif
 }
 
 unsigned
 tell (int fd) {
 	#ifdef USERPROG
-	sema_down(&file_lock);
+	// sema_down(&file_lock);
+	lock_acquire(&file_lock);
 	off_t ans = file_tell (thread_current()->fd_table[fd]);
-	sema_up(&file_lock);
+	// sema_up(&file_lock);
+	lock_release(&file_lock);
 	return ans;
 	#endif
 }
@@ -339,10 +384,14 @@ close (int fd) {
 	if(pml4_get_page (thread_current ()->pml4, fd) == NULL) return;
 	struct file *_file;
 	struct thread* t = thread_current();
+	lock_acquire(&file_lock);
 	if(fd<=1) return;
 	_file = t->fd_table[fd];
 	if(_file==NULL) return;
+	// sema_down(&file_lock);
 	file_close(_file);
+	// sema_up(&file_lock);
+	lock_release(&file_lock);
 	t->fd_table[fd] = NULL;
 }
 

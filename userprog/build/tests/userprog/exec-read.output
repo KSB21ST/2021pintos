@@ -18,15 +18,24 @@ Executing 'exec-read':
 test_main in test?userprog?exec-read.c
 (exec-read) open "sample.txt"
 (exec-read) read "sample.txt" first 20 bytes
-Kernel PANIC at ../../threads/mmu.c:235 in pml4_set_page(): assertion `pg_ofs (kpage) == 0' failed.
-Call stack: 0x8004218748 0x800420d733 0x800421bf40 0x800420d09f 0x800420d151 0x800420d1f6 0x800420d28e 0x800421bff9 0x80042075e4.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 70 ticks
-Thread: 33 idle ticks, 35 kernel ticks, 2 user ticks
+Page fault at 0x40362d: not present error reading page in user context.
+child-read: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=40362d
+ cr2=000000000040362d error=               4
+rax 0000000000000004 rbx 0000000000000000 rcx 000000000040362d rdx 0000000000000000
+rsp 000000004747fe98 rbp 000000004747fee0 rsi 0000000000000000 rdi 0000000000404689
+rip 000000000040362d r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000212 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000212
+es: 001b ds: 001b cs: 0023 ss: 001b
+exec-read: exit(-1)
+Execution of 'exec-read' complete.
+Timer: 75 ticks
+Thread: 30 idle ticks, 37 kernel ticks, 8 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 144 reads, 506 writes
 hd1:0: 229 reads, 0 writes
-Console: 1390 characters output
-Key
+Console: 1710 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...

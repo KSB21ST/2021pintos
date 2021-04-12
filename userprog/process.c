@@ -23,6 +23,7 @@
 #endif
 
 //start 20180109
+#include "filesys/inode.h"
 void argument_stack(char **argv, int argc, struct intr_frame *if_);
 // void argument_stack(char **argv, int argc, void **);
 //end 20180109
@@ -87,8 +88,14 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
-	return thread_create (name,
-			PRI_DEFAULT, __do_fork, thread_current ());
+	// return thread_create (name,
+	// 		PRI_DEFAULT, __do_fork, thread_current ());
+	//start 20180109
+	//원래는 aux 에 thread_current()를 넣어줬는데, frame으로 바꿨다.
+	struct intr_frame *parent_if = &thread_current()->tf;
+	return thread_create(name, PRI_DEFAULT, __do_fork, parent_if);
+	sema_down(&thread_current()->child_fork);
+	//end 20180109
 }
 
 #ifndef VM
@@ -103,23 +110,45 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	bool writable;
 
 	/* 1. TODO: If the parent_page is kernel page, then return immediately. */
+	//start 20180109
+	if(is_kernel_vaddr(pte)) return true;
+	//end 20180109
 
 	/* 2. Resolve VA from the parent's page map level 4. */
 	parent_page = pml4_get_page (parent->pml4, va);
 
 	/* 3. TODO: Allocate new PAL_USER page for the child and set result to
 	 *    TODO: NEWPAGE. */
+	//start 20180109
+	newpage = palloc_get_page (PAL_USER);
+	if (newpage == NULL){
+		palloc_free_page(newpage);
+		return true;
+	}
+	//end 20180109
 
 	/* 4. TODO: Duplicate parent's page to the new page and
 	 *    TODO: check whether parent's page is writable or not (set WRITABLE
 	 *    TODO: according to the result). */
+	//start 20180109
+	memcpy(newpage, parent_page, PGSIZE);
+	writable = is_writable(pte);
+	//end 20180109
 
 	/* 5. Add new page to child's page table at address VA with WRITABLE
 	 *    permission. */
-	if (!pml4_set_page (current->pml4, va, newpage, writable)) {
-		/* 6. TODO: if fail to insert page, do error handling. */
+	// if (!pml4_set_page (current->pml4, va, newpage, writable)) {
+	// 	/* 6. TODO: if fail to insert page, do error handling. */
+	// }
+	// return true;
+	//start 20180109
+	if(pml4_set_page (current->pml4, va, newpage, writable)) {
+		return true;
+	}else{
+		palloc_free_page(newpage);
+		return false;
 	}
-	return true;
+	//end 20180109
 }
 #endif
 
@@ -130,10 +159,13 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 static void
 __do_fork (void *aux) {
 	struct intr_frame if_;
-	struct thread *parent = (struct thread *) aux;
+	// struct thread *parent = (struct thread *) aux;
 	struct thread *current = thread_current ();
+	//start 20180109
+	struct thread *parent = current->parent;
 	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
-	struct intr_frame *parent_if;
+	struct intr_frame *parent_if = (struct intr_frame *)aux;
+	//start 20180109
 	bool succ = true;
 
 	/* 1. Read the cpu context to local stack. */
@@ -160,12 +192,35 @@ __do_fork (void *aux) {
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
 
-	process_init ();
+	//start 20180109
+	struct file ** parent_fd_table = parent->fd_table;
 
+	struct file ** child_fd_table = current->fd_table;
+
+	for(int i=2; i<128;i++){
+		struct file *f = parent_fd_table[i];
+		if(f==NULL)
+			continue;
+		struct file *child_f = file_duplicate(f);
+		if(child_f==NULL){
+			goto error;
+		}
+		child_fd_table[i] = child_f;
+
+	}	
+	sema_up(&parent->child_fork);
+	//end 20180109
+
+	process_init ();
 	/* Finally, switch to the newly created process. */
 	if (succ)
 		do_iret (&if_);
 error:
+	//start 20180109
+	// current->child_exit_status=-1;
+	// parent->child_exit_status = -1;
+	sema_up(&parent->child_fork);
+	//end 20180109
 	thread_exit ();
 }
 
@@ -248,6 +303,13 @@ process_wait (tid_t child_tid UNUSED) {
 	{
 		t = list_entry(e, struct thread, child_elem);
 		if (child_tid == t->tid) {
+			if(t == NULL){
+				list_remove(&t->child_elem);
+				return -1;
+			}
+			if(t->child_exit_status == -1){
+				return -1;
+			}
 			sema_down(&(t->child_lock));
 			exit_status = t->exit_status;
 			list_remove(&t->child_elem);
@@ -268,15 +330,26 @@ process_exit (void) {
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
+	//start 20180109
 	struct thread *cur = thread_current ();
+	struct file **cur_fd_table = cur->fd_table;
+	for(int i=2;i<128;i++){
+		struct file *_file = cur_fd_table[i];
+		if(_file == NULL) continue;
+		file_close(_file);
+		cur_fd_table[i] = NULL;
+
+	}
+
+	curr->process_exit = true;
+	list_remove(&curr->child_elem); //check child_exit_status??
+	//end 20180109
 
 	process_cleanup ();
 
 	//start 20180109
-	#ifdef USERPROG
 	sema_up(&cur->child_lock);
 	sema_down(&cur->exit_lock);
-	#endif
 	//end 20180109
 }
 

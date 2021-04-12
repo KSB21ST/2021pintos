@@ -4,7 +4,7 @@ Kernel command line: -q -f put syn-read put child-syn-read run syn-read
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  159,744,000 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 225 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -18,15 +18,24 @@ Executing 'syn-read':
 (syn-read) open "data"
 (syn-read) write "data"
 (syn-read) close "data"
-Kernel PANIC at ../../threads/mmu.c:235 in pml4_set_page(): assertion `pg_ofs (kpage) == 0' failed.
-Call stack: 0x8004218748 0x800420d733 0x800421bf40 0x800420d09f 0x800420d151 0x800420d1f6 0x800420d28e 0x800421bff9 0x80042075e4.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 76 ticks
-Thread: 33 idle ticks, 39 kernel ticks, 4 user ticks
+Page fault at 0x4036f8: not present error reading page in user context.
+child-syn-read: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=4036f8
+ cr2=00000000004036f8 error=               4
+rax 0000000000000004 rbx 000000004747ff64 rcx 00000000004036f8 rdx 0000000000000000
+rsp 000000004747fe38 rbp 000000004747fe80 rsi 0000000000000000 rdi 0000000000404721
+rip 00000000004036f8 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000212 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000212
+es: 001b ds: 001b cs: 0023 ss: 001b
+syn-read: exit(-1)
+Execution of 'syn-read' complete.
+Timer: 90 ticks
+Thread: 42 idle ticks, 39 kernel ticks, 9 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 137 reads, 504 writes
 hd1:0: 225 reads, 0 writes
-Console: 1315 characters output
-Key
+Console: 1637 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...

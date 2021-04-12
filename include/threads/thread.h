@@ -122,18 +122,21 @@ struct thread {
 
 
 
-#ifdef USERPROG
+// #ifdef USERPROG
 	//start 20180109
 	//for process
 	struct list child_list; /*list of child processes*/
-	struct list_elem child_elem; /*ist element to go inside child process list of my parent*/
+	struct list_elem child_elem; /*list element to go inside child process list of my parent*/
 	struct thread *parent; /*my parent thread*/
 	int exit_status; /*my status when I exit - for prcess wait*/
+	int child_exit_status; /*the exit status of my child*/
+	bool process_exit; /*if I(process) ended, true.*/
 	struct semaphore child_lock;
-	struct semaphore exit_lock;
+	struct semaphore exit_lock;/*lock to hold child until I remove child from child_list*/
+	struct semaphore child_fork; /*lock for forking child*/
 	struct file* fd_table[128]; /*fd table*/
 	//end 20180109
-#endif
+// #endif
 
 
 

@@ -136,10 +136,19 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		f->R.rax = ans;
 		break;
 	case SYS_SEEK:
+		check_user_sp(f->R.rdi);
+		check_user_sp(f->R.rsi);
+		seek(f->R.rdi, f->R.rsi);
 		break;
 	case SYS_TELL:
+		check_user_sp(f->R.rdi);
+		f->R.rax = tell(f->R.rdi);
+		break;
 		break;
 	case SYS_CLOSE:
+		check_user_sp(f->R.rdi);
+		close(f->R.rdi);
+		break;
 		break;
 	}
 	//printf("syscall is done\n");
@@ -168,6 +177,7 @@ pid_t
 fork (const char *thread_name)
 {
 	tid_t num = process_fork(thread_name);
+	return num;
 }
 
 int 
@@ -267,8 +277,6 @@ read (int fd, void *buffer, unsigned length)
 			sema_up(&file_lock);
 			exit(-1);
 		}
-		//printf("REACHED??\n");
-		//cnt = length;
 		if(length > 0){
 			cnt = file_read(cur->fd_table[fd], buffer, length);
 		}
@@ -279,6 +287,8 @@ read (int fd, void *buffer, unsigned length)
 			}
 			cnt++;
 		}
+	}else{
+		return -1;
 	}
 	sema_up(&file_lock);
 
@@ -303,6 +313,38 @@ write (int fd, const void *buffer, unsigned length)
 		}
 	}
 	return cnt;
+}
+
+void
+seek (int fd, unsigned position) {
+	#ifdef USERPROG
+	sema_down(&file_lock);
+	if (thread_current()->fd_table[fd] == NULL) exit(-1);
+	file_seek(thread_current()->fd_table[fd], position);
+	sema_up(&file_lock);
+	#endif
+}
+
+unsigned
+tell (int fd) {
+	#ifdef USERPROG
+	sema_down(&file_lock);
+	off_t ans = file_tell (thread_current()->fd_table[fd]);
+	sema_up(&file_lock);
+	return ans;
+	#endif
+}
+
+void
+close (int fd) {
+	if(pml4_get_page (thread_current ()->pml4, fd) == NULL) return;
+	struct file *_file;
+	struct thread* t = thread_current();
+	if(fd<=1) return;
+	_file = t->fd_table[fd];
+	if(_file==NULL) return;
+	file_close(_file);
+	t->fd_table[fd] = NULL;
 }
 
 void 

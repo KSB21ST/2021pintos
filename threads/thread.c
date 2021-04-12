@@ -479,16 +479,21 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->wait_lock = NULL;
 
 	//start 20180109
-	#ifdef USERPROG
-	t->exit_status = 0;
-	list_init(&(t->child_list));
-	sema_init(&(t->child_lock), 0);    
-	sema_init(&(t->exit_lock), 0);        
+	// #ifdef USERPROG
+	list_init(&t->child_list);
+	t->parent = running_thread();
+	t->exit_status = NULL;
+	t->child_exit_status = NULL;
+	t->process_exit = false;
+	sema_init(&t->child_lock, 0);    
+	sema_init(&t->exit_lock, 0); 
+	sema_init(&t->child_fork, 0);       
 	list_push_back(&running_thread()->child_list, &t->child_elem);
 	for (int i = 0; i < 128; i++) {                                                         
 		t->fd_table[i] = NULL;                                                                
   	} 
-	#endif
+
+	// #endif
 	//end 20180109
 
 	

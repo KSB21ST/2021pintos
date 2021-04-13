@@ -141,9 +141,10 @@ page_fault (struct intr_frame *f) {
 	user = (f->error_code & PF_U) != 0;
 
 	//start 20180109
-	if (!user || is_kernel_vaddr(fault_addr)) {
-    	exit(-1);
-  	}
+	// if (!user || is_kernel_vaddr(fault_addr)) {
+    // 	exit(-1);
+  	// }
+	exit(-1);
 	//end 20180109
 
 #ifdef VM

@@ -25,7 +25,8 @@
 //start 20180109
 #include "filesys/inode.h"
 void argument_stack(char **argv, int argc, struct intr_frame *if_);
-// void argument_stack(char **argv, int argc, void **);
+// static struct lock file_locker; //careful!
+// static struct semaphore lock_sema;
 //end 20180109
 
 static void process_cleanup (void);
@@ -49,6 +50,11 @@ process_create_initd (const char *file_name) {
 	char *fn_copy;
 	tid_t tid;
 
+	//start 20180109 careful!
+	// lock_init(&file_locker);
+	// sema_init(&lock_sema, 0);
+	//end 20180109
+
 	/* Make a copy of FILE_NAME.
 	 * Otherwise there's a race between the caller and load(). */
 	fn_copy = palloc_get_page (0);
@@ -64,6 +70,9 @@ process_create_initd (const char *file_name) {
 
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
+	//start 20180109 lock_sema
+	sema_down(&thread_current()->load_sema);
+	//start 20180109
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
 	return tid;
@@ -257,10 +266,23 @@ process_exec (void *f_name) {
 	char *next_ptr;
 	char * realname;
 	realname = strtok_r(fn_copy2," ", &next_ptr);
+	
+	//start 20180109 careful!
+	// lock_acquire(&file_locker);
+	//end 20180109
+
 	if (filesys_open(realname)==NULL){
 		palloc_free_page (fn_copy); 
 		palloc_free_page(fn_copy2);
 		printf ("load: %s: open failed\n", file_name);
+			//start 20180109 careful!
+	// lock_release(&file_locker);
+		//start 20180109 lock_sema
+	// lock_release(&file_locker);
+	sema_up(&thread_current()->parent->load_sema);
+	//end 20180109
+
+	//end 20180109
     	exit(-1);
   	}
 	//end 20180109
@@ -271,6 +293,12 @@ process_exec (void *f_name) {
 
 	// success = load (file_name, &_if);
 	success = load(fn_copy, &_if);
+
+	//start 20180109 lock_sema
+	// lock_release(&file_locker);
+	sema_up(&thread_current()->parent->load_sema);
+	//end 20180109
+
 
 	//start 20180109
 	// argument_stack(arg_list, token_count, &_if);
@@ -588,11 +616,6 @@ load (const char *file_name, struct intr_frame *if_) {
 	/* Set up stack. */
 	if (!setup_stack (if_))
 		goto done;
-
-	//start 20180109
-	// argument_stack(arg_list, token_count, if_);
-	// hex_dump(if_->rsp, if_->rsp, USER_STACK - if_->rsp, true);
-	//end 20180109
 
 	/* Start address. */
 	if_->rip = ehdr.e_entry;

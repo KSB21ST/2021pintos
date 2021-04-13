@@ -25,8 +25,6 @@
 //start 20180109
 #include "filesys/inode.h"
 void argument_stack(char **argv, int argc, struct intr_frame *if_);
-// static struct lock file_locker; //careful!
-// static struct semaphore lock_sema;
 //end 20180109
 
 static void process_cleanup (void);
@@ -49,11 +47,6 @@ tid_t
 process_create_initd (const char *file_name) {
 	char *fn_copy;
 	tid_t tid;
-
-	//start 20180109 careful!
-	// lock_init(&file_locker);
-	// sema_init(&lock_sema, 0);
-	//end 20180109
 
 	/* Make a copy of FILE_NAME.
 	 * Otherwise there's a race between the caller and load(). */
@@ -100,7 +93,6 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	// return thread_create (name,
 	// 		PRI_DEFAULT, __do_fork, thread_current ());
 	//start 20180109
-	//원래는 aux 에 thread_current()를 넣어줬는데, frame으로 바꿨다.
 	struct thread *curr = thread_current();
 	int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
 	sema_down(&thread_current()->child_fork);
@@ -266,23 +258,12 @@ process_exec (void *f_name) {
 	char *next_ptr;
 	char * realname;
 	realname = strtok_r(fn_copy2," ", &next_ptr);
-	
-	//start 20180109 careful!
-	// lock_acquire(&file_locker);
-	//end 20180109
 
 	if (filesys_open(realname)==NULL){
 		palloc_free_page (fn_copy); 
 		palloc_free_page(fn_copy2);
 		printf ("load: %s: open failed\n", file_name);
-			//start 20180109 careful!
-	// lock_release(&file_locker);
-		//start 20180109 lock_sema
-	// lock_release(&file_locker);
-	sema_up(&thread_current()->parent->load_sema);
-	//end 20180109
-
-	//end 20180109
+		sema_up(&thread_current()->parent->load_sema);
     	exit(-1);
   	}
 	//end 20180109
@@ -295,35 +276,19 @@ process_exec (void *f_name) {
 	success = load(fn_copy, &_if);
 
 	//start 20180109 lock_sema
-	// lock_release(&file_locker);
 	sema_up(&thread_current()->parent->load_sema);
 	//end 20180109
 
-
-	//start 20180109
-	// argument_stack(arg_list, token_count, &_if);
-	// hex_dump(_if.rsp, _if.rsp, USER_STACK-_if.rsp, true);
-	//end 20180109
-	/* If load failed, quit. */
-	// palloc_free_page (file_name); /////////// process_create_init 에서 allocate 해줬던 거 안 지워도 되나????
-	////////////////////////// 동시에 같은 이름의 page 들이 allocate 되면 어떻게 되는거??? 덮어씌워지는거????
-	// if (!success)
-	// 	return -1;
 	
 	//start 20180109
 	if(success){
 		palloc_free_page (fn_copy); 
 		palloc_free_page(fn_copy2);
-		// sema_up(&thread_current()->load_sema);
-		
-		// lock_release(&thread_current()->load_lock);
 	}
 	else{
 		palloc_free_page (fn_copy); 
 		palloc_free_page(fn_copy2);
-		// sema_up(&thread_current()->load_sema);
-		// lock_release(&thread_current()->load_lock);
-		exit(-1);
+		return -1;
 	}
 	//end 20180109
 

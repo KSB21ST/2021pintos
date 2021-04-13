@@ -258,15 +258,19 @@ process_exec (void *f_name) {
 	char * realname;
 	realname = strtok_r(fn_copy2," ", &next_ptr);
 	if (filesys_open(realname)==NULL){
-    	return -1;
+		palloc_free_page (fn_copy); 
+		palloc_free_page(fn_copy2);
+		printf ("load: %s: open failed\n", file_name);
+    	exit(-1);
   	}
 	//end 20180109
 
 	/* We first kill the current context */
 	process_cleanup ();
 
+
+	// lock_acquire(&thread_current()->load_lock);
 	// success = load (file_name, &_if);
-	// sema_down(&thread_current()->load_sema);
 	success = load(fn_copy, &_if);
 
 	//start 20180109
@@ -274,7 +278,8 @@ process_exec (void *f_name) {
 	// hex_dump(_if.rsp, _if.rsp, USER_STACK-_if.rsp, true);
 	//end 20180109
 	/* If load failed, quit. */
-	// palloc_free_page (file_name);
+	// palloc_free_page (file_name); /////////// process_create_init 에서 allocate 해줬던 거 안 지워도 되나????
+	////////////////////////// 동시에 같은 이름의 page 들이 allocate 되면 어떻게 되는거??? 덮어씌워지는거????
 	// if (!success)
 	// 	return -1;
 	
@@ -283,14 +288,15 @@ process_exec (void *f_name) {
 		palloc_free_page (fn_copy); 
 		palloc_free_page(fn_copy2);
 		// sema_up(&thread_current()->load_sema);
+		
+		// lock_release(&thread_current()->load_lock);
 	}
 	else{
-		thread_current()->exit_status = 1;
 		palloc_free_page (fn_copy); 
 		palloc_free_page(fn_copy2);
 		// sema_up(&thread_current()->load_sema);
+		// lock_release(&thread_current()->load_lock);
 		exit(-1);
-		return -1;
 	}
 	//end 20180109
 

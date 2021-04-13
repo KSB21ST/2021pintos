@@ -11,7 +11,6 @@
 void
 test_main (void) 
 {
-  printf("test_main in test?userprog?exec-read.c\n");
   pid_t pid;
   int handle;
   int byte_cnt;

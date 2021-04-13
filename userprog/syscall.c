@@ -13,6 +13,7 @@
 #include "filesys/inode.h"
 #include "filesys/filesys.h"
 
+//copy from proj2_fork
 
 // register uint64_t *num asm ("rax") = (uint64_t *) num_;
 // 	register uint64_t *a1 asm ("rdi") = (uint64_t *) a1_;

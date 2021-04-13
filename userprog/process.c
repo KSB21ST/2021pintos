@@ -269,7 +269,6 @@ process_exec (void *f_name) {
 	process_cleanup ();
 
 
-	// lock_acquire(&thread_current()->load_lock);
 	// success = load (file_name, &_if);
 	success = load(fn_copy, &_if);
 

@@ -8,6 +8,11 @@
         "interrupt.h": "c",
         "thread.h": "c",
         "syscall-nr.h": "c",
-        "file.h": "c"
+        "file.h": "c",
+        "loader.h": "c",
+        "stdio.h": "c",
+        "gdt.h": "c",
+        "inode.h": "c",
+        "filesys.h": "c"
     }
 }

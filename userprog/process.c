@@ -64,6 +64,7 @@ process_create_initd (const char *file_name) {
 
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
+	sema_down(&thread_current()->load_sema);
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
 	return tid;
@@ -261,7 +262,9 @@ process_exec (void *f_name) {
 		palloc_free_page (fn_copy); 
 		palloc_free_page(fn_copy2);
 		printf ("load: %s: open failed\n", file_name);
-    	exit(-1);
+    	
+		sema_up(&thread_current()->parent->load_sema);
+		exit(-1);
   	}
 	//end 20180109
 
@@ -282,6 +285,8 @@ process_exec (void *f_name) {
 	////////////////////////// 동시에 같은 이름의 page 들이 allocate 되면 어떻게 되는거??? 덮어씌워지는거????
 	// if (!success)
 	// 	return -1;
+
+	sema_up(&thread_current()->parent->load_sema);
 	
 	//start 20180109
 	if(success){

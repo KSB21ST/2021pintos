@@ -20,7 +20,8 @@ enum thread_status {
 	THREAD_RUNNING,     /* Running thread. */
 	THREAD_READY,       /* Not running but ready to run. */
 	THREAD_BLOCKED,     /* Waiting for an event to trigger. */
-	THREAD_DYING        /* About to be destroyed. */
+	THREAD_DYING,        /* About to be destroyed. */
+	THREAD_EXIT
 };
 
 /* Thread identifier type.
@@ -131,11 +132,14 @@ struct thread {
 	int exit_status; /*my status when I exit - for prcess wait*/
 	int child_exit_status; /*the exit status of my child*/
 	bool process_exit; /*if I(process) ended, true.*/
-	struct semaphore child_lock;
-	struct semaphore exit_lock;/*lock to hold child until I remove child from child_list*/
+	// struct semaphore child_lock;
+	// struct semaphore exit_lock;/*lock to hold child until I remove child from child_list*/
 	struct semaphore child_fork; /*lock for forking child*/
-	struct semaphore load_sema;
 	struct file* fd_table[128]; /*fd table*/
+	struct lock file_t_lock;
+	struct condition exit_cond;
+	struct lock exit_lock;
+	// struct file *executable;
 	//end 20180109
 // #endif
 

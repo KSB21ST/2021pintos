@@ -144,7 +144,6 @@ page_fault (struct intr_frame *f) {
 	// if (!user || is_kernel_vaddr(fault_addr)) {
     // 	exit(-1);
   	// }
-	exit(-1);
 	//end 20180109
 
 #ifdef VM
@@ -155,6 +154,10 @@ page_fault (struct intr_frame *f) {
 
 	/* Count page faults. */
 	page_fault_cnt++;
+
+	//start 20180109
+	exit(-1);
+	//end 20180109
 
 	/* If the fault is true fault, show info and exit. */
 	printf ("Page fault at %p: %s error %s page in %s context.\n",

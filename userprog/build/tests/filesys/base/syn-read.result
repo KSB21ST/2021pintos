@@ -1,2 +1,26 @@
 FAIL
-run: wait for child 1 of 10 returned -1 (expected 0): FAILED
+Kernel panic in run: PANIC at ../../threads/thread.c:283 in thread_current(): assertion `is_thread (t)' failed.
+Call stack: 0x80042187cb 0x800420708d 0x800420ad8c 0x800421bb35 0x800421bd02 0x800421bce6 0x8004216cca 0x8004216402 0x800421bb95 0x8004215cce 0x800421de48 0x800421d831 0x80042092ec 0x800420970a 0x800420d879 0x800421d0b5 0x800421cf60 0x800421cbc1 0x800421c4b9 0x800421dedf 0x800421da6c 0x800421d8a3
+Translation of call stack:
+0x00000080042187cb: debug_panic (lib/kernel/debug.c:32)
+0x000000800420708d: thread_current (threads/thread.c:284)
+0x000000800420ad8c: lock_held_by_current_thread (threads/synch.c:321)
+0x000000800421bb35: console_locked_by_current_thread (lib/kernel/console.c:111 (discriminator 2))
+0x000000800421bd02: putchar_have_lock (lib/kernel/console.c:173)
+0x000000800421bce6: vprintf_helper (lib/kernel/console.c:166)
+0x0000008004216cca: format_string (lib/stdio.c:529 (discriminator 3))
+0x0000008004216402: __vprintf (lib/stdio.c:284)
+0x000000800421bb95: vprintf (lib/kernel/console.c:123)
+0x0000008004215cce: printf (lib/stdio.c:80)
+0x000000800421de48: exit (userprog/syscall.c:172)
+0x000000800421d831: syscall_entry (??:?)
+0x00000080042092ec: intr_handler (threads/interrupt.c:352)
+0x000000800420970a: intr_entry (threads/intr-stubs.o:?)
+0x000000800420d879: pml4_set_page (threads/mmu.c:239)
+0x000000800421d0b5: install_page (userprog/process.c:740 (discriminator 1))
+0x000000800421cf60: load_segment (userprog/process.c:693)
+0x000000800421cbc1: load (userprog/process.c:565)
+0x000000800421c4b9: process_exec (userprog/process.c:286)
+0x000000800421dedf: exec (userprog/syscall.c:187)
+0x000000800421da6c: syscall_handler (userprog/syscall.c:90)
+0x000000800421d8a3: no_sti (userprog/syscall-entry.o:?)

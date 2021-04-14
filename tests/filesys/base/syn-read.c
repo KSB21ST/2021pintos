@@ -12,7 +12,7 @@
 static char buf[BUF_SIZE];
 
 #define CHILD_CNT 10
-
+// #define CHILD_CNT 1
 void
 test_main (void) 
 {
@@ -28,4 +28,8 @@ test_main (void)
 
   exec_children ("child-syn-read", children, CHILD_CNT);
   wait_children (children, CHILD_CNT);
+
+  // CHECK ((fd = open ("child-syn-read")) > 1, "TEST open \"%s\"","child-syn-read" );
+  // char c;
+  // read (fd, &c, 1);
 }

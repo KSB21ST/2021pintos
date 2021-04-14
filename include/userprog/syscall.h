@@ -9,7 +9,8 @@
 #include "threads/interrupt.h"
 
 void syscall_init (void);
-void check_user_sp(const void* sp);
+void check_addr(const void* va);
+void check_stack_addr(const void* sp, void *va);
 void halt (void);
 void exit (int status);
 int fork(const char *thread_name,struct intr_frame *f);

@@ -198,6 +198,9 @@ lock_acquire (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (!intr_context ());
 	ASSERT (!lock_held_by_current_thread (lock));
+   //proj2
+   // if(lock_held_by_current_thread(lock))
+   //    return;
 
    enum intr_level old_level = intr_disable();
    struct thread *curr = thread_current();
@@ -384,10 +387,11 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED) {
 	ASSERT (!intr_context ());
 	ASSERT (lock_held_by_current_thread (lock));
 
-	if (!list_empty (&cond->waiters))
+	if (!list_empty (&cond->waiters)){
 		list_sort(&cond->waiters, &compare_sema_pri, NULL);
 		sema_up (&list_entry (list_pop_front (&cond->waiters),
 					struct semaphore_elem, elem)->semaphore);
+   }
 }
 
 /* Wakes up all threads, if any, waiting on COND (protected by

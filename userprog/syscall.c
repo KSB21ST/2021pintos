@@ -15,18 +15,19 @@
 
 
 // register uint64_t *num asm ("rax") = (uint64_t *) num_;
-// 	register uint64_t *a1 asm ("rdi") = (uint64_t *) a1_;
-// 	register uint64_t *a2 asm ("rsi") = (uint64_t *) a2_;
-// 	register uint64_t *a3 asm ("rdx") = (uint64_t *) a3_;
-// 	register uint64_t *a4 asm ("r10") = (uint64_t *) a4_;
-// 	register uint64_t *a5 asm ("r8") = (uint64_t *) a5_;
-// 	register uint64_t *a6 asm ("r9") = (uint64_t *) a6_;
+//    register uint64_t *a1 asm ("rdi") = (uint64_t *) a1_;
+//    register uint64_t *a2 asm ("rsi") = (uint64_t *) a2_;
+//    register uint64_t *a3 asm ("rdx") = (uint64_t *) a3_;
+//    register uint64_t *a4 asm ("r10") = (uint64_t *) a4_;
+//    register uint64_t *a5 asm ("r8") = (uint64_t *) a5_;
+//    register uint64_t *a6 asm ("r9") = (uint64_t *) a6_;
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
 //start 20180109
-void check_user_sp(const void* sp);
+void check_addr(const void* sp);
+void check_stack_addr(const void* sp, void *va);
 // struct semaphore file_lock; /*syncrhonization for file open, create, remove*/
 int ans = -1;
 static struct lock file_lock;
@@ -47,18 +48,18 @@ static struct lock file_lock;
 
 void
 syscall_init (void) {
-	write_msr(MSR_STAR, ((uint64_t)SEL_UCSEG - 0x10) << 48  |
-			((uint64_t)SEL_KCSEG) << 32);
-	write_msr(MSR_LSTAR, (uint64_t) syscall_entry);
+   write_msr(MSR_STAR, ((uint64_t)SEL_UCSEG - 0x10) << 48  |
+         ((uint64_t)SEL_KCSEG) << 32);
+   write_msr(MSR_LSTAR, (uint64_t) syscall_entry);
 
-	/* The interrupt service rountine should not serve any interrupts
-	 * until the syscall_entry swaps the userland stack to the kernel
-	 * mode stack. Therefore, we masked the FLAG_FL. */
-	write_msr(MSR_SYSCALL_MASK,
-			FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
-	//edit
-	// sema_init(&file_lock, 1);
-	lock_init(&file_lock);
+   /* The interrupt service rountine should not serve any interrupts
+    * until the syscall_entry swaps the userland stack to the kernel
+    * mode stack. Therefore, we masked the FLAG_FL. */
+   write_msr(MSR_SYSCALL_MASK,
+         FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
+   //edit
+   // sema_init(&file_lock, 1);
+   lock_init(&file_lock);
 }
 
 
@@ -66,340 +67,305 @@ syscall_init (void) {
 /* The main system call interface */
 void
 syscall_handler (struct intr_frame *f) {
-	// TODO: Your implementation goes here.
-	//printf ("system call!\n");
-	int sys_num = f->R.rax;
-	//printf("sys_num: %d \n", sys_num);
-	// hex_dump(f->rsp, f->rsp, USER_STACK-f->rsp, true);
-	// printf("syscall num : %d %#x\n", *(uint64_t *)(f->R.rax));
-	switch (sys_num)
-	{
-	case SYS_HALT:
-		//printf("halt! \n");
-		halt();
-		break;
-	case SYS_EXIT:
-		//printf("exit! \n");
-		check_user_sp(f->R.rdi);
-		exit(f->R.rdi);
-		break;
-	case SYS_FORK:
-		//printf("fork! \n");
-		check_user_sp(f->R.rdi);
-		f->R.rax = fork(f->R.rdi, f);
-		break;
-	case SYS_EXEC:
-		//printf("exec \n");
-		check_user_sp(f->R.rdi);
-		f->R.rax = exec(f->R.rdi);
-		break;
-	case SYS_WAIT:
-		//printf("wait \n");
-		check_user_sp(f->R.rdi);
-		f->R.rax = wait(f->R.rdi);
-		break;
-	case SYS_CREATE:
-		//printf("create!\n");
-		check_user_sp(f->R.rdi);
-		check_user_sp(f->R.rsi);
-		f->R.rax = create(f->R.rdi, f->R.rsi);
-		break;
-	case SYS_REMOVE:
-		//printf("remove \n");
-		check_user_sp(f->R.rdi);
-		bool temp = remove(f->R.rdi);
-		f->R.rax = temp;
-		break;
-	case SYS_OPEN:
-		//printf("open \n");
-		check_user_sp(f->R.rdi);
-		ans = open(f->R.rdi);
-		f->R.rax = ans;
-		break;
-	case SYS_FILESIZE:
-		//printf("filesize \n");
-		ans = filesize(f->R.rdi);
-		f->R.rax = ans;
-		break;
-	case SYS_READ:
-		//printf("read \n");
-		check_user_sp(f->R.rdi);
-		check_user_sp(f->R.rsi);
-		check_user_sp(f->R.rdx);
-		// printf("f->R.rdi = %d, f->R.rsi = %d, f->R.rdx= %d\n" ,f->R.rdi,f->R.rsi, f->R.rdx);
-		ans = read(f->R.rdi, f->R.rsi, f->R.rdx);
-		f->R.rax = ans;
-		break;
-	case SYS_WRITE:
-		//printf("write \n");
-		check_user_sp(f->R.rdi);
-		check_user_sp(f->R.rsi);
-		check_user_sp(f->R.rdx);
-		// printf("f->R.rdi = %d, f->R.rsi = %d, f->R.rdx= %d\n" ,f->R.rdi,f->R.rsi, f->R.rdx);
-		ans = write(f->R.rdi, f->R.rsi, f->R.rdx);
-		f->R.rax = ans;
-		break;
-	case SYS_SEEK:
-		check_user_sp(f->R.rdi);
-		check_user_sp(f->R.rsi);
-		seek(f->R.rdi, f->R.rsi);
-		break;
-	case SYS_TELL:
-		check_user_sp(f->R.rdi);
-		f->R.rax = tell(f->R.rdi);
-		break;
-	case SYS_CLOSE:
-		check_user_sp(f->R.rdi);
-		close(f->R.rdi);
-		break;
-	}
-	//printf("syscall is done\n");
- 
-	// thread_exit();
+   // TODO: Your implementation goes here.
+   int sys_num = f->R.rax;
+   switch (sys_num)
+   {
+   case SYS_HALT:
+      halt();
+      break;
+   case SYS_EXIT:
+      check_addr(f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      exit(f->R.rdi);
+      break;
+   case SYS_FORK:
+      check_addr(f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      f->R.rax = fork(f->R.rdi, f);
+      break;
+   case SYS_EXEC:
+      check_addr(f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      f->R.rax = exec(f->R.rdi);
+      break;
+   case SYS_WAIT:
+      check_addr(f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      f->R.rax = wait(f->R.rdi);
+      break;
+   case SYS_CREATE:
+      check_addr(f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      check_addr(f->R.rsi);
+      // check_stack_addr(f->rsp, f->R.rsi);
+      f->R.rax = create(f->R.rdi, f->R.rsi);
+      break;
+   case SYS_REMOVE:
+      check_addr(f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      bool temp = remove(f->R.rdi);
+      f->R.rax = temp;
+      break;
+   case SYS_OPEN:
+      check_addr(f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      ans = open(f->R.rdi);
+      f->R.rax = ans;
+      break;
+   case SYS_FILESIZE:
+      // check_stack_addr(f->rsp, f->R.rdi);
+      ans = filesize(f->R.rdi);
+      f->R.rax = ans;
+      break;
+   case SYS_READ:
+      check_addr(f->R.rdi);
+      check_addr(f->R.rsi);
+      check_addr(f->R.rdx);
+      // check_stack_addr(f->rsp, f->R.rsi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdx);
+      ans = read(f->R.rdi, f->R.rsi, f->R.rdx);
+      f->R.rax = ans;
+      break;
+   case SYS_WRITE:
+      check_addr(f->R.rdi);
+      check_addr(f->R.rsi);
+      check_addr(f->R.rdx);
+      // check_stack_addr(f->rsp, f->R.rsi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdx);
+      ans = write(f->R.rdi, f->R.rsi, f->R.rdx);
+      f->R.rax = ans;
+      break;
+   case SYS_SEEK:
+      check_addr(f->R.rdi);
+      check_addr(f->R.rsi);
+      // check_stack_addr(f->rsp, f->R.rsi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      seek(f->R.rdi, f->R.rsi);
+      break;
+   case SYS_TELL:
+      check_addr(f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      f->R.rax = tell(f->R.rdi);
+      break;
+   case SYS_CLOSE:
+      check_addr(f->R.rdi);
+      // check_stack_addr(f->rsp, f->R.rdi);
+      close(f->R.rdi);
+      break;
+   }
 }
 
 void
 halt (void) 
 {
-	power_off();
+   power_off();
 }
 
 void
 exit (int status) 
 {
-	struct thread *t = thread_current();
-	#ifdef USERPROG
-    t->exit_status = status;
-	#endif
-	printf("%s: exit(%d)\n", t->name, status);
-	thread_exit();
+   struct thread *t = thread_current();
+   printf("%s: exit(%d)\n", t->name, status);
+   t->exit_status = status;
+   thread_exit();
 }
 
 int
 fork (const char *thread_name, struct intr_frame *f)
 {
-	tid_t num = process_fork(thread_name, f);
-	return num;
+   tid_t num = process_fork(thread_name, f);
+   return num;
 }
 
 int 
 exec (const char *file)
 {
-	tid_t tid = process_exec(file);
- 	return tid;
+   if(file == NULL || *file == NULL) exit(-1);
+   tid_t tid = process_exec(file);
+   return tid;
 }
 
 int 
 wait (int pid){
-	int ans = process_wait(pid);
-	return ans;
+   int ans = process_wait(pid);
+   return ans;
 }
 
 bool
 create (const char *file, unsigned initial_size)
 {
-	//printf("in create\n");
-	if (file == NULL) exit(-1);
-	// sema_down(&file_lock);
-	lock_acquire(&file_lock);
+   if (file == NULL) exit(-1);
+   lock_acquire(&file_lock);
     bool result = (filesys_create (file, initial_size));
-	// sema_up(&file_lock);
-	lock_release(&file_lock);
+   lock_release(&file_lock);
     return result;
 }
 
 bool 
 remove (const char *file)
 {
-	//printf("in remove\n");
-	if(file==NULL||*file==NULL){
-    	exit(-1);
-  	}
- 	// sema_down(&file_lock);
-	lock_acquire(&file_lock);
-  	bool success = filesys_remove(file);
-  	// sema_up(&file_lock);
-	lock_release(&file_lock);
-  	return success;
+   if(file==NULL||*file==NULL) exit(-1);
+   lock_acquire(&file_lock);
+   bool success = filesys_remove(file);
+   lock_release(&file_lock);
+     return success;
 }
 
 int 
 open (const char *file)
 {
-	//printf("in open\n");
-	if(file==NULL) exit(-1);
+   if(file==NULL) exit(-1);
 
-	struct file* opened_file;
-	struct thread *cur =thread_current();
-	// sema_down(&file_lock);
-	lock_acquire(&file_lock);
-	opened_file = filesys_open (file);
-	//printf("file pointer: %#x\n", opened_file);
-	if(opened_file==NULL){
-		// sema_up(&file_lock);
-		lock_release(&file_lock);
-		return -1;
-	}
-	/* if file is current process, deny write */
-	if(!strcmp(file,cur->name))
-		file_deny_write(opened_file);
-	/* number of opened files should be less than 128 */
-	/* check vacant room of fd_table */
-	for(int i =2;i<128;i++){
-		if(cur->fd_table[i]==NULL){
-			cur->fd_table[i]=opened_file;
-			//printf("fd in open syscall: %d \n", fd_num);
-			// sema_up(&file_lock);
-			lock_release(&file_lock);
-			return i;
-		}
-	}
-	// sema_up(&file_lock);
-	lock_release(&file_lock);
-	return;
+   struct file* opened_file;
+   struct thread *cur =thread_current();
+   lock_acquire(&file_lock);
+   opened_file = filesys_open (file);
+   if(opened_file==NULL){
+      lock_release(&file_lock);
+      return -1;
+   }
+   /* if file is current process, deny write */
+   if(!strcmp(file,cur->name))
+      file_deny_write(opened_file);
+   /* number of opened files should be less than 128 */
+   /* check vacant room of fd_table */
+   for(int i =2;i<128;i++){
+      if(cur->fd_table[i]==NULL){
+         cur->fd_table[i]=opened_file;
+         lock_release(&file_lock);
+         return i;
+      }
+   }
+   lock_release(&file_lock);
+   return;
 }
 
 int 
 filesize (int fd)
 {
-	//printf("fd in filesize syscall: %d \n", fd);
-	// sema_down(&file_lock);
-	lock_acquire(&file_lock);
-  	struct thread *cur =thread_current();
-	if(cur->fd_table[fd] == NULL){
-		// sema_up(&file_lock);
-		lock_release(&file_lock);
-		exit(-1);
-	}else{
-		// sema_up(&file_lock);
-		lock_release(&file_lock);
-		return file_length(cur->fd_table[fd]);
-	}
-	// sema_up(&file_lock);
-	lock_release(&file_lock);
+   lock_acquire(&file_lock);
+     struct thread *cur =thread_current();
+   if(cur->fd_table[fd] == NULL){
+      lock_release(&file_lock);
+      exit(-1);
+   }else{
+      lock_release(&file_lock);
+      int ret = file_length(cur->fd_table[fd]);
+      return ret;
+   }
+   lock_release(&file_lock);
+   return;
 }
 
 int 
 read (int fd, void *buffer, unsigned length)
 {
-	check_user_sp(buffer);
-	int cnt = 0;
-	struct thread *cur =thread_current();
-	// sema_down(&file_lock);
-	lock_acquire(&file_lock);
-	//printf("fd: %d\n", fd);
-	if (fd > 1){
-		if(cur->fd_table[fd] == NULL){
-			// sema_up(&file_lock);
-			lock_release(&file_lock);
-			exit(-1);
-		}
-		if(length > 0){
-			cnt = file_read(cur->fd_table[fd], buffer, length);
-		}
-	}else if(fd == 0){
-		for(int i=0; i<length; i++){
-			if(input_getc() == NULL){
-				break;
-			}
-			cnt++;
-		}
-	}else{
-		// sema_up(&file_lock);
-		lock_release(&file_lock);
-		return -1;
-	}
-	// sema_up(&file_lock);
-	lock_release(&file_lock);
-
-	return cnt;
-
+   check_addr(buffer);
+   int cnt = 0;
+   struct thread *cur =thread_current();
+   lock_acquire(&file_lock);
+   if (fd > 1){
+      if(cur->fd_table[fd] == NULL){
+         lock_release(&file_lock);
+         exit(-1);
+      }
+      if(length > 0){
+         cnt = file_read(cur->fd_table[fd], buffer, length);
+      }
+   }else if(fd == 0){
+      for(int i=0; i<length; i++){
+         if(input_getc() == NULL){
+            break;
+         }
+         cnt++;
+      }
+   }else{
+      lock_release(&file_lock);
+      return -1;
+   }
+   lock_release(&file_lock);
+   return cnt;
 }
 
 int 
 write (int fd, const void *buffer, unsigned length)
 {
-	/* check the validity of buffer pointer */
-	check_user_sp(buffer);
-	int cnt = 0;
-	// sema_down(&file_lock);
-	lock_acquire(&file_lock);
-	/* Fd 1 means standard output(ex)printf) */
-	if(fd == 1){
-		putbuf(buffer, length);
-		// sema_up(&file_lock);
-		lock_release(&file_lock);
-		return length;
-	}else{
-		if(fd == 0) {
-			// sema_up(&file_lock);
-			lock_release(&file_lock);
-			return;
-		}
-		struct thread *cur = thread_current();
-		if(cur->fd_table[fd] == NULL) {
-			// sema_up(&file_lock);
-			lock_release(&file_lock);
-			return;
-		}
-		if(length > 0){
-			cnt = file_write(cur->fd_table[fd], buffer, length);
-		}
-	}
-	// sema_up(&file_lock);
-	lock_release(&file_lock);
-	return cnt;
+   /* check the validity of buffer pointer */
+   check_addr(buffer);
+   int cnt = 0;
+   lock_acquire(&file_lock);
+   /* Fd 1 means standard output(ex)printf) */
+   if(fd == 1){
+      putbuf(buffer, length);
+      lock_release(&file_lock);
+      return length;
+   }else{
+      if(fd == 0) {
+         lock_release(&file_lock);
+         return;
+      }
+      struct thread *cur = thread_current();
+      if(cur->fd_table[fd] == NULL) {
+         lock_release(&file_lock);
+         return;
+      }
+      if(length > 0){
+         cnt = file_write(cur->fd_table[fd], buffer, length);
+      }
+   }
+   lock_release(&file_lock);
+   return cnt;
 }
 
 void
 seek (int fd, unsigned position) {
-	#ifdef USERPROG
-	// sema_down(&file_lock);
-	lock_acquire(&file_lock);
-	if (thread_current()->fd_table[fd] == NULL) {
-		// sema_up(&file_lock);
-		lock_release(&file_lock);
-		exit(-1);
-	}
-	file_seek(thread_current()->fd_table[fd], position);
-	// sema_up(&file_lock);
-	lock_release(&file_lock);
-	#endif
+   #ifdef USERPROG
+   lock_acquire(&file_lock);
+   if (thread_current()->fd_table[fd] == NULL) {
+      lock_release(&file_lock);
+      exit(-1);
+   }
+   file_seek(thread_current()->fd_table[fd], position);
+   lock_release(&file_lock);
+   #endif
 }
 
 unsigned
 tell (int fd) {
-	#ifdef USERPROG
-	// sema_down(&file_lock);
-	lock_acquire(&file_lock);
-	off_t ans = file_tell (thread_current()->fd_table[fd]);
-	// sema_up(&file_lock);
-	lock_release(&file_lock);
-	return ans;
-	#endif
+   lock_acquire(&file_lock);
+   off_t ans = file_tell (thread_current()->fd_table[fd]);
+   lock_release(&file_lock);
+   return ans;
 }
 
 void
 close (int fd) {
-	if(pml4_get_page (thread_current ()->pml4, fd) == NULL) return;
-	struct file *_file;
-	struct thread* t = thread_current();
-	lock_acquire(&file_lock);
-	if(fd<=1) return;
-	_file = t->fd_table[fd];
-	if(_file==NULL) return;
-	// sema_down(&file_lock);
-	file_close(_file);
-	// sema_up(&file_lock);
-	lock_release(&file_lock);
-	t->fd_table[fd] = NULL;
+   if(pml4_get_page (thread_current ()->pml4, fd) == NULL) return;
+   struct file *_file;
+   struct thread* t = thread_current();
+   lock_acquire(&file_lock);
+   if(fd<=1) return;
+   _file = t->fd_table[fd];
+   if(_file==NULL) return;
+   file_close(_file);
+   lock_release(&file_lock);
+   t->fd_table[fd] = NULL;
 }
 
 void 
-check_user_sp(const void* sp)
+check_addr(const void* va)
 {
-  if(!is_user_vaddr(sp)){
-	printf("Invalid user sp!");
+  if(!is_user_vaddr(va)){
     exit(-1);
   }
 }
+
+// void 
+// check_stack_addr(const void* sp, void *va)
+// {
+//    if (va == NULL) return;
+//    if(!is_user_vaddr(sp) || sp > va) exit(-1);
+// }

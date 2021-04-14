@@ -8,6 +8,11 @@
         "interrupt.h": "c",
         "thread.h": "c",
         "syscall-nr.h": "c",
-        "file.h": "c"
+        "file.h": "c",
+        "random.h": "c",
+        "stdio.h": "c",
+        "main.h": "c",
+        "lib.h": "c",
+        "syn-read.h": "c"
     }
 }

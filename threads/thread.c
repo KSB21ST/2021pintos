@@ -311,8 +311,9 @@ thread_exit (void) {
 	/* Just set our status to dying and schedule another process.
 	   We will be destroyed during the call to schedule_tail(). */
 	intr_disable ();
-	int status = curr->process_exit ? THREAD_EXIT:THREAD_DYING;
-	do_schedule (status);
+	// int status = curr->process_exit ? THREAD_EXIT:THREAD_DYING;
+	// do_schedule (status);
+	do_schedule(THREAD_DYING);
 	NOT_REACHED ();
 }
 
@@ -484,14 +485,18 @@ init_thread (struct thread *t, const char *name, int priority) {
 	list_init(&t->child_list);
 	t->parent = running_thread();
 	t->exit_status = NULL;
-	t->child_exit_status = NULL;
+	// t->child_exit_status = NULL;
 	t->process_exit = false;
-	// sema_init(&t->child_lock, 0);    
-	// sema_init(&t->exit_lock, 0); 
-	sema_init(&t->child_fork, 0); 
-	lock_init(&t->file_t_lock);
-	lock_init(&t->exit_lock);
-	cond_init(&t->exit_cond);
+	// t->success_load = false;
+	sema_init(&t->child_sema, 0);    
+	sema_init(&t->exit_sema, 0); 
+	sema_init(&t->fork_sema, 0);  
+	sema_init(&t->load_sema, 0); 
+	// lock_init(&t->file_t_lock);
+	// lock_init(&t->exit_lock);
+	// cond_init(&t->exit_cond);
+	// lock_init(&t->fork_lock);
+	// cond_init(&t->fork_cond);
 	// t->executable = NULL;
 	list_push_back(&running_thread()->child_list, &t->child_elem);
 	for (int i = 0; i < 128; i++) {                                                         
@@ -540,7 +545,8 @@ next_thread_to_run (void) {
 		temp = list_entry (list_front (&ready_list), struct thread, elem);
 		if(temp->priority <= curr->priority && curr->status == THREAD_RUNNING){
 			return curr;
-		}else{
+		}
+		else{
 			list_remove(&temp->elem);
 			return temp;
 		}

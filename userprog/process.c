@@ -27,6 +27,8 @@
 void argument_stack(char **argv, int argc, struct intr_frame *if_);
 int argument_parse(const char *file_name, char **argv);
 static struct lock file_locker; //careful!
+struct thread *find_child(struct list *child_list, int tid);
+int load_wait (tid_t child_tid);
 // static struct semaphore lock_sema;
 //end 20180109
 
@@ -72,9 +74,12 @@ process_create_initd (const char *file_name) {
    /* Create a new thread to execute FILE_NAME. */
    tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
    //start 20180109 lock_sema
-   // sema_down(&thread_current()->load_sema);
    process_wait(tid); //wait for the created process to load execute completely
+   // struct thread *t = find_child(&thread_current()->child_list, tid);
+   // if(t->status != THREAD_EXIT)
+      // sema_down(&t->fork_sema);
    //start 20180109
+   //  sema_down(&thread_current()->fork_sema);
    if (tid == TID_ERROR)
       palloc_free_page (fn_copy);
    return tid;
@@ -101,7 +106,12 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    /* Clone current thread to new thread.*/
    struct thread *curr = thread_current();
    int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
-   sema_down(&thread_current()->child_fork); //wait for the child to load.
+   // sema_down(&thread_current()->child_fork); //wait for the child to load.
+   // load_wait(ans);
+   struct thread *t = find_child(&curr->child_list, ans);
+   if(t->status != THREAD_EXIT)
+      sema_down(&t->fork_sema);
+
    return ans;
    //end 20180109
 }
@@ -219,18 +229,13 @@ __do_fork (void *aux) {
    //end 20180109
 
    process_init ();
-   sema_up(&parent->child_fork);
    /* Finally, switch to the newly created process. */
    if (succ){
       if_.R.rax = 0;
       do_iret (&if_);
    }
 error:
-   //start 20180109
    current->exit_status=-1;
-   parent->child_exit_status = -1;
-   sema_up(&parent->child_fork);
-   //end 20180109
    thread_exit ();
 }
 
@@ -265,19 +270,14 @@ process_exec (void *f_name) {
    strlcpy (fn_copy2, file_name, PGSIZE);
    char *next_ptr;
    char *realname;
-   realname = strtok_r(fn_copy2," ", &next_ptr);
-   
+   // realname = strtok_r(fn_copy2," ", &next_ptr);
 
-   if (filesys_open(realname)==NULL){
-      printf ("load: %s: open failed\n", realname);
-      palloc_free_page (fn_copy); 
-      palloc_free_page(fn_copy2);
-      exit(-1);
-     }
    //end 20180109
 
    /* We first kill the current context */
    process_cleanup ();
+
+   realname = strtok_r(fn_copy2," ", &next_ptr);
 
    int argc = argument_parse(fn_copy, argv);
    //end 20180109
@@ -285,7 +285,11 @@ process_exec (void *f_name) {
    // success = load (file_name, &_if);
    success = load(realname, &_if);
 
+   enum intr_level old_level = intr_disable();
+
    argument_stack(argv, argc, &_if);
+
+   intr_set_level(old_level);
 
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
@@ -328,14 +332,16 @@ process_wait (tid_t child_tid UNUSED) {
             return -1;
          }
          // while(t->status == THREAD_EXIT);
-         lock_acquire(&t->exit_lock);
-         if(t->status != THREAD_EXIT){
-            cond_wait(&t->exit_cond, &t->exit_lock);
-         }
+         // lock_acquire(&t->exit_lock);
+         // if(t->status != THREAD_EXIT){
+            // cond_wait(&t->exit_cond, &t->exit_lock);
+         // }
+         sema_down(&t->child_sema);
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
-         lock_release(&t->exit_lock);
-         palloc_free_page(t);
+         // lock_release(&t->exit_lock);
+         // palloc_free_page(t);
+         sema_up(&t->exit_sema);
          return exit_status;
       }   
    }
@@ -361,23 +367,29 @@ process_exit (void) {
 
    }
 
+   if(cur->parent)
+      sema_up(&cur->fork_sema);
+
 
    //end 20180109
-   lock_acquire(&cur->exit_lock);
-   if(cur->parent){
-      curr->process_exit = true;
-      cond_signal(&cur->exit_cond, &cur->exit_lock);
-   }
+   // lock_acquire(&cur->fork_lock);
+   // lock_acquire(&cur->exit_lock);
+   // if(cur->parent){
+   //    // cond_signal(&cur->fork_cond, &cur->fork_lock);
+   //    curr->process_exit = true;
+   //    cond_signal(&cur->exit_cond, &cur->exit_lock);
+   // }
 
 
    process_cleanup ();
 
-   intr_disable ();
-   lock_release(&cur->exit_lock);
+   // intr_disable ();
+   // lock_release(&cur->fork_lock);
+   // lock_release(&cur->exit_lock);
    // cur->status = THREAD_EXIT;
    //start 20180109
-   // sema_up(&cur->child_lock);
-   // sema_down(&cur->exit_lock);
+   sema_up(&cur->child_sema);
+   sema_down(&cur->exit_sema);
    //end 20180109
 }
 
@@ -875,3 +887,51 @@ argument_parse(const char *file_name, char **argv)
    return token_count;
 }
 
+struct thread *
+find_child(struct list *child_list, int tid)
+{
+   struct list_elem* e;
+   struct thread* t = NULL;
+   
+   for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
+   {
+      t = list_entry(e, struct thread, child_elem);
+      if(t->tid == tid) 
+         if(t == NULL) return;
+         return t;
+   }
+}
+
+// int
+// load_wait (tid_t child_tid) 
+// {
+//    /* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
+//     * XXX:       to add infinite loop here before
+//     * XXX:       implementing the process_wait. */
+//    // while(1);
+//    struct list_elem* e;
+//    struct thread* t = NULL;
+//    int exit_status;
+
+//    // lock_init(&t->fork_lock);
+//    // cond_init(&t->fork_cond);
+   
+//    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
+//    {
+//       t = list_entry(e, struct thread, child_elem);
+//       if (child_tid == t->tid) {
+//          if(t == NULL){
+//             list_remove(&t->child_elem);
+//             continue;
+//          }
+//          intr_disable ();
+//          lock_acquire(&t->fork_lock);
+//          if(t->status != THREAD_EXIT){
+//             cond_wait(&t->fork_cond, &t->fork_lock);
+//          }
+//          lock_release(&t->fork_lock);
+//          return t->tid;
+//       }   
+//    }
+//    return -1;
+// }

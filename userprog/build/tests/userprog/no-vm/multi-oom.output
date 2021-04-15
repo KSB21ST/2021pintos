@@ -32,4 +32,41 @@ child_21_X: exit(-1)
 child_22_X: exit(-1)
 child_23_X: exit(-1)
 child_24_X: exit(-1)
-TIMEOUT
+(multi-oom) Should return > 0.: FAILED
+child_23_O: exit(1)
+child_22_O: exit(1)
+child_21_O: exit(1)
+child_20_O: exit(1)
+child_19_O: exit(1)
+child_18_O: exit(1)
+child_17_O: exit(1)
+child_16_O: exit(1)
+child_15_O: exit(1)
+child_14_O: exit(1)
+child_13_O: exit(1)
+child_12_O: exit(1)
+child_11_O: exit(1)
+child_10_O: exit(1)
+child_9_O: exit(1)
+child_8_O: exit(1)
+child_7_O: exit(1)
+child_6_O: exit(1)
+child_5_O: exit(1)
+child_4_O: exit(1)
+child_3_O: exit(1)
+child_2_O: exit(1)
+child_1_O: exit(1)
+child_0_O: exit(1)
+(multi-oom) Spawned at least 10 children.
+(multi-oom) Spawned at least 10 children.: FAILED
+multi-oom: exit(1)
+Execution of 'multi-oom' complete.
+Timer: 911 ticks
+Thread: 218 idle ticks, 49 kernel ticks, 644 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 16065 reads, 242 writes
+hd1:0: 107 reads, 0 writes
+Console: 1827 characters output
+Keyboard: 0 keys pressed
+Exception: 17 page faults
+Powering off...

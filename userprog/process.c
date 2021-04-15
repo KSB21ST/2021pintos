@@ -29,7 +29,6 @@ int argument_parse(const char *file_name, char **argv);
 static struct lock file_locker; //careful!
 struct thread *find_child(struct list *child_list, int tid);
 int load_wait (tid_t child_tid);
-// static struct semaphore lock_sema;
 //end 20180109
 
 static void process_cleanup (void);
@@ -103,11 +102,6 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    sema_init(&curr->fork_sema, 0);
    int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
    struct thread *t = find_child(&curr->child_list, ans);
-   // lock_acquire(&t->exit_lock);
-   // if(t->status != THREAD_EXIT){
-   //    cond_wait(&t->exit_cond, &t->exit_lock);
-   // }
-   // lock_release(&t->exit_lock);
    sema_down(&curr->fork_sema);
    return ans;
    //end 20180109
@@ -267,7 +261,6 @@ process_exec (void *f_name) {
    strlcpy (fn_copy2, file_name, PGSIZE);
    char *next_ptr;
    char *realname;
-   // realname = strtok_r(fn_copy2," ", &next_ptr);
 
    //end 20180109
 
@@ -338,7 +331,6 @@ process_wait (tid_t child_tid UNUSED) {
          list_remove(&t->child_elem);
          lock_release(&t->exit_lock);
          palloc_free_page(t);
-         // sema_up(&t->exit_sema);
          return exit_status;
       }   
    }
@@ -369,27 +361,16 @@ process_exit (void) {
 
 
    //end 20180109
-   // lock_acquire(&cur->fork_lock);
    lock_acquire(&cur->exit_lock);
    if(cur->parent){
-      // cond_signal(&cur->fork_cond, &cur->fork_lock);
       curr->process_exit = true;
       cond_signal(&cur->exit_cond, &cur->exit_lock);
    }
 
-   // sema_up(&cur->child_sema);
-   // sema_down(&cur->exit_sema);
-
 
    process_cleanup ();
 
-   // intr_disable ();
-   // lock_release(&cur->fork_lock);
    lock_release(&cur->exit_lock);
-   // cur->status = THREAD_EXIT;
-   //start 20180109
-   // sema_up(&cur->child_sema);
-   //end 20180109
 }
 
 /* Free the current process's resources. */
@@ -824,15 +805,12 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
 {
     /* insert arguments' address */
     char *argu_address[128];
-   // void **esp = if_->rsp;
-   // printf("base user stack : %#x \n", if_->rsp);
     for (int i = argc - 1; i >= 0; i--)
     {
       int argv_len = strlen(argv[i]);
         if_->rsp = if_->rsp - (argv_len + 1);
         memcpy(if_->rsp, argv[i], argv_len + 1);
         argu_address[i] = if_->rsp;
-      // printf("%d if_->rsp: %s %#x \n", i, if_->rsp, if_->rsp);
     }
 
     /* insert padding for word-align */
@@ -840,8 +818,6 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     {
         if_->rsp--;
         *(uint8_t *)(if_->rsp) = 0;
-      // memset(if_->rsp, 0, sizeof(uint8_t *));
-      // printf("if_->rsp: %s %#x \n", if_->rsp, if_->rsp);
     }
     
     /* insert address of strings including sentinel */
@@ -849,20 +825,16 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     {
         if_->rsp = if_->rsp - 8;
         if (i == argc){
-            // memset(if_->rsp, 0, sizeof(char **));
          *(char *)(if_->rsp) = 0;
-         // printf("%d: if_rsp value: %#x addr: %#x \n", i, *(uintptr_t  *)if_->rsp, if_->rsp);
       }
         else{
          memcpy(if_->rsp, &argu_address[i], sizeof(char **));
-         // printf("%d: if_rsp addr: %#x %#x %#x \n", i, *(uintptr_t  *)if_->rsp, argu_address[i], if_->rsp);
       }
             
     }
    
    if_->R.rdi = argc;
     if_->R.rsi =  if_->rsp;
-   // memcpy(if_->R.rsi, &(if_->rsp), sizeof(uintptr_t *));
 
     /* fake return address */
     if_->rsp = if_->rsp - 8;
@@ -875,7 +847,6 @@ argument_parse(const char *file_name, char **argv)
    char *token, *last;
    int token_count = 0;
    token = strtok_r(file_name, " ", &last);
-   // char *tmp_save = token;
    argv[token_count] = token;
    while (token != NULL)
    {
@@ -900,37 +871,3 @@ find_child(struct list *child_list, int tid)
          return t;
    }
 }
-
-// int
-// load_wait (tid_t child_tid) 
-// {
-//    /* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
-//     * XXX:       to add infinite loop here before
-//     * XXX:       implementing the process_wait. */
-//    // while(1);
-//    struct list_elem* e;
-//    struct thread* t = NULL;
-//    int exit_status;
-
-//    // lock_init(&t->fork_lock);
-//    // cond_init(&t->fork_cond);
-   
-//    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
-//    {
-//       t = list_entry(e, struct thread, child_elem);
-//       if (child_tid == t->tid) {
-//          if(t == NULL){
-//             list_remove(&t->child_elem);
-//             continue;
-//          }
-//          intr_disable ();
-//          lock_acquire(&t->fork_lock);
-//          if(t->status != THREAD_EXIT){
-//             cond_wait(&t->fork_cond, &t->fork_lock);
-//          }
-//          lock_release(&t->fork_lock);
-//          return t->tid;
-//       }   
-//    }
-//    return -1;
-// }

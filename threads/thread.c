@@ -311,9 +311,9 @@ thread_exit (void) {
 	/* Just set our status to dying and schedule another process.
 	   We will be destroyed during the call to schedule_tail(). */
 	intr_disable ();
-	// int status = curr->process_exit ? THREAD_EXIT:THREAD_DYING;
-	// do_schedule (status);
-	do_schedule(THREAD_DYING);
+	int status = curr->process_exit ? THREAD_EXIT:THREAD_DYING;
+	do_schedule (status);
+	// do_schedule(THREAD_DYING);
 	NOT_REACHED ();
 }
 
@@ -488,13 +488,13 @@ init_thread (struct thread *t, const char *name, int priority) {
 	// t->child_exit_status = NULL;
 	t->process_exit = false;
 	// t->success_load = false;
-	sema_init(&t->child_sema, 0);    
-	sema_init(&t->exit_sema, 0); 
+	// sema_init(&t->child_sema, 0);    
+	// sema_init(&t->exit_sema, 0); 
 	sema_init(&t->fork_sema, 0);  
-	sema_init(&t->load_sema, 0); 
+	// sema_init(&t->load_sema, 0); 
 	// lock_init(&t->file_t_lock);
-	// lock_init(&t->exit_lock);
-	// cond_init(&t->exit_cond);
+	lock_init(&t->exit_lock);
+	cond_init(&t->exit_cond);
 	// lock_init(&t->fork_lock);
 	// cond_init(&t->fork_cond);
 	// t->executable = NULL;

@@ -109,8 +109,16 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    // sema_down(&thread_current()->child_fork); //wait for the child to load.
    // load_wait(ans);
    struct thread *t = find_child(&curr->child_list, ans);
-   if(t->status != THREAD_EXIT)
-      sema_down(&t->fork_sema);
+   // if(t->status != THREAD_EXIT){
+   //    sema_init(&t->fork_sema, 0);
+   //    sema_down(&t->fork_sema);
+   // }
+   lock_acquire(&t->exit_lock);
+   if(t->status != THREAD_EXIT){
+      cond_wait(&t->exit_cond, &t->exit_lock);
+   }
+   lock_release(&t->exit_lock);
+     
 
    return ans;
    //end 20180109
@@ -279,20 +287,19 @@ process_exec (void *f_name) {
 
    realname = strtok_r(fn_copy2," ", &next_ptr);
 
+
    int argc = argument_parse(fn_copy, argv);
    //end 20180109
 
    // success = load (file_name, &_if);
    success = load(realname, &_if);
 
-   enum intr_level old_level = intr_disable();
-
-   argument_stack(argv, argc, &_if);
-
-   intr_set_level(old_level);
+   if(success)
+      argument_stack(argv, argc, &_if);
 
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
+   // palloc_free_page(file_name);
    
    if(!success){
       return -1;
@@ -336,12 +343,17 @@ process_wait (tid_t child_tid UNUSED) {
          // if(t->status != THREAD_EXIT){
             // cond_wait(&t->exit_cond, &t->exit_lock);
          // }
-         sema_down(&t->child_sema);
+         // sema_down(&t->child_sema);
+         // while(t->status == THREAD_EXIT);
+         lock_acquire(&t->exit_lock);
+         if(t->status != THREAD_EXIT){
+            cond_wait(&t->exit_cond, &t->exit_lock);
+         }
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
-         // lock_release(&t->exit_lock);
-         // palloc_free_page(t);
-         sema_up(&t->exit_sema);
+         lock_release(&t->exit_lock);
+         palloc_free_page(t);
+         // sema_up(&t->exit_sema);
          return exit_status;
       }   
    }
@@ -373,23 +385,25 @@ process_exit (void) {
 
    //end 20180109
    // lock_acquire(&cur->fork_lock);
-   // lock_acquire(&cur->exit_lock);
-   // if(cur->parent){
-   //    // cond_signal(&cur->fork_cond, &cur->fork_lock);
-   //    curr->process_exit = true;
-   //    cond_signal(&cur->exit_cond, &cur->exit_lock);
-   // }
+   lock_acquire(&cur->exit_lock);
+   if(cur->parent){
+      // cond_signal(&cur->fork_cond, &cur->fork_lock);
+      curr->process_exit = true;
+      cond_signal(&cur->exit_cond, &cur->exit_lock);
+   }
+
+   // sema_up(&cur->child_sema);
+   // sema_down(&cur->exit_sema);
 
 
    process_cleanup ();
 
    // intr_disable ();
    // lock_release(&cur->fork_lock);
-   // lock_release(&cur->exit_lock);
+   lock_release(&cur->exit_lock);
    // cur->status = THREAD_EXIT;
    //start 20180109
-   sema_up(&cur->child_sema);
-   sema_down(&cur->exit_sema);
+   // sema_up(&cur->child_sema);
    //end 20180109
 }
 

@@ -31,10 +31,7 @@ child_20_X: exit(-1)
 child_21_X: exit(-1)
 child_22_X: exit(-1)
 child_23_X: exit(-1)
-child_24_X: exit(-1)
-child_24_O: exit(-1)
 (multi-oom) Should return > 0.: FAILED
-child_23_O: exit(1)
 child_22_O: exit(1)
 child_21_O: exit(1)
 child_20_O: exit(1)
@@ -62,12 +59,12 @@ child_0_O: exit(1)
 (multi-oom) Spawned at least 10 children.: FAILED
 multi-oom: exit(1)
 Execution of 'multi-oom' complete.
-Timer: 832 ticks
-Thread: 175 idle ticks, 44 kernel ticks, 613 user ticks
+Timer: 862 ticks
+Thread: 187 idle ticks, 49 kernel ticks, 626 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 16057 reads, 242 writes
+hd0:1: 15363 reads, 242 writes
 hd1:0: 107 reads, 0 writes
-Console: 1848 characters output
+Console: 1786 characters output
 Keyboard: 0 keys pressed
-Exception: 18 page faults
+Exception: 16 page faults
 Powering off...

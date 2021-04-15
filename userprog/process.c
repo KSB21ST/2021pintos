@@ -55,7 +55,6 @@ process_create_initd (const char *file_name) {
 
    //start 20180109 careful!
    lock_init(&file_locker);
-   // sema_init(&lock_sema, 0);
    //end 20180109
 
    /* Make a copy of FILE_NAME.
@@ -73,13 +72,9 @@ process_create_initd (const char *file_name) {
 
    /* Create a new thread to execute FILE_NAME. */
    tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
-   //start 20180109 lock_sema
+
    process_wait(tid); //wait for the created process to load execute completely
-   // struct thread *t = find_child(&thread_current()->child_list, tid);
-   // if(t->status != THREAD_EXIT)
-      // sema_down(&t->fork_sema);
-   //start 20180109
-   //  sema_down(&thread_current()->fork_sema);
+
    if (tid == TID_ERROR)
       palloc_free_page (fn_copy);
    return tid;
@@ -106,20 +101,12 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    /* Clone current thread to new thread.*/
    struct thread *curr = thread_current();
    int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
-   // sema_down(&thread_current()->child_fork); //wait for the child to load.
-   // load_wait(ans);
    struct thread *t = find_child(&curr->child_list, ans);
-   // if(t->status != THREAD_EXIT){
-   //    sema_init(&t->fork_sema, 0);
-   //    sema_down(&t->fork_sema);
-   // }
    lock_acquire(&t->exit_lock);
    if(t->status != THREAD_EXIT){
       cond_wait(&t->exit_cond, &t->exit_lock);
    }
    lock_release(&t->exit_lock);
-     
-
    return ans;
    //end 20180109
 }
@@ -338,13 +325,6 @@ process_wait (tid_t child_tid UNUSED) {
             list_remove(&t->child_elem);
             return -1;
          }
-         // while(t->status == THREAD_EXIT);
-         // lock_acquire(&t->exit_lock);
-         // if(t->status != THREAD_EXIT){
-            // cond_wait(&t->exit_cond, &t->exit_lock);
-         // }
-         // sema_down(&t->child_sema);
-         // while(t->status == THREAD_EXIT);
          lock_acquire(&t->exit_lock);
          if(t->status != THREAD_EXIT){
             cond_wait(&t->exit_cond, &t->exit_lock);

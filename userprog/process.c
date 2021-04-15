@@ -261,7 +261,7 @@ process_exec (void *f_name) {
 	if (filesys_open(realname)==NULL){
 		palloc_free_page (fn_copy); 
 		palloc_free_page(fn_copy2);
-		printf ("not load: %s: open failed\n", file_name);
+		printf ("load: %s: open failed\n", file_name);
     	
 		sema_up(&thread_current()->parent->load_sema);
 		exit(-1);

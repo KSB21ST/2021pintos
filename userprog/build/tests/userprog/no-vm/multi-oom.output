@@ -61,8 +61,8 @@ child_0_O: exit(1)
 (multi-oom) Spawned at least 10 children.: FAILED
 multi-oom: exit(1)
 Execution of 'multi-oom' complete.
-Timer: 727 ticks
-Thread: 133 idle ticks, 43 kernel ticks, 551 user ticks
+Timer: 755 ticks
+Thread: 173 idle ticks, 31 kernel ticks, 551 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 16065 reads, 242 writes
 hd1:0: 107 reads, 0 writes

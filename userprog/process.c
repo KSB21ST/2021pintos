@@ -100,13 +100,15 @@ tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    /* Clone current thread to new thread.*/
    struct thread *curr = thread_current();
+   sema_init(&curr->fork_sema, 0);
    int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
    struct thread *t = find_child(&curr->child_list, ans);
-   lock_acquire(&t->exit_lock);
-   if(t->status != THREAD_EXIT){
-      cond_wait(&t->exit_cond, &t->exit_lock);
-   }
-   lock_release(&t->exit_lock);
+   // lock_acquire(&t->exit_lock);
+   // if(t->status != THREAD_EXIT){
+   //    cond_wait(&t->exit_cond, &t->exit_lock);
+   // }
+   // lock_release(&t->exit_lock);
+   sema_down(&curr->fork_sema);
    return ans;
    //end 20180109
 }
@@ -281,8 +283,11 @@ process_exec (void *f_name) {
    // success = load (file_name, &_if);
    success = load(realname, &_if);
 
-   if(success)
+   if(success){
       argument_stack(argv, argc, &_if);
+      sema_up(&(thread_current()->parent)->fork_sema);
+   }
+      
 
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
@@ -360,7 +365,7 @@ process_exit (void) {
    }
 
    if(cur->parent)
-      sema_up(&cur->fork_sema);
+      sema_up(&(cur->parent)->fork_sema);
 
 
    //end 20180109

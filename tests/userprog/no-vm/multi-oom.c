@@ -113,6 +113,7 @@ make_children (void) {
       snprintf (child_name, sizeof child_name, "%s_%d_%s", "child", i, "X");
 //      printf("before fork 1\n");
       pid = fork(child_name);
+//      printf("1st fork... pid: %d, i: %d\n", pid, i);
       if (pid > 0 && wait (pid) != -1) {
         fail ("crashed child should return -1.");
       } else if (pid == 0) {
@@ -125,8 +126,9 @@ make_children (void) {
     snprintf (child_name, sizeof child_name, "%s_%d_%s", "child", i, "O");
 //    printf("before fork 2\n");
     pid = fork(child_name);
+//    printf("\n2nd fork... pid: %d, i: %d\n", pid, i);
     if (pid < 0) {
-      printf("pid is smaller than 0. so exit(%d)\n", i);
+//      printf("pid is smaller than 0. so exit(%d)\n", i);
       exit (i);
     } else if (pid == 0) {
 //      printf("child process is running 2\n");
@@ -138,7 +140,7 @@ make_children (void) {
   }
   //printf("\nbefore depth = wait(%d)\n", pid);
   int depth = wait (pid);
-  //printf("after depth = wait(%d)\n", pid);
+//  printf("after depth(%d) = wait(%d)\n", depth, pid);
   if (depth < 0)
 	  fail ("Should return > 0.");
 

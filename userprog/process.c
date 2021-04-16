@@ -77,6 +77,8 @@ process_create_initd (const char *file_name) {
 
    if (tid == TID_ERROR)
       palloc_free_page (fn_copy);
+
+   palloc_free_page(fn_copy); // edit palloc
    return tid;
 }
 
@@ -162,6 +164,8 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
    // return true;
    //start 20180109
    if(pml4_set_page (current->pml4, va, newpage, writable)) {
+//      palloc_free_page(newpage);
+      //edit palloc
       return true;
    }else{
       palloc_free_page(newpage);
@@ -214,25 +218,26 @@ __do_fork (void *aux) {
    //start 20180109
    struct file ** parent_fd_table = parent->fd_table;
    struct file ** child_fd_table = current->fd_table;
-   for(int i=2; i<128;i++){
-      struct file *f = parent_fd_table[i];
+   //for(int i=2; i<128;i++){
+      //struct file *f = parent_fd_table[i];
       //struct file *f;
       //memcpy(&f, &parent_fd_table[i], sizeof(struct file *));
       
-      if(f==NULL)
+      //if(f==NULL)
 //      if((parent->fd_table)[i]==NULL)
-         continue;
-      lock_acquire(&file_locker);
-      struct file *child_f = file_duplicate(f);
+      //   continue;
+      //lock_acquire(&file_locker);
+      //struct file *child_f = file_duplicate(f);
 //      struct file *child_f = file_duplicate(((parent->fd_table)[i]));
-      lock_release(&file_locker);
-      if(child_f==NULL){
-         goto error;
-      }
-      child_fd_table[i] = child_f;
+      //lock_release(&file_locker);
+      //if(child_f==NULL){
+      //   goto error;
+      //}
+      //child_fd_table[i] = child_f;
+      memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table));
 //      memcpy(&child_fd_table[i], &child_f, sizeof(struct file *));
 
-   }   
+   //}   
    //end 20180109
 //   sema_up(&parent->fork_sema);
    process_init ();
@@ -256,7 +261,8 @@ process_exec (void *f_name) {
    
    //char *argv[64];
    char *argv;
-   argv = (char *)malloc(sizeof(char) * 64);
+//   argv = (char *)malloc(sizeof(char) * 64);
+   argv = palloc_get_page(PAL_ZERO);
 
    if(f_name == NULL) exit(-1);
 
@@ -301,7 +307,8 @@ process_exec (void *f_name) {
       sema_up(&(thread_current()->parent)->fork_sema);
    }
    
-   free(argv);
+//   free(argv);
+   palloc_free_page(argv);
 
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
@@ -354,7 +361,7 @@ process_wait (tid_t child_tid UNUSED) {
          list_remove(&t->child_elem);
 
          lock_release(&t->exit_lock);
-         // palloc_free_page(t->fd_table);
+//         palloc_free_page(t->fd_table); //edit palloc
          palloc_free_page(t);
 
          // sema_up(&t->exit_sema);
@@ -855,7 +862,8 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
    /* insert arguments' address */
    //char *argu_address[128];
    char **argu_address;
-   argu_address = (char **)malloc(sizeof(char *) * 128);
+//   argu_address = (char **)malloc(sizeof(char *) * 128);
+   argu_address = palloc_get_page(PAL_ZERO);
 
    // void **esp = if_->rsp;
    // printf("base user stack : %#x \n", if_->rsp);
@@ -901,7 +909,8 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     if_->rsp = if_->rsp - 8;
     memset(if_->rsp, 0, sizeof(void *));
    
-   free(argu_address);
+//   free(argu_address);
+   palloc_free_page(argu_address);
 }
 
 int

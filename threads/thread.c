@@ -196,7 +196,7 @@ thread_print_stats (void) {
    Priority scheduling is the goal of Problem 1-3. */
 tid_t
 thread_create (const char *name, int priority,
-		thread_func *function, void *aux) {
+	thread_func *function, void *aux) {
 	struct thread *t;
 	tid_t tid;
 
@@ -214,6 +214,8 @@ thread_create (const char *name, int priority,
 	//memset(t->fd_table, NULL, sizeof(t->fd_table));
 	//t->fd_table = palloc_get_multiple(PAL_ZERO, 128);
 	t->fd_table = palloc_get_page(PAL_ZERO);
+	if(t->fd_table == NULL)
+		return TID_ERROR;
 	tid = t->tid = allocate_tid ();
 
 	/* Call the kernel_thread if it scheduled.

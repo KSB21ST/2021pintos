@@ -333,10 +333,10 @@ process_wait (tid_t child_tid UNUSED) {
          }
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
-         // intr_disable();
          // list_push_back(&destruction_req, &t->elem);
          lock_release(&t->exit_lock);
-         palloc_free_multiple(t, 2); //multiloom
+         // palloc_free_multiple(t, 2); //multiloom
+         palloc_free_page(t);
          return exit_status;
       }   
    }

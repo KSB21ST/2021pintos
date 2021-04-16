@@ -62,6 +62,7 @@ consume_some_resources (void)
 	  }
 #else
 		if (open (test_name) == -1){
+      printf("open fail here \n");
       break;
     }
 		  

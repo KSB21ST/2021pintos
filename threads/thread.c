@@ -201,7 +201,7 @@ thread_create (const char *name, int priority,
 
 	/* Allocate thread. */
 	// t = palloc_get_page (PAL_ZERO);20180109
-	t = palloc_get_multiple (PAL_ZERO, 3);
+	t = palloc_get_page (PAL_ZERO);
 	if (t == NULL)
 		return TID_ERROR;
 
@@ -664,8 +664,8 @@ do_schedule(int status) {
 	while (!list_empty (&destruction_req)) {
 		struct thread *victim =
 			list_entry (list_pop_front (&destruction_req), struct thread, elem);
-		// palloc_free_page(victim);
-		palloc_free_multiple(victim, 3);
+		palloc_free_page(victim);
+		// palloc_free_multiple(victim, 3);
 	}
 	thread_current ()->status = status;
 	schedule ();

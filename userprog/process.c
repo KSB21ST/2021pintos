@@ -382,13 +382,25 @@ process_exit (void) {
       if(_file == NULL) continue;
       file_close(_file);
       cur_fd_table[i] = 0;
-
    }
-//   free(cur->fd_table);
-//   palloc_free_multiple(cur->fd_table, 128);
    palloc_free_page(cur->fd_table);
+
+    //multioom
+   struct list_elem *e;
+   struct thread *t;
+   for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
+   {
+      t = list_entry(e, struct thread, child_elem);
+      if(t == NULL) continue;
+      t->parent = NULL;
+      list_remove(&t->child_elem);
+      if(t->status == THREAD_EXIT) palloc_free_page(t);
+   }
+   //multioom end
+
    if(cur->parent)
       sema_up(&(cur->parent)->fork_sema);
+
 
    //end 20180109
    // lock_acquire(&cur->fork_lock);
@@ -398,10 +410,6 @@ process_exit (void) {
       curr->process_exit = true;
       cond_signal(&cur->exit_cond, &cur->exit_lock);
    }
-
-   // sema_up(&cur->child_sema);
-   // sema_down(&cur->exit_sema);
-
 
    process_cleanup ();
 

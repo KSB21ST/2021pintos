@@ -14,6 +14,9 @@
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
+
+//edit
+#include <stdlib.h>
 //THIS IS A TEST For SB
 bool compare_priority(struct list_elem *, struct list_elem *, void *);
 int load_avg;
@@ -200,13 +203,17 @@ thread_create (const char *name, int priority,
 	ASSERT (function != NULL);
 
 	/* Allocate thread. */
-	// t = palloc_get_page (PAL_ZERO);20180109
-	t = palloc_get_multiple (PAL_ZERO, 3);
+	 t = palloc_get_page (PAL_ZERO); //20180109
+	//t = palloc_get_multiple (PAL_ZERO, 3);
 	if (t == NULL)
 		return TID_ERROR;
 
 	/* Initialize thread. */
 	init_thread (t, name, priority);
+	//t->fd_table = (struct file **)malloc(sizeof(struct file *) * 128);
+	//memset(t->fd_table, NULL, sizeof(t->fd_table));
+	//t->fd_table = palloc_get_multiple(PAL_ZERO, 128);
+	t->fd_table = palloc_get_page(PAL_ZERO);
 	tid = t->tid = allocate_tid ();
 
 	/* Call the kernel_thread if it scheduled.
@@ -303,6 +310,12 @@ thread_exit (void) {
 
 	//edit
 	list_remove(&thread_current()->allelem);
+	//edit 2021.04.16
+	//list_remove(&thread_current()->slpelem);
+	//list_remove(&thread_current()->elem);
+	//list_remove(&thread_current()->child_elem);
+	//free(thread_current()->fd_table);
+	//palloc_free_page(thread_current()->fd_table);
 
 
 	#ifdef USERPROG
@@ -499,10 +512,15 @@ init_thread (struct thread *t, const char *name, int priority) {
 	// lock_init(&t->fork_lock);
 	// cond_init(&t->fork_cond);
 	// t->executable = NULL;
+	//t->fd_table = (struct file **)malloc(sizeof(struct file *) * 128); //edit
+
+	//t->fd_table = palloc_get_multiple(PAL_ZERO, 128);
+
 	list_push_back(&running_thread()->child_list, &t->child_elem);
-	for (int i = 0; i < 128; i++) {                                                         
-		t->fd_table[i] = NULL;                                                                
-  	} 
+//	for (int i = 0; i < 128; i++) {                                                         
+//		t->fd_table[i] = 0;                                                              
+//  	} 
+	//memset(t->fd_table, 0, sizeof(t->fd_table));
 
 	// #endif
 	//end 20180109
@@ -664,8 +682,8 @@ do_schedule(int status) {
 	while (!list_empty (&destruction_req)) {
 		struct thread *victim =
 			list_entry (list_pop_front (&destruction_req), struct thread, elem);
-		// palloc_free_page(victim);
-		palloc_free_multiple(victim, 3);
+		palloc_free_page(victim);
+		//palloc_free_multiple(victim, 3);
 	}
 	thread_current ()->status = status;
 	schedule ();

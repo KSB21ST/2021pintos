@@ -62,6 +62,7 @@ consume_some_resources (void)
 	  }
 #else
 		if (open (test_name) == -1)
+      printf("open failed here\n");
 		  break;
 #endif
   }
@@ -108,27 +109,34 @@ make_children (void) {
   char child_name[128];
   for (; ; random_init (i), i++) {
     if (i > EXPECTED_DEPTH_TO_PASS/2) {
+      //printf("\n%d > %d\n", i, EXPECTED_DEPTH_TO_PASS/2);
       snprintf (child_name, sizeof child_name, "%s_%d_%s", "child", i, "X");
+      //printf("before fork 1\n");
       pid = fork(child_name);
       if (pid > 0 && wait (pid) != -1) {
         fail ("crashed child should return -1.");
       } else if (pid == 0) {
+        //printf("child process is running 1\n");
         consume_some_resources_and_die();
         fail ("Unreachable");
       }
     }
-
+    //printf("\ni = %d\n", i);
     snprintf (child_name, sizeof child_name, "%s_%d_%s", "child", i, "O");
+    //printf("before fork 2\n");
     pid = fork(child_name);
     if (pid < 0) {
+      //printf("pid is smaller than 0. so exit(%d)\n", i);
       exit (i);
     } else if (pid == 0) {
+      //printf("child process is running 2\n");
       consume_some_resources();
     } else {
+      //printf("parent process???\n");
       break;
     }
   }
-
+  //printf("before checking depth\n");
   int depth = wait (pid);
   if (depth < 0)
 	  fail ("Should return > 0.");

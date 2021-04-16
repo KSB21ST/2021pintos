@@ -11,6 +11,9 @@
 #include "vm/vm.h"
 #endif
 
+//edit
+#include <stdlib.h>
+
 //start 20180109
 #include "threads/synch.h"
 //end 20180109
@@ -135,7 +138,11 @@ struct thread {
 	// struct semaphore child_sema;
 	// struct semaphore exit_sema;/*lock to hold child until I remove child from child_list*/
 	struct semaphore fork_sema; /*lock for forking child*/
-	struct file* fd_table[128]; /*fd table*/
+	//struct file *fd_table;
+	//fd_table = (struct file*) malloc(sizeof(struct file) * 128);
+	//struct file *fd_table[128];
+	struct file **fd_table;
+	
 	// struct lock file_t_lock;
 	struct condition exit_cond;
 	struct lock exit_lock;
@@ -145,6 +152,7 @@ struct thread {
 	// struct semaphore load_sema;
 	// struct file *executable;
 	//end 20180109
+
 // #endif
 
 

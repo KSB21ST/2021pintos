@@ -166,19 +166,48 @@ halt (void)
 
 void
 exit (int status) 
-{
+{	
    struct thread *t = thread_current();
    printf("%s: exit(%d)\n", t->name, status);
    t->exit_status = status;
    thread_exit();
-}
+   /*
+  	struct thread *cur = thread_current();
+	char real_file_name[128];
+	int idx = 0, i;
+	while((cur->name)[idx] != ' ' && (cur->name)[idx] != '\0'){
+		real_file_name[idx] = (cur->name)[idx];
+		idx++;
+	}
+	real_file_name[idx] = '\0';
+	printf("%s: exit(%d)\n", real_file_name, status);
+	cur->exit_status = status;
+
+	for (i = 2; i < 128; i++){
+		if(cur->fd_table[i] != 0){
+			close(i);
+		}
+	}
+	struct thread *temp_thread = NULL;
+	struct list_elem *temp_elem = NULL;
+
+	for(temp_elem = list_begin(&thread_current()->child_list);
+			temp_elem != list_end(&thread_current()->child_list);
+			temp_elem = list_next(temp_elem)){
+				temp_thread = list_entry(temp_elem, struct thread, child_elem);
+
+				process_wait(temp_thread->tid);
+	}
+	thread_exit();
+   */
+} 
 
 int
 fork (const char *thread_name, struct intr_frame *f)
 {
    tid_t num = process_fork(thread_name, f);
    return num;
-}
+} 
 
 int 
 exec (const char *file)
@@ -233,7 +262,7 @@ open (const char *file)
    /* number of opened files should be less than 128 */
    /* check vacant room of fd_table */
    for(int i =2;i<128;i++){
-      if(cur->fd_table[i]==NULL){
+      if(cur->fd_table[i]==0){
          cur->fd_table[i]=opened_file;
          lock_release(&file_lock);
          return i;
@@ -248,7 +277,7 @@ filesize (int fd)
 {
    lock_acquire(&file_lock);
      struct thread *cur =thread_current();
-   if(cur->fd_table[fd] == NULL){
+   if(cur->fd_table[fd] == 0){
       lock_release(&file_lock);
       exit(-1);
    }else{
@@ -268,7 +297,7 @@ read (int fd, void *buffer, unsigned length)
    struct thread *cur =thread_current();
    lock_acquire(&file_lock);
    if (fd > 1){
-      if(cur->fd_table[fd] == NULL){
+      if(cur->fd_table[fd] == 0){
          lock_release(&file_lock);
          exit(-1);
       }
@@ -308,7 +337,7 @@ write (int fd, const void *buffer, unsigned length)
          return;
       }
       struct thread *cur = thread_current();
-      if(cur->fd_table[fd] == NULL) {
+      if(cur->fd_table[fd] == 0) {
          lock_release(&file_lock);
          return;
       }
@@ -324,7 +353,7 @@ void
 seek (int fd, unsigned position) {
    #ifdef USERPROG
    lock_acquire(&file_lock);
-   if (thread_current()->fd_table[fd] == NULL) {
+   if (thread_current()->fd_table[fd] == 0) {
       lock_release(&file_lock);
       exit(-1);
    }
@@ -352,7 +381,7 @@ close (int fd) {
    if(_file==NULL) return;
    file_close(_file);
    lock_release(&file_lock);
-   t->fd_table[fd] = NULL;
+   t->fd_table[fd] = 0;
 }
 
 void 

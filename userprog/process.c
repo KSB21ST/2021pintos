@@ -108,6 +108,7 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    //    cond_wait(&t->exit_cond, &t->exit_lock);
    // }
    // lock_release(&t->exit_lock);
+   //printf("before sema_down\n");
    sema_down(&curr->fork_sema);
    return ans;
    //end 20180109
@@ -212,19 +213,25 @@ __do_fork (void *aux) {
    struct file ** child_fd_table = current->fd_table;
    for(int i=2; i<128;i++){
       struct file *f = parent_fd_table[i];
+      //struct file *f;
+      //memcpy(&f, &parent_fd_table[i], sizeof(struct file *));
+      
       if(f==NULL)
+//      if((parent->fd_table)[i]==NULL)
          continue;
       lock_acquire(&file_locker);
       struct file *child_f = file_duplicate(f);
+//      struct file *child_f = file_duplicate(((parent->fd_table)[i]));
       lock_release(&file_locker);
       if(child_f==NULL){
          goto error;
       }
       child_fd_table[i] = child_f;
+//      memcpy(&child_fd_table[i], &child_f, sizeof(struct file *));
 
    }   
    //end 20180109
-
+   sema_up(&parent->fork_sema);
    process_init ();
    /* Finally, switch to the newly created process. */
    if (succ){
@@ -244,7 +251,10 @@ process_exec (void *f_name) {
    bool success;
 
    
-   char *argv[64];
+   //char *argv[64];
+   char *argv;
+   argv = (char *)malloc(sizeof(char) * 64);
+
    if(f_name == NULL) exit(-1);
 
    /* We cannot use the intr_frame in the thread structure.
@@ -285,9 +295,10 @@ process_exec (void *f_name) {
 
    if(success){
       argument_stack(argv, argc, &_if);
-      sema_up(&(thread_current()->parent)->fork_sema);
+//      sema_up(&(thread_current()->parent)->fork_sema);
    }
-      
+   
+   free(argv);
 
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
@@ -321,13 +332,15 @@ process_wait (tid_t child_tid UNUSED) {
    struct list_elem* e;
    struct thread* t = NULL;
    int exit_status;
-   
+   //printf("process wait...\n");
    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
    {
       t = list_entry(e, struct thread, child_elem);
       if (child_tid == t->tid) {
          if(t == NULL){
             list_remove(&t->child_elem);
+            palloc_free_page(t->fd_table);
+            palloc_free_page(t);
             return -1;
          }
          lock_acquire(&t->exit_lock);
@@ -336,12 +349,17 @@ process_wait (tid_t child_tid UNUSED) {
          }
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
+
          lock_release(&t->exit_lock);
+         palloc_free_page(t->fd_table);
          palloc_free_page(t);
+
          // sema_up(&t->exit_sema);
          return exit_status;
       }   
    }
+   palloc_free_page(t->fd_table);
+   palloc_free_page(t);
    return -1;
 }
 
@@ -360,12 +378,14 @@ process_exit (void) {
       struct file *_file = cur_fd_table[i];
       if(_file == NULL) continue;
       file_close(_file);
-      cur_fd_table[i] = NULL;
+      cur_fd_table[i] = 0;
 
    }
-
-   if(cur->parent)
-      sema_up(&(cur->parent)->fork_sema);
+//   free(cur->fd_table);
+//   palloc_free_multiple(thread_current()->fd_table, 128);
+//   palloc_free_page(thread_current()->fd_table);
+//   if(cur->parent)
+//      sema_up(&(cur->parent)->fork_sema);
 
 
    //end 20180109
@@ -822,8 +842,11 @@ setup_stack (struct intr_frame *if_) {
 
 void argument_stack(char **argv, int argc, struct intr_frame *if_)
 {
-    /* insert arguments' address */
-    char *argu_address[128];
+   /* insert arguments' address */
+   //char *argu_address[128];
+   char **argu_address;
+   argu_address = (char **)malloc(sizeof(char *) * 128);
+
    // void **esp = if_->rsp;
    // printf("base user stack : %#x \n", if_->rsp);
     for (int i = argc - 1; i >= 0; i--)
@@ -867,6 +890,8 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     /* fake return address */
     if_->rsp = if_->rsp - 8;
     memset(if_->rsp, 0, sizeof(void *));
+   
+   free(argu_address);
 }
 
 int

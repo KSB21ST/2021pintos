@@ -231,7 +231,7 @@ __do_fork (void *aux) {
 
    }   
    //end 20180109
-   sema_up(&parent->fork_sema);
+//   sema_up(&parent->fork_sema);
    process_init ();
    /* Finally, switch to the newly created process. */
    if (succ){
@@ -295,7 +295,7 @@ process_exec (void *f_name) {
 
    if(success){
       argument_stack(argv, argc, &_if);
-//      sema_up(&(thread_current()->parent)->fork_sema);
+      sema_up(&(thread_current()->parent)->fork_sema);
    }
    
    free(argv);
@@ -384,8 +384,8 @@ process_exit (void) {
 //   free(cur->fd_table);
 //   palloc_free_multiple(thread_current()->fd_table, 128);
 //   palloc_free_page(thread_current()->fd_table);
-//   if(cur->parent)
-//      sema_up(&(cur->parent)->fork_sema);
+   if(cur->parent)
+      sema_up(&(cur->parent)->fork_sema);
 
 
    //end 20180109

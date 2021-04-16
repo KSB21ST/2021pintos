@@ -44,7 +44,7 @@ static struct thread *initial_thread;
 static struct lock tid_lock;
 
 /* Thread destruction requests */
-static struct list destruction_req;
+struct list destruction_req;  //20180109 - erased static
 
 /* Statistics. */
 static long long idle_ticks;    /* # of timer ticks spent idle. */

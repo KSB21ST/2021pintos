@@ -130,20 +130,11 @@ struct thread {
 	struct list_elem child_elem; /*list element to go inside child process list of my parent*/
 	struct thread *parent; /*my parent thread*/
 	int exit_status; /*my status when I exit - for prcess wait*/
-	// int child_exit_status; /*the exit status of my child*/
 	bool process_exit; /*if I(process) ended, true.*/
-	// struct semaphore child_sema;
-	// struct semaphore exit_sema;/*lock to hold child until I remove child from child_list*/
 	struct semaphore fork_sema; /*lock for forking child*/
 	struct file* fd_table[128]; /*fd table*/
-	// struct lock file_t_lock;
 	struct condition exit_cond;
 	struct lock exit_lock;
-	// struct lock fork_lock;
-	// struct condition fork_cond;
-	// bool success_load;
-	// struct semaphore load_sema;
-	// struct file *executable;
 	//end 20180109
 // #endif
 
@@ -204,5 +195,6 @@ int fp_round(int);
 //edit
 static struct list sleep_list;
 void thread_preempt (struct thread *);
+struct list destruction_req; //20180109 - erased static
 //end of edit
 #endif /* threads/thread.h */

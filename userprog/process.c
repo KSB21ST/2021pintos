@@ -1,4 +1,5 @@
 #include "userprog/process.h"
+#include "userprog/process.h"
 #include <debug.h>
 #include <inttypes.h>
 #include <round.h>
@@ -28,7 +29,6 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_);
 int argument_parse(const char *file_name, char **argv);
 static struct lock file_locker; //careful!
 struct thread *find_child(struct list *child_list, int tid);
-int load_wait (tid_t child_tid);
 //end 20180109
 
 static void process_cleanup (void);
@@ -99,6 +99,10 @@ tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    /* Clone current thread to new thread.*/
    struct thread *curr = thread_current();
+   if(list_size_int(&curr->child_list) > 29)
+      return -1;
+   //multiloom end
+
    sema_init(&curr->fork_sema, 0);
    int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
    struct thread *t = find_child(&curr->child_list, ans);
@@ -261,6 +265,7 @@ process_exec (void *f_name) {
    strlcpy (fn_copy2, file_name, PGSIZE);
    char *next_ptr;
    char *realname;
+   // realname = strtok_r(fn_copy2," ", &next_ptr);
 
    //end 20180109
 
@@ -273,7 +278,6 @@ process_exec (void *f_name) {
    int argc = argument_parse(fn_copy, argv);
    //end 20180109
 
-   // success = load (file_name, &_if);
    success = load(realname, &_if);
 
    if(success){
@@ -329,8 +333,10 @@ process_wait (tid_t child_tid UNUSED) {
          }
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
+         // intr_disable();
+         list_push_back(&destruction_req, &t->elem);
          lock_release(&t->exit_lock);
-         palloc_free_page(t);
+         // palloc_free_multiple(t, 3); //multiloom
          return exit_status;
       }   
    }
@@ -484,7 +490,6 @@ load (const char *file_name, struct intr_frame *if_) {
    int i;
    enum intr_level old_level;
 
-   // old_level = intr_disable();
    /* Allocate and activate page directory. */
    t->pml4 = pml4_create ();
    if (t->pml4 == NULL)
@@ -834,7 +839,7 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     }
    
    if_->R.rdi = argc;
-    if_->R.rsi =  if_->rsp;
+   if_->R.rsi =  if_->rsp;
 
     /* fake return address */
     if_->rsp = if_->rsp - 8;
@@ -847,6 +852,7 @@ argument_parse(const char *file_name, char **argv)
    char *token, *last;
    int token_count = 0;
    token = strtok_r(file_name, " ", &last);
+   // char *tmp_save = token;
    argv[token_count] = token;
    while (token != NULL)
    {

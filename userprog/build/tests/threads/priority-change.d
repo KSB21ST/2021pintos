@@ -5,4 +5,4 @@ tests/threads/priority-change.o: ../../tests/threads/priority-change.c \
  ../../include/lib/kernel/stdio.h ../../tests/threads/tests.h \
  ../../include/threads/init.h ../../include/threads/thread.h \
  ../../include/lib/kernel/list.h ../../include/threads/interrupt.h \
- ../../include/threads/synch.h
+ ../../include/lib/stdlib.h ../../include/threads/synch.h

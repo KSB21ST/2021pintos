@@ -7,8 +7,9 @@ userprog/syscall.o: ../../userprog/syscall.c \
  ../../include/lib/debug.h ../../include/lib/stdarg.h \
  ../../include/lib/stddef.h ../../include/lib/kernel/stdio.h \
  ../../include/lib/syscall-nr.h ../../include/threads/thread.h \
- ../../include/lib/kernel/list.h ../../include/threads/synch.h \
- ../../include/threads/loader.h ../../include/userprog/gdt.h \
- ../../include/threads/flags.h ../../include/intrinsic.h \
- ../../include/threads/mmu.h ../../include/threads/pte.h \
- ../../include/threads/vaddr.h ../../include/filesys/filesys.h
+ ../../include/lib/kernel/list.h ../../include/lib/stdlib.h \
+ ../../include/threads/synch.h ../../include/threads/loader.h \
+ ../../include/userprog/gdt.h ../../include/threads/flags.h \
+ ../../include/intrinsic.h ../../include/threads/mmu.h \
+ ../../include/threads/pte.h ../../include/threads/vaddr.h \
+ ../../include/filesys/filesys.h

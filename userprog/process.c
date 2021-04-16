@@ -334,9 +334,9 @@ process_wait (tid_t child_tid UNUSED) {
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
          // intr_disable();
-         list_push_back(&destruction_req, &t->elem);
+         // list_push_back(&destruction_req, &t->elem);
          lock_release(&t->exit_lock);
-         // palloc_free_multiple(t, 3); //multiloom
+         palloc_free_multiple(t, 2); //multiloom
          return exit_status;
       }   
    }
@@ -361,6 +361,18 @@ process_exit (void) {
       cur_fd_table[i] = NULL;
 
    }
+   //multioom
+   struct list_elem *e;
+   struct thread *t;
+   for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
+   {
+      t = list_entry(e, struct thread, child_elem);
+      if(t == NULL) continue;
+      t->parent = NULL;
+      list_remove(&t->child_elem);
+      if(t->status == THREAD_EXIT) palloc_free_multiple(t, 3);
+   }
+   //multioom end
 
    if(cur->parent)
       sema_up(&(cur->parent)->fork_sema);

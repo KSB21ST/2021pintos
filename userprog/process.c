@@ -102,7 +102,10 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    struct thread *curr = thread_current();
    sema_init(&curr->fork_sema, 0);
    int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
-   struct thread *t = find_child(&curr->child_list, ans);
+   if (ans == TID_ERROR){
+      return ans;
+   }
+   //struct thread *t = find_child(&curr->child_list, ans);
    // lock_acquire(&t->exit_lock);
    // if(t->status != THREAD_EXIT){
    //    cond_wait(&t->exit_cond, &t->exit_lock);
@@ -351,15 +354,15 @@ process_wait (tid_t child_tid UNUSED) {
          list_remove(&t->child_elem);
 
          lock_release(&t->exit_lock);
-         palloc_free_page(t->fd_table);
+         // palloc_free_page(t->fd_table);
          palloc_free_page(t);
 
          // sema_up(&t->exit_sema);
          return exit_status;
-      }   
+      }
    }
-   palloc_free_page(t->fd_table);
-   palloc_free_page(t);
+   // palloc_free_page(t->fd_table);
+   // palloc_free_page(t);
    return -1;
 }
 
@@ -382,11 +385,10 @@ process_exit (void) {
 
    }
 //   free(cur->fd_table);
-//   palloc_free_multiple(thread_current()->fd_table, 128);
-//   palloc_free_page(thread_current()->fd_table);
+//   palloc_free_multiple(cur->fd_table, 128);
+   palloc_free_page(cur->fd_table);
    if(cur->parent)
       sema_up(&(cur->parent)->fork_sema);
-
 
    //end 20180109
    // lock_acquire(&cur->fork_lock);

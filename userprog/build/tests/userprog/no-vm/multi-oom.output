@@ -282,12 +282,12 @@ child_0_O: exit(15)
 (multi-oom) end
 multi-oom: exit(0)
 Execution of 'multi-oom' complete.
-Timer: 707 ticks
-Thread: 99 idle ticks, 96 kernel ticks, 512 user ticks
+Timer: 621 ticks
+Thread: 46 idle ticks, 101 kernel ticks, 474 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 8795 reads, 244 writes
 hd1:0: 108 reads, 0 writes
-Console: 6328 characters output
+Console: 6329 characters output
 Keyboard: 0 keys pressed
 Exception: 77 page faults
 Powering off...

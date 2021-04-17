@@ -346,26 +346,49 @@ process_wait (tid_t child_tid UNUSED) {
    struct list_elem* e;
    struct thread* t = NULL;
    int exit_status;
+   /*
+   iterate lists of child and find the child that has the same tid with input argument. If there is no such child, return -1.
+   */
    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
    {
       t = list_entry(e, struct thread, child_elem);
       if (child_tid == t->tid) {
-         if(t == NULL){
+         if(t == NULL){ /*t being NULL would probably never happen, but implement it just in case*/
             list_remove(&t->child_elem);
             palloc_free_page(t->fd_table);
             palloc_free_page(t);
             return -1;
-         }
+         } 
          /*
-         conditions. 
+         so condition is a very unique term. Go to synch.c for more explanation.
+         cond_wait will wait for cond_signal. Similar to semaphore, but multiple jobs can wait for one signal.
+         also, it should have a pair of lock and condition to implement.
+         In thread.h, implemented exit_lock and exit_cond.
+         cond_signal for exit_lock is called in thread_exit().
+         this is because, process_wait() waits for the child to enter exit(). The child will close all the files, sema_up the forked parent, 
+         then call cond_signal and make process_exit = true if it has a parent. After calling cond_signal, it will retreat to thread_exit(). 
+         In thread_exit() in thread.c, if child->process_exit is true, it will become a status of THREAD_EXIT.
+         THREAD_EXIT is thread status I implemented. Schedule will only push thread if the thread status is THREAD_DYING. 
+         If thread status is THREAD_EXIT,it won't be killed by scheduler. Thus it will pend like a zombie.
+         A thread can only be THREAD_EXIT if it has a parent.(see the code in process_exit)
+         If it doesn't have a parent, doesn't call cond_signal, because it has no waiting parent and the thread will just exit like normal thraed.
+         if it has parent but parent doesn't wait, parent will make all the children orphans in thread_exit() by iterating child_list before it dies.
+         So either child has parent but doesn't wait, child has parent but wait, child does not have parent. Three cases. This is for the second case.
          */
          lock_acquire(&t->exit_lock);
          if(t->status != THREAD_EXIT){
             cond_wait(&t->exit_cond, &t->exit_lock);
          }
+         /*
+
+         */
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
          lock_release(&t->exit_lock);
+         /*
+         in thread_create(), every therad get's allocated by palloc_get_page, which is 1KB. 
+         The discription in thead.h recommends thread structure to have less than 1KB of memeory.
+         */
          palloc_free_page(t);
          return exit_status;
       }

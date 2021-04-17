@@ -24,12 +24,10 @@
 
 //start 20180109
 #include "filesys/inode.h"
-void argument_stack(char **argv, int argc, struct intr_frame *if_);
-int argument_parse(const char *file_name, char **argv);
-static struct lock file_locker; //careful!
+void argument_stack(char **argv, int argc, struct intr_frame *if_); //stack arguments after load
+int argument_parse(const char *file_name, char **argv); //parse argument before load in process_exec
+static struct lock file_locker; //lock for file access, before proj3 implementation
 struct thread *find_child(struct list *child_list, int tid);
-int load_wait (tid_t child_tid);
-// static struct semaphore lock_sema;
 //end 20180109
 
 static void process_cleanup (void);
@@ -54,7 +52,7 @@ process_create_initd (const char *file_name) {
    tid_t tid;
 
    //start 20180109 careful!
-   lock_init(&file_locker);
+   lock_init(&file_locker); 
    //end 20180109
 
    /* Make a copy of FILE_NAME.
@@ -102,16 +100,16 @@ tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    /* Clone current thread to new thread.*/
    struct thread *curr = thread_current();
-   if(list_size_int(&all_list) > 17)
+   if(list_size_int(&all_list) > 17) /*for multioom, restrict forked child number*/
       return TID_ERROR;
-   sema_init(&curr->fork_sema, 0);
-   int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
-   if (ans == TID_ERROR){
+   /*semaphore for forking and waiting the child to finish load. If success, sema_up after load. If load fails, sema_up at process_exit*/
+   sema_init(&curr->fork_sema, 0); 
+   int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_); /*create child thread*/
+   if (ans == TID_ERROR){ /*if thread_create went wrong reaturn TID_ERROR which is -1*/
       return ans;
    }
-   sema_down(&curr->fork_sema);
+   sema_down(&curr->fork_sema); /*wait for the child to finish loading*/
    return ans;
-   //end 20180109
 }
 
 #ifndef VM
@@ -126,47 +124,33 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
    bool writable;
 
    /* 1. TODO: If the parent_page is kernel page, then return immediately. */
-   //start 20180109
    if(is_kernel_vaddr(va)) return true;
-   //end 20180109
 
    /* 2. Resolve VA from the parent's page map level 4. */
    parent_page = pml4_get_page (parent->pml4, va);
 
    /* 3. TODO: Allocate new PAL_USER page for the child and set result to
     *    TODO: NEWPAGE. */
-   //start 20180109
    newpage = palloc_get_page (PAL_USER);
    if (newpage == NULL){
       palloc_free_page(newpage);
       return true;
    }
-   //end 20180109
 
    /* 4. TODO: Duplicate parent's page to the new page and
     *    TODO: check whether parent's page is writable or not (set WRITABLE
     *    TODO: according to the result). */
-   //start 20180109
    memcpy(newpage, parent_page, PGSIZE);
    writable = is_writable(pte);
-   //end 20180109
 
    /* 5. Add new page to child's page table at address VA with WRITABLE
     *    permission. */
-   // if (!pml4_set_page (current->pml4, va, newpage, writable)) {
-   //    /* 6. TODO: if fail to insert page, do error handling. */
-   // }
-   // return true;
-   //start 20180109
    if(pml4_set_page (current->pml4, va, newpage, writable)) {
-//      palloc_free_page(newpage);
-      //edit palloc
       return true;
    }else{
       palloc_free_page(newpage);
       return false;
    }
-   //end 20180109
 }
 #endif
 
@@ -210,18 +194,21 @@ __do_fork (void *aux) {
     * TODO:       from the fork() until this function successfully duplicates
     * TODO:       the resources of parent.*/
 
-   //start 20180109
-   lock_acquire(&file_locker);
+   /*acquire file_locker for file_duplicate, and any other possible interruptions*/
+   lock_acquire(&file_locker); 
    struct file ** parent_fd_table = parent->fd_table;
    struct file ** child_fd_table = current->fd_table;
    struct file *child_f;
-   for(int i=0; i<128;i++){
+   /*run from 0 to 128, including STDOUT and STDIN. Because of dup2, fd for STDOUT, STDIN may change*/
+   for(int i=0; i<128;i++){ 
       if((parent->fd_table)[i]==NULL)
          continue;
-      if((parent->fd_table)[i] == -1 || (parent->fd_table)[i] == -2){
+      /*if fd is STDIN or STDOUT. Initialized int thread_create, as fd_table[0] = -1, fd_table[1] = -2*/
+      if((parent->fd_table)[i] == -1 || (parent->fd_table)[i] == -2){ 
          child_fd_table[i] = parent->fd_table[i];
          continue;
       }
+      
       child_f = file_duplicate(((parent->fd_table)[i]));
       if(child_f==NULL){
          goto error;
@@ -229,16 +216,21 @@ __do_fork (void *aux) {
       current->fd_table[i] = child_f;
    }   
    lock_release(&file_locker);
-   // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table));
-   //end 20180109
-//   sema_up(&parent->fork_sema);
+   /*if we memcpy parent's fd table to child's fd table without duplicating file, multioom pass but other tests fail*/
+   // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table)); 
+
    process_init ();
    /* Finally, switch to the newly created process. */
    if (succ){
-      if_.R.rax = 0;
+      /*child's return should be 0. rax is the return register*/
+      if_.R.rax = 0; 
       do_iret (&if_);
    }
 error:
+/*
+this is the same with exit(-1). If loading while forking fails, exit with status -1. 
+sema_up(fork_sema) will be done in thread_exit, no need to be done here.
+*/
    current->exit_status=-1;
    thread_exit ();
 }
@@ -250,12 +242,11 @@ process_exec (void *f_name) {
    char *file_name = f_name;
    bool success;
 
-   
-   //char *argv[64];
+   /*palloc_get_page might be too big to allocate, since it is 4KB. But couldn't risk using malloc. free it later.
+   pointer for argument array. Would contain parsed argument from input f_name after 'argument_parse' function
+   */
    char *argv;
-//   argv = (char *)malloc(sizeof(char) * 64);
-   argv = palloc_get_page(PAL_ZERO);
-
+   argv = palloc_get_page(PAL_ZERO); 
    if(f_name == NULL) exit(-1);
 
    /* We cannot use the intr_frame in the thread structure.
@@ -266,46 +257,67 @@ process_exec (void *f_name) {
    _if.cs = SEL_UCSEG;
    _if.eflags = FLAG_IF | FLAG_MBS;
 
-   //start 20180109
+   /*
+   use palloc_get_page to avoid passing kernel address to load function. 
+   fn_copy is for argument_parse function
+   fn_copy2 is for realname, which is input file name to load function
+   just by declaring 
+   char *file_name = f_name;
+   was not safe. Why? maybe f_name was in kernel address.
+   Had to allocate new page in user program memeory and copy the content of f_name.
+   */
    char *fn_copy;
    char *fn_copy2;
    fn_copy = palloc_get_page(0);
    fn_copy2 = palloc_get_page (0);
-   if (fn_copy == NULL){
+   if (fn_copy == NULL || fn_copy2 == NULL){
        return -1;
    }
    strlcpy (fn_copy, file_name, PGSIZE);
    strlcpy (fn_copy2, file_name, PGSIZE);
    char *next_ptr;
    char *realname;
-   // realname = strtok_r(fn_copy2," ", &next_ptr);
-
-   //end 20180109
 
    /* We first kill the current context */
    process_cleanup ();
 
+   /*return the thread name. use fn_copy2, which is copy of f_name*/
    realname = strtok_r(fn_copy2," ", &next_ptr);
 
-
+   /*parse arguments. use fn_copy, which is copy of f_name. argv is list for arguments.*/
    int argc = argument_parse(fn_copy, argv);
-   //end 20180109
 
-   // success = load (file_name, &_if);
+   /*load - did not change anything in load*/
    success = load(realname, &_if);
 
+   /*
+   if load success, stack parsed arguments in stack.
+   and sema_up fork_sema to notify the parent that load is finished.
+   parent thread will be running from now, woken up from sema_down in process_fork
+   */
    if(success){
       argument_stack(argv, argc, &_if);
       sema_up(&(thread_current()->parent)->fork_sema);
    }
    
-//   free(argv);
+   /*
+   free all the allocated pages. important for multioom, memory leak.
+   */
    palloc_free_page(argv);
 
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
-   // palloc_free_page(file_name);
+   // palloc_free_page(file_name); 
+   /*
+   file_name was allocated in process_create_initd, if this is the second created process. 
+   But if not second thread, where was it allocated?
+   */
    
+   /*
+   if load fails, return -1.
+   just by returning -1 will eventually call thread_exit().
+   if this is a child, it will sema_up at thread_exit().
+   */
    if(!success){
       return -1;
    }
@@ -330,11 +342,10 @@ process_wait (tid_t child_tid UNUSED) {
    /* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
     * XXX:       to add infinite loop here before
     * XXX:       implementing the process_wait. */
-   // while(1);
+   // while(1); used while loop (busy wait, which is not recommended) when first started implementing process.c and syscall.c
    struct list_elem* e;
    struct thread* t = NULL;
    int exit_status;
-   //printf("process wait...\n");
    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
    {
       t = list_entry(e, struct thread, child_elem);
@@ -345,23 +356,20 @@ process_wait (tid_t child_tid UNUSED) {
             palloc_free_page(t);
             return -1;
          }
+         /*
+         conditions. 
+         */
          lock_acquire(&t->exit_lock);
          if(t->status != THREAD_EXIT){
             cond_wait(&t->exit_cond, &t->exit_lock);
          }
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
-
          lock_release(&t->exit_lock);
-//         palloc_free_page(t->fd_table); //edit palloc
          palloc_free_page(t);
-
-         // sema_up(&t->exit_sema);
          return exit_status;
       }
    }
-   // palloc_free_page(t->fd_table);
-   // palloc_free_page(t);
    return -1;
 }
 
@@ -939,37 +947,3 @@ find_child(struct list *child_list, int tid)
          return t;
    }
 }
-
-// int
-// load_wait (tid_t child_tid) 
-// {
-//    /* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
-//     * XXX:       to add infinite loop here before
-//     * XXX:       implementing the process_wait. */
-//    // while(1);
-//    struct list_elem* e;
-//    struct thread* t = NULL;
-//    int exit_status;
-
-//    // lock_init(&t->fork_lock);
-//    // cond_init(&t->fork_cond);
-   
-//    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
-//    {
-//       t = list_entry(e, struct thread, child_elem);
-//       if (child_tid == t->tid) {
-//          if(t == NULL){
-//             list_remove(&t->child_elem);
-//             continue;
-//          }
-//          intr_disable ();
-//          lock_acquire(&t->fork_lock);
-//          if(t->status != THREAD_EXIT){
-//             cond_wait(&t->fork_cond, &t->fork_lock);
-//          }
-//          lock_release(&t->fork_lock);
-//          return t->tid;
-//       }   
-//    }
-//    return -1;
-// }

@@ -214,6 +214,10 @@ thread_create (const char *name, int priority,
 	//memset(t->fd_table, NULL, sizeof(t->fd_table));
 	//t->fd_table = palloc_get_multiple(PAL_ZERO, 128);
 	t->fd_table = palloc_get_page(PAL_ZERO);
+	if(t->fd_table == NULL)
+		return TID_ERROR;
+	t->fd_table[0] = -1;
+	t->fd_table[1] = -2;
 	tid = t->tid = allocate_tid ();
 
 	/* Call the kernel_thread if it scheduled.

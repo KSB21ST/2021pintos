@@ -211,20 +211,24 @@ __do_fork (void *aux) {
     * TODO:       the resources of parent.*/
 
    //start 20180109
+   lock_acquire(&file_locker);
    struct file ** parent_fd_table = parent->fd_table;
    struct file ** child_fd_table = current->fd_table;
-   for(int i=2; i<128;i++){
-     if((parent->fd_table)[i]==NULL)
-        continue;
-      lock_acquire(&file_locker);
-     struct file *child_f = file_duplicate(((parent->fd_table)[i]));
-      lock_release(&file_locker);
-      if(child_f==NULL){
-        goto error;
+   struct file *child_f;
+   for(int i=0; i<128;i++){
+      if((parent->fd_table)[i]==NULL)
+         continue;
+      if((parent->fd_table)[i] == -1 || (parent->fd_table)[i] == -2){
+         child_fd_table[i] = parent->fd_table[i];
+         continue;
       }
-      child_fd_table[i] = child_f;
-//      memcpy(&child_fd_table[i], &child_f, sizeof(struct file *));
+      child_f = file_duplicate(((parent->fd_table)[i]));
+      if(child_f==NULL){
+         goto error;
+      }
+      current->fd_table[i] = child_f;
    }   
+   lock_release(&file_locker);
    // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table));
    //end 20180109
 //   sema_up(&parent->fork_sema);
@@ -372,10 +376,12 @@ process_exit (void) {
    //start 20180109
    struct thread *cur = thread_current ();
    struct file **cur_fd_table = cur->fd_table;
-   for(int i=2;i<128;i++){
+   for(int i=0;i<128;i++){
       struct file *_file = cur_fd_table[i];
-      if(_file == NULL) continue;
-      file_close(_file);
+      if(_file == NULL || _file == -1 || _file == -2) continue;
+      lock_acquire(&file_locker);
+      close(i);
+      lock_release(&file_locker);
       // remove(_file);
       cur_fd_table[i] = 0;
    }

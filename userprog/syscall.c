@@ -156,7 +156,7 @@ syscall_handler (struct intr_frame *f) {
       close(f->R.rdi);
       break;
    case SYS_DUP2:
-      check_addr(f->R.rdi);
+      // check_addr(f->R.rdi);
       check_addr(f->R.rsi);
       f->R.rax = dup2(f->R.rdi, f->R.rsi);
       break;
@@ -249,7 +249,7 @@ remove (const char *file)
    lock_acquire(&file_lock);
    bool success = filesys_remove(file);
    lock_release(&file_lock);
-     return success;
+   return success;
 }
 
 int 
@@ -262,14 +262,6 @@ open (const char *file)
    if(cur->open_cnt > 10)
       return-1;
    lock_acquire(&file_lock);
-   //multioom
-   // for(int i =2;i<128;i++){
-   //    if(cur->fd_table[i]==file){
-   //       lock_release(&file_lock);
-   //       return i;
-   //    }
-   // }
-   //multioom
    opened_file = filesys_open (file);
    if(opened_file==NULL){
       lock_release(&file_lock);
@@ -296,14 +288,16 @@ open (const char *file)
 int 
 filesize (int fd)
 {
+   struct thread *cur =thread_current();
+   if(cur->fd_table[fd] == -1 || cur->fd_table[fd] == -2)
+      return;
    lock_acquire(&file_lock);
-     struct thread *cur =thread_current();
    if(cur->fd_table[fd] == 0){
       lock_release(&file_lock);
       exit(-1);
    }else{
-      lock_release(&file_lock);
       int ret = file_length(cur->fd_table[fd]);
+      lock_release(&file_lock);
       return ret;
    }
    lock_release(&file_lock);
@@ -317,24 +311,41 @@ read (int fd, void *buffer, unsigned length)
    int cnt = 0;
    struct thread *cur =thread_current();
    lock_acquire(&file_lock);
-   if (fd > 1){
-      if(cur->fd_table[fd] == 0){
-         lock_release(&file_lock);
-         exit(-1);
-      }
-      if(length > 0){
-         cnt = file_read(cur->fd_table[fd], buffer, length);
-      }
-   }else if(fd == 0){
+   // if (fd > 1){
+   //    if(cur->fd_table[fd] == 0){
+   //       lock_release(&file_lock);
+   //       exit(-1);
+   //    }
+   //    if(length > 0){
+   //       cnt = file_read(cur->fd_table[fd], buffer, length);
+   //    }
+   // }else if(fd == 0){
+   //    for(int i=0; i<length; i++){
+   //       if(input_getc() == NULL){
+   //          break;
+   //       }
+   //       cnt++;
+   //    }
+   // }else{
+   //    lock_release(&file_lock);
+   //    return -1;
+   // }
+   // lock_release(&file_lock);
+   // return cnt;
+   struct file *temp = cur->fd_table[fd];
+   if(temp == -1){
       for(int i=0; i<length; i++){
          if(input_getc() == NULL){
             break;
          }
          cnt++;
       }
+   }else if(temp == -2){
+      cnt = -1;
    }else{
-      lock_release(&file_lock);
-      return -1;
+      if(temp == NULL)
+         cnt = -1;
+      cnt = file_read(cur->fd_table[fd], buffer, length);
    }
    lock_release(&file_lock);
    return cnt;
@@ -345,26 +356,38 @@ write (int fd, const void *buffer, unsigned length)
 {
    /* check the validity of buffer pointer */
    check_addr(buffer);
+   struct thread *cur = thread_current();
    int cnt = 0;
    lock_acquire(&file_lock);
-   /* Fd 1 means standard output(ex)printf) */
-   if(fd == 1){
-      putbuf(buffer, length);
-      lock_release(&file_lock);
-      return length;
+   // /* Fd 1 means standard output(ex)printf) */
+   // if(fd == 1){
+   //       putbuf(buffer, length);
+   //       lock_release(&file_lock);
+   //       return length;
+   //    }
+   // }else{
+   //    if(fd == 0) {
+   //       lock_release(&file_lock);
+   //       return;
+   //    }
+   //    if(cur->fd_table[fd] == 0) {
+   //       lock_release(&file_lock);
+   //       return;
+   //    }
+   //    if(length > 0){
+   //       cnt = file_write(cur->fd_table[fd], buffer, length);
+   //    }
+   // }
+   struct file *temp = cur->fd_table[fd];
+   if(temp == -2){
+         putbuf(buffer, length);
+         cnt = length;
+   }else if(temp == -1){
+      cnt = NULL;
    }else{
-      if(fd == 0) {
-         lock_release(&file_lock);
-         return;
-      }
-      struct thread *cur = thread_current();
-      if(cur->fd_table[fd] == 0) {
-         lock_release(&file_lock);
-         return;
-      }
-      if(length > 0){
-         cnt = file_write(cur->fd_table[fd], buffer, length);
-      }
+      if(temp == NULL)
+         cnt = NULL;
+      cnt = file_write(cur->fd_table[fd], buffer, length);
    }
    lock_release(&file_lock);
    return cnt;
@@ -374,11 +397,16 @@ void
 seek (int fd, unsigned position) {
    #ifdef USERPROG
    lock_acquire(&file_lock);
+   struct file *temp = thread_current()->fd_table[fd];
    if (thread_current()->fd_table[fd] == 0) {
       lock_release(&file_lock);
       exit(-1);
    }
-   file_seek(thread_current()->fd_table[fd], position);
+   if(temp != -1 && temp != -2){
+      file_seek(thread_current()->fd_table[fd], position);
+      lock_release(&file_lock);
+      return;
+   }
    lock_release(&file_lock);
    #endif
 }
@@ -386,38 +414,70 @@ seek (int fd, unsigned position) {
 unsigned
 tell (int fd) {
    lock_acquire(&file_lock);
+   struct file *temp = thread_current()->fd_table[fd];
+   if(temp == -1 || temp == -2){
+      lock_release(&file_lock);
+      return;
+   }
    off_t ans = file_tell (thread_current()->fd_table[fd]);
    lock_release(&file_lock);
    return ans;
 }
 
-void
+void 
 close (int fd) {
    if(pml4_get_page (thread_current ()->pml4, fd) == NULL) return;
    struct file *_file;
+   struct file *inside_file;
    struct thread* t = thread_current();
-   lock_acquire(&file_lock);
-   if(fd<=1) return;
-   _file = t->fd_table[fd];
-   if(_file==NULL) return;
-   t->open_cnt--;
-   file_close(_file);
-   lock_release(&file_lock);
-   t->fd_table[fd] = 0;
+   struct file **file_table = t->fd_table;
+   int cnt; //number of fd who has same file with given argument fd
+   _file = file_table[fd];
+   if(_file == -1 || _file == -2)
+      return;
+   // lock_acquire(&file_lock);
+   // if(fd<=1) return;
+   // _file = t->fd_table[fd];
+   // if(_file==NULL || _file == -1 || _file == -2) return;
+   // file_close(_file);
+   // lock_release(&file_lock);
+   // t->fd_table[fd] = 0;
+   for (int i=0;i<128;i++){
+      inside_file = file_table[i];
+      if(i == fd) continue;
+      if(inside_file == _file)
+         cnt++;
+   }
+   if (cnt > 0){ // _file 을 가리키고 있는 fd가 더 있다는 뜻이다.
+      t->fd_table[fd] = NULL;
+      return;
+   }else{
+      lock_acquire(&file_lock);
+      t->open_cnt--;
+      file_close(_file);
+      lock_release(&file_lock);
+      t->fd_table[fd] = NULL;
+   }
+      
 }
 
 
 int 
 dup2 (int oldfd, int newfd)
 {
+   if(!is_user_vaddr(oldfd)){
+      return -1;;
+   }
    struct thread *t = thread_current();
    struct file *old_file = t->fd_table[oldfd];
    struct file *new_file = t->fd_table[newfd];
+   struct file *n_file = NULL;
    if(old_file == new_file)
       return newfd;
    if(old_file == NULL)
       return -1;
-   close(new_file);
+   // memcpy(&n_file, &old_file, sizeof(old_file));
+   close(newfd); //new_file 이 -1이나 -2이면 0으로 되돌려줘야 하나?
    t->fd_table[newfd] = old_file;
 
    return newfd;

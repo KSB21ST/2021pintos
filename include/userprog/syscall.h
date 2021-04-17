@@ -25,6 +25,7 @@ int write (int fd, const void *buffer, unsigned size);
 void seek (int fd, unsigned position);
 unsigned tell (int fd);
 void close(int fd);
+int dup2 (int oldfd, int newfd);
 /* check the validity of user stack pointer */
 
 #endif /* userprog/syscall.h */

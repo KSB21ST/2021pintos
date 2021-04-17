@@ -76,8 +76,8 @@ multi-recurse: exit(14)
 (multi-recurse) end 15
 multi-recurse: exit(15)
 Execution of 'multi-recurse' complete.
-Timer: 133 ticks
-Thread: 35 idle ticks, 50 kernel ticks, 49 user ticks
+Timer: 129 ticks
+Thread: 41 idle ticks, 48 kernel ticks, 41 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 882 reads, 254 writes
 hd1:0: 113 reads, 0 writes

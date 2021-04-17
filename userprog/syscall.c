@@ -155,6 +155,15 @@ syscall_handler (struct intr_frame *f) {
       // check_stack_addr(f->rsp, f->R.rdi);
       close(f->R.rdi);
       break;
+   case SYS_DUP2:
+      check_addr(f->R.rdi);
+      check_addr(f->R.rsi);
+      f->R.rax = dup2(f->R.rdi, f->R.rsi);
+      break;
+   case SYS_MOUNT:
+      break;
+	case SYS_UMOUNT:
+      break;
    }
 }
 
@@ -396,6 +405,25 @@ close (int fd) {
    lock_release(&file_lock);
    t->fd_table[fd] = 0;
 }
+
+
+int 
+dup2 (int oldfd, int newfd)
+{
+   struct thread *t = thread_current();
+   struct file *old_file = t->fd_table[oldfd];
+   struct file *new_file = t->fd_table[newfd];
+   if(old_file == new_file)
+      return newfd;
+   if(old_file == NULL)
+      return -1;
+   close(new_file);
+   t->fd_table[newfd] = old_file;
+
+   return newfd;
+}
+
+
 
 void 
 check_addr(const void* va)

@@ -250,12 +250,23 @@ open (const char *file)
 
    struct file* opened_file;
    struct thread *cur =thread_current();
+   if(cur->open_cnt > 10)
+      return-1;
    lock_acquire(&file_lock);
+   //multioom
+   // for(int i =2;i<128;i++){
+   //    if(cur->fd_table[i]==file){
+   //       lock_release(&file_lock);
+   //       return i;
+   //    }
+   // }
+   //multioom
    opened_file = filesys_open (file);
    if(opened_file==NULL){
       lock_release(&file_lock);
       return -1;
    }
+   cur->open_cnt++;
    /* if file is current process, deny write */
    if(!strcmp(file,cur->name))
       file_deny_write(opened_file);
@@ -269,6 +280,7 @@ open (const char *file)
       }
    }
    lock_release(&file_lock);
+   // remove(opened_file);
    return;
 }
 
@@ -379,6 +391,7 @@ close (int fd) {
    if(fd<=1) return;
    _file = t->fd_table[fd];
    if(_file==NULL) return;
+   t->open_cnt--;
    file_close(_file);
    lock_release(&file_lock);
    t->fd_table[fd] = 0;

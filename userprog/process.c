@@ -73,8 +73,8 @@ process_create_initd (const char *file_name) {
    /* Create a new thread to execute FILE_NAME. */
    tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
 
-   process_wait(tid); //wait for the created process to load execute completely
-
+   // process_wait(tid); //wait for the created process to load execute completely
+   sema_down(&thread_current()->fork_sema);
    if (tid == TID_ERROR)
       palloc_free_page (fn_copy);
 
@@ -102,18 +102,13 @@ tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    /* Clone current thread to new thread.*/
    struct thread *curr = thread_current();
+   if(list_size_int(&all_list) > 17)
+      return TID_ERROR;
    sema_init(&curr->fork_sema, 0);
    int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_);
    if (ans == TID_ERROR){
       return ans;
    }
-   //struct thread *t = find_child(&curr->child_list, ans);
-   // lock_acquire(&t->exit_lock);
-   // if(t->status != THREAD_EXIT){
-   //    cond_wait(&t->exit_cond, &t->exit_lock);
-   // }
-   // lock_release(&t->exit_lock);
-   //printf("before sema_down\n");
    sema_down(&curr->fork_sema);
    return ans;
    //end 20180109
@@ -218,26 +213,19 @@ __do_fork (void *aux) {
    //start 20180109
    struct file ** parent_fd_table = parent->fd_table;
    struct file ** child_fd_table = current->fd_table;
-   //for(int i=2; i<128;i++){
-      //struct file *f = parent_fd_table[i];
-      //struct file *f;
-      //memcpy(&f, &parent_fd_table[i], sizeof(struct file *));
-      
-      //if(f==NULL)
-//      if((parent->fd_table)[i]==NULL)
-      //   continue;
-      //lock_acquire(&file_locker);
-      //struct file *child_f = file_duplicate(f);
-//      struct file *child_f = file_duplicate(((parent->fd_table)[i]));
-      //lock_release(&file_locker);
-      //if(child_f==NULL){
-      //   goto error;
-      //}
-      //child_fd_table[i] = child_f;
-      memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table));
+   for(int i=2; i<128;i++){
+     if((parent->fd_table)[i]==NULL)
+        continue;
+      lock_acquire(&file_locker);
+     struct file *child_f = file_duplicate(((parent->fd_table)[i]));
+      lock_release(&file_locker);
+      if(child_f==NULL){
+        goto error;
+      }
+      child_fd_table[i] = child_f;
 //      memcpy(&child_fd_table[i], &child_f, sizeof(struct file *));
-
-   //}   
+   }   
+   // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table));
    //end 20180109
 //   sema_up(&parent->fork_sema);
    process_init ();
@@ -388,6 +376,7 @@ process_exit (void) {
       struct file *_file = cur_fd_table[i];
       if(_file == NULL) continue;
       file_close(_file);
+      // remove(_file);
       cur_fd_table[i] = 0;
    }
    palloc_free_page(cur->fd_table);

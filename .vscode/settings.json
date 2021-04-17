@@ -13,6 +13,7 @@
         "stdio.h": "c",
         "main.h": "c",
         "lib.h": "c",
-        "syn-read.h": "c"
+        "syn-read.h": "c",
+        "filesys.h": "c"
     }
 }

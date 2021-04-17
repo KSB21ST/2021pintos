@@ -52,6 +52,7 @@ consume_some_resources (void)
 	 A low-memory condition in open() should not lead to the
 	 termination of the process.  */
   for (fd = 0; fd < fdmax; fd++) {
+      // printf("open  %d\n", fd);
 #ifdef EXTRA2
 	  if (fd != 0 && (random_ulong () & 1)) {
 		if (dup2(random_ulong () % fd, fd+fdmax) == -1)
@@ -62,7 +63,7 @@ consume_some_resources (void)
 	  }
 #else
 		if (open (test_name) == -1)
-//      printf("open failed here\n");
+    //  printf("open failed here %d\n", fd);
 		  break;
 #endif
   }

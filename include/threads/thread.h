@@ -146,6 +146,7 @@ struct thread {
 	// struct lock file_t_lock;
 	struct condition exit_cond;
 	struct lock exit_lock;
+	int open_cnt;
 	// struct lock fork_lock;
 	// struct condition fork_cond;
 	// bool success_load;
@@ -212,5 +213,6 @@ int fp_round(int);
 //edit
 static struct list sleep_list;
 void thread_preempt (struct thread *);
+struct list all_list;
 //end of edit
 #endif /* threads/thread.h */

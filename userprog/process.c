@@ -407,18 +407,34 @@ process_exit (void) {
    //start 20180109
    struct thread *cur = thread_current ();
    struct file **cur_fd_table = cur->fd_table;
+   /*
+   iterate through file descriptor table to close all open files.
+   Then palloc_free_page the fd_table that was allocated in thread_create.
+   should not remove the file, because that would effect other threads that also have
+   file descriptors pointing to it.
+
+   DON'T KNOW WHY MULTIOOM WILL NOT PASS, EVEN IF I CLOSE ALL THE FILES.
+   */
    for(int i=0;i<128;i++){
       struct file *_file = cur_fd_table[i];
       if(_file == NULL || _file == -1 || _file == -2) continue;
       lock_acquire(&file_locker);
       close(i);
       lock_release(&file_locker);
-      // remove(_file);
       cur_fd_table[i] = 0;
    }
    palloc_free_page(cur->fd_table);
 
-    //multioom
+   /*
+   So this is what I wrote about in process_wait().
+   Iterate child list before I die.
+   Tell the child that I am dying.(child->parent = NULL)
+   remove the child from the child_list.
+   If there's a waiting child which has THREAD_EXIT status, free the child.
+   No need to free the THREAD_EXIT child's fd_table, because it would already have been freed when
+   the child previously entered process_wait().
+   If a child has THREAD_EXIT status, the child SHOULD have entered process_exit().
+   */
    struct list_elem *e;
    struct thread *t;
    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
@@ -429,30 +445,36 @@ process_exit (void) {
       list_remove(&t->child_elem);
       if(t->status == THREAD_EXIT) palloc_free_page(t);
    }
-   //multioom end
 
+   /*
+   sema_up the fork_sema, where the parent will have been waiting for in process_fork if load in process_exec haven't failed.
+   sema_up in total may have occured two times, if a thread successfully loaded (fist sema_up) and exited normall (second sema_up)
+   because normal threads enter process_exit too.
+   However, it doesn't mater because once the parent is sema_up-ed, it will sema_init again in process_fork.
+   */
    if(cur->parent)
       sema_up(&(cur->parent)->fork_sema);
 
-
-   //end 20180109
-   // lock_acquire(&cur->fork_lock);
+   /*
+   signal waiting parent if there is a parent. 
+   Use cond_signal.
+   If the parent didn't wait for this child, it must have freed the child when it exited by the loop right above,
+   or will deallocate this child even after it's died after this child by the loop right above(if child->status == THREAD_EXIT).
+   */
    lock_acquire(&cur->exit_lock);
    if(cur->parent){
-      // cond_signal(&cur->fork_cond, &cur->fork_lock);
+      /*
+      set process_exit as true so that it can change it's status to THREAD_EXIT instead of THERAD_DYING in thread_exit() in thread.c.
+      Only when this one has parent.
+      Initialized as false in init_thread() in thread.c
+      */
       curr->process_exit = true;
       cond_signal(&cur->exit_cond, &cur->exit_lock);
    }
 
    process_cleanup ();
-
-   // intr_disable ();
-   // lock_release(&cur->fork_lock);
+   /*release lock for cond_signal, exit_lock*/
    lock_release(&cur->exit_lock);
-   // cur->status = THREAD_EXIT;
-   //start 20180109
-   // sema_up(&cur->child_sema);
-   //end 20180109
 }
 
 /* Free the current process's resources. */

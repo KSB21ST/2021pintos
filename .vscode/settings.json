@@ -15,6 +15,7 @@
         "lib.h": "c",
         "syn-read.h": "c",
         "filesys.h": "c",
-        "loader.h": "c"
+        "loader.h": "c",
+        "palloc.h": "c"
     }
 }

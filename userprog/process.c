@@ -24,15 +24,13 @@
 
 //start 20180109
 #include "filesys/inode.h"
-void argument_stack(char **argv, int argc, struct intr_frame *if_);
-int argument_parse(const char *file_name, char **argv);
 static struct lock file_locker; //careful!
 struct thread *find_child(struct list *child_list, int tid);
 int load_wait (tid_t child_tid);
 //end 20180109
 
 static void process_cleanup (void);
-static bool load (const char *file_name, struct intr_frame *if_);
+static bool load (const char *file_name, struct intr_frame *if_, char **argv, int argc);
 static void initd (void *f_name);
 static void __do_fork (void *);
 
@@ -246,10 +244,6 @@ process_exec (void *f_name) {
    char *file_name = f_name;
    bool success;
 
-   
-   char *argv;
-   argv = palloc_get_page(PAL_ZERO);
-
    if(f_name == NULL) exit(-1);
 
    /* We cannot use the intr_frame in the thread structure.
@@ -262,7 +256,7 @@ process_exec (void *f_name) {
 
    //start 20180109
    char *fn_copy;
-   char *fn_copy2;
+   char *fn_copy2; 
    fn_copy = palloc_get_page(0);
    fn_copy2 = palloc_get_page (0);
    if (fn_copy == NULL){
@@ -280,20 +274,31 @@ process_exec (void *f_name) {
 
    realname = strtok_r(fn_copy2," ", &next_ptr);
 
+// argument parsing start
+   char *token, *temp;
+   int argc = 0;
+   char **argv;
+   argv = (char **)malloc(sizeof(char *) * 128);
+   token = strtok_r(fn_copy, " ", &temp);
+   argv[argc] = token;
 
-   int argc = argument_parse(fn_copy, argv);
+   while(token != NULL){
+      token = strtok_r(NULL, " ", &temp);
+      argc++;
+      argv[argc] = token;
+   }
+// argument parsing end
+
+
    //end 20180109
 
-   // success = load (file_name, &_if);
-   success = load(realname, &_if);
+   success = load(realname, &_if, argv, argc);
 
    if(success){
-      argument_stack(argv, argc, &_if);
       sema_up(&(thread_current()->parent)->fork_sema);
    }
    
-   palloc_free_page(argv);
-
+   free(argv);
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
    
@@ -325,7 +330,6 @@ process_wait (tid_t child_tid UNUSED) {
    struct list_elem* e;
    struct thread* t = NULL;
    int exit_status;
-   //printf("process wait...\n");
    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
    {
       t = list_entry(e, struct thread, child_elem);
@@ -505,7 +509,7 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
  * and its initial stack pointer into *RSP.
  * Returns true if successful, false otherwise. */
 static bool
-load (const char *file_name, struct intr_frame *if_) {
+load (const char *file_name, struct intr_frame *if_, char **argv, int argc) {
    struct thread *t = thread_current ();
    struct ELF ehdr;
    struct file *file = NULL;
@@ -603,6 +607,40 @@ load (const char *file_name, struct intr_frame *if_) {
    /* TODO: Your code goes here.
     * TODO: Implement argument passing (see project2/argument_passing.html). */
    //start 20180109
+
+   char **argu_address;
+   argu_address = palloc_get_page(PAL_ZERO);
+
+   for (int i = 1; i <= argc; i++){
+      if_->rsp = if_->rsp - (strlen(argv[argc - i]) + 1);
+      memcpy(if_->rsp, argv[argc - i], strlen(argv[argc - i]) + 1);
+      argu_address[argc - i] = if_->rsp;
+   }
+
+   /* insert padding for word-align */
+   while (if_->rsp % 8 != 0){
+      if_->rsp--;
+      *(uint8_t *)(if_->rsp) = 0;
+   }
+   
+   /* insert address of strings including sentinel */
+   for (int i = 0; i <= argc; i++){
+      if_->rsp = if_->rsp - 8;
+      if (i == 0){
+      *(char *)(if_->rsp) = 0;
+      }else{
+         memcpy(if_->rsp, &argu_address[argc - i], sizeof(char **));
+      }   
+   }
+   
+   if_->R.rdi = argc;
+   if_->R.rsi = if_->rsp;
+
+   /* fake return address */
+   if_->rsp = if_->rsp - 8;
+   memset(if_->rsp, 0, sizeof(void *));
+   
+   palloc_free_page(argu_address);  
 
    success = true;
 
@@ -824,68 +862,6 @@ setup_stack (struct intr_frame *if_) {
    return success;
 }
 #endif /* VM */
-
-
-void argument_stack(char **argv, int argc, struct intr_frame *if_)
-{
-   /* insert arguments' address */
-
-   char **argu_address;
-   argu_address = palloc_get_page(PAL_ZERO);
-
-    for (int i = argc - 1; i >= 0; i--)
-    {
-      int argv_len = strlen(argv[i]);
-        if_->rsp = if_->rsp - (argv_len + 1);
-        memcpy(if_->rsp, argv[i], argv_len + 1);
-        argu_address[i] = if_->rsp;
-    }
-
-    /* insert padding for word-align */
-    while (if_->rsp % 8 != 0)
-    {
-        if_->rsp--;
-        *(uint8_t *)(if_->rsp) = 0;
-    }
-    
-    /* insert address of strings including sentinel */
-    for (int i = argc; i >= 0; i--)
-    {
-        if_->rsp = if_->rsp - 8;
-        if (i == argc){
-         *(char *)(if_->rsp) = 0;
-      }
-        else{
-         memcpy(if_->rsp, &argu_address[i], sizeof(char **));
-      }
-            
-    }
-   
-   if_->R.rdi = argc;
-    if_->R.rsi =  if_->rsp;
-
-    /* fake return address */
-    if_->rsp = if_->rsp - 8;
-    memset(if_->rsp, 0, sizeof(void *));
-   
-   palloc_free_page(argu_address);
-}
-
-int
-argument_parse(const char *file_name, char **argv)
-{
-   char *token, *last;
-   int token_count = 0;
-   token = strtok_r(file_name, " ", &last);
-   argv[token_count] = token;
-   while (token != NULL)
-   {
-      token = strtok_r(NULL, " ", &last);
-      token_count++;
-      argv[token_count] = token;
-   }
-   return token_count;
-}
 
 struct thread *
 find_child(struct list *child_list, int tid)

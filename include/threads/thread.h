@@ -24,7 +24,7 @@ enum thread_status {
 	THREAD_READY,       /* Not running but ready to run. */
 	THREAD_BLOCKED,     /* Waiting for an event to trigger. */
 	THREAD_DYING,        /* About to be destroyed. */
-	THREAD_EXIT
+	THREAD_EXIT         /*this is implemented because of proj2 - for synching child and parent. Child stays zombie when it's status is THREAD_EXIT. See thread_exit()*/
 };
 
 /* Thread identifier type.
@@ -125,37 +125,24 @@ struct thread {
 	uint64_t *pml4;                     /* Page map level 4 */
 
 
-
-// #ifdef USERPROG
-	//start 20180109
-	//for process
+	/*
+	implemented because of proj2-userprogram.
+	*/
 	struct list child_list; /*list of child processes*/
-	struct list_elem child_elem; /*list element to go inside child process list of my parent*/
+	struct list_elem child_elem; /*list element to go inside child_list*/
 	struct thread *parent; /*my parent thread*/
-	int exit_status; /*my status when I exit - for prcess wait*/
-	// int child_exit_status; /*the exit status of my child*/
-	bool process_exit; /*if I(process) ended, true.*/
-	// struct semaphore child_sema;
-	// struct semaphore exit_sema;/*lock to hold child until I remove child from child_list*/
-	struct semaphore fork_sema; /*lock for forking child*/
-	//struct file *fd_table;
-	//fd_table = (struct file*) malloc(sizeof(struct file) * 128);
-	//struct file *fd_table[128];
-	struct file **fd_table;
-	
-	// struct lock file_t_lock;
-	struct condition exit_cond;
-	struct lock exit_lock;
-	int open_cnt;
-	// struct lock fork_lock;
-	// struct condition fork_cond;
-	// bool success_load;
-	// struct semaphore load_sema;
-	// struct file *executable;
-	//end 20180109
-
-// #endif
-
+	int exit_status; /*my status when I exit - so that the parent can know my exit status*/
+	/*if I(process) ended, true. Initialized as false in init_thread in thread.c. 
+	if process_exit = true, then stays as zombie as status THERAD_EXIT until parent process deallocates it.
+	see thread_exit() and process_exit().
+	*/
+	bool process_exit; 
+	struct semaphore fork_sema; /*lock for forking child, until child loads successfully. see process_fork(), process_exec() after load, process_exit().*/ 
+	struct file **fd_table;     /*file descriptor table for fd. made it as pointer for array so that thread size doesn't go over 1KB. Because it is a pointer, thread size doesn't grow*/
+	struct condition exit_cond; /*for process_exit() and process_wait() synchronization. Signals parent when thread exits, and in process_wait, waits for the signal using cond_wait.*/
+	struct lock exit_lock; /*pair with exit_cond. condition always needs lock. see synch.c file.*/
+	int open_cnt; /*FOR MULTIOOM. SHOULD CHANGE THIS. THIS IS NOT RIGHT. Limits the number of open files. See syscall.c open() and close()*/
+	/*proj2 end*/
 
 
 // #endif

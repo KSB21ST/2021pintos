@@ -204,15 +204,11 @@ thread_create (const char *name, int priority,
 
 	/* Allocate thread. */
 	 t = palloc_get_page (PAL_ZERO); //20180109
-	//t = palloc_get_multiple (PAL_ZERO, 3);
 	if (t == NULL)
 		return TID_ERROR;
 
 	/* Initialize thread. */
 	init_thread (t, name, priority);
-	//t->fd_table = (struct file **)malloc(sizeof(struct file *) * 128);
-	//memset(t->fd_table, NULL, sizeof(t->fd_table));
-	//t->fd_table = palloc_get_multiple(PAL_ZERO, 128);
 	t->fd_table = palloc_get_page(PAL_ZERO);
 	if(t->fd_table == NULL)
 		return TID_ERROR;
@@ -314,12 +310,6 @@ thread_exit (void) {
 
 	//edit
 	list_remove(&thread_current()->allelem);
-	//edit 2021.04.16
-	//list_remove(&thread_current()->slpelem);
-	//list_remove(&thread_current()->elem);
-	//list_remove(&thread_current()->child_elem);
-	//free(thread_current()->fd_table);
-	//palloc_free_page(thread_current()->fd_table);
 
 
 	#ifdef USERPROG
@@ -499,35 +489,18 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->wait_lock = NULL;
 
 	//start 20180109
-	// #ifdef USERPROG
+
 	list_init(&t->child_list);
 	t->parent = running_thread();
 	t->exit_status = NULL;
-	// t->child_exit_status = NULL;
 	t->process_exit = false;
 	t->open_cnt = 0;
-	// t->success_load = false;
-	// sema_init(&t->child_sema, 0);    
-	// sema_init(&t->exit_sema, 0); 
 	sema_init(&t->fork_sema, 0);  
-	// sema_init(&t->load_sema, 0); 
-	// lock_init(&t->file_t_lock);
 	lock_init(&t->exit_lock);
 	cond_init(&t->exit_cond);
-	// lock_init(&t->fork_lock);
-	// cond_init(&t->fork_cond);
-	// t->executable = NULL;
-	//t->fd_table = (struct file **)malloc(sizeof(struct file *) * 128); //edit
-
-	//t->fd_table = palloc_get_multiple(PAL_ZERO, 128);
 
 	list_push_back(&running_thread()->child_list, &t->child_elem);
-//	for (int i = 0; i < 128; i++) {                                                         
-//		t->fd_table[i] = 0;                                                              
-//  	} 
-	//memset(t->fd_table, 0, sizeof(t->fd_table));
 
-	// #endif
 	//end 20180109
 
 	
@@ -688,7 +661,6 @@ do_schedule(int status) {
 		struct thread *victim =
 			list_entry (list_pop_front (&destruction_req), struct thread, elem);
 		palloc_free_page(victim);
-		//palloc_free_multiple(victim, 3);
 	}
 	thread_current ()->status = status;
 	schedule ();
@@ -757,7 +729,6 @@ bool compare_priority(struct list_elem * a, struct list_elem * b, void *aux){
 
 //mlfqs
 void mlfqs_load_avg (void){
-   //load_avg = (59/60) * load_avg + (1/60) * ready_threads
    int ready_threads = list_size_int(&ready_list);
    if(running_thread() != idle_thread)
       ready_threads++;

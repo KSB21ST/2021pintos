@@ -29,7 +29,6 @@ int argument_parse(const char *file_name, char **argv);
 static struct lock file_locker; //careful!
 struct thread *find_child(struct list *child_list, int tid);
 int load_wait (tid_t child_tid);
-// static struct semaphore lock_sema;
 //end 20180109
 
 static void process_cleanup (void);
@@ -73,12 +72,11 @@ process_create_initd (const char *file_name) {
    /* Create a new thread to execute FILE_NAME. */
    tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
 
-   // process_wait(tid); //wait for the created process to load execute completely
    sema_down(&thread_current()->fork_sema);
    if (tid == TID_ERROR)
       palloc_free_page (fn_copy);
 
-   palloc_free_page(fn_copy); // edit palloc
+   palloc_free_page(fn_copy);
    return tid;
 }
 
@@ -159,8 +157,6 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
    // return true;
    //start 20180109
    if(pml4_set_page (current->pml4, va, newpage, writable)) {
-//      palloc_free_page(newpage);
-      //edit palloc
       return true;
    }else{
       palloc_free_page(newpage);
@@ -229,7 +225,7 @@ __do_fork (void *aux) {
       current->fd_table[i] = child_f;
    }   
    lock_release(&file_locker);
-   // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table));
+
    //end 20180109
 //   sema_up(&parent->fork_sema);
    process_init ();
@@ -251,9 +247,7 @@ process_exec (void *f_name) {
    bool success;
 
    
-   //char *argv[64];
    char *argv;
-//   argv = (char *)malloc(sizeof(char) * 64);
    argv = palloc_get_page(PAL_ZERO);
 
    if(f_name == NULL) exit(-1);
@@ -278,7 +272,6 @@ process_exec (void *f_name) {
    strlcpy (fn_copy2, file_name, PGSIZE);
    char *next_ptr;
    char *realname;
-   // realname = strtok_r(fn_copy2," ", &next_ptr);
 
    //end 20180109
 
@@ -299,12 +292,10 @@ process_exec (void *f_name) {
       sema_up(&(thread_current()->parent)->fork_sema);
    }
    
-//   free(argv);
    palloc_free_page(argv);
 
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
-   // palloc_free_page(file_name);
    
    if(!success){
       return -1;
@@ -353,15 +344,11 @@ process_wait (tid_t child_tid UNUSED) {
          list_remove(&t->child_elem);
 
          lock_release(&t->exit_lock);
-//         palloc_free_page(t->fd_table); //edit palloc
          palloc_free_page(t);
 
-         // sema_up(&t->exit_sema);
          return exit_status;
       }
    }
-   // palloc_free_page(t->fd_table);
-   // palloc_free_page(t);
    return -1;
 }
 
@@ -382,7 +369,6 @@ process_exit (void) {
       lock_acquire(&file_locker);
       close(i);
       lock_release(&file_locker);
-      // remove(_file);
       cur_fd_table[i] = 0;
    }
    palloc_free_page(cur->fd_table);
@@ -405,22 +391,15 @@ process_exit (void) {
 
 
    //end 20180109
-   // lock_acquire(&cur->fork_lock);
    lock_acquire(&cur->exit_lock);
    if(cur->parent){
-      // cond_signal(&cur->fork_cond, &cur->fork_lock);
       curr->process_exit = true;
       cond_signal(&cur->exit_cond, &cur->exit_lock);
    }
 
    process_cleanup ();
 
-   // intr_disable ();
-   // lock_release(&cur->fork_lock);
    lock_release(&cur->exit_lock);
-   // cur->status = THREAD_EXIT;
-   //start 20180109
-   // sema_up(&cur->child_sema);
    //end 20180109
 }
 
@@ -535,7 +514,6 @@ load (const char *file_name, struct intr_frame *if_) {
    int i;
    enum intr_level old_level;
 
-   // old_level = intr_disable();
    /* Allocate and activate page directory. */
    t->pml4 = pml4_create ();
    if (t->pml4 == NULL)
@@ -625,12 +603,8 @@ load (const char *file_name, struct intr_frame *if_) {
    /* TODO: Your code goes here.
     * TODO: Implement argument passing (see project2/argument_passing.html). */
    //start 20180109
-   // argument_stack(arg_list, token_count, if_);
-   // hex_dump(if_->rsp, if_->rsp, USER_STACK - if_->rsp, true);
-   //end 20180109
 
    success = true;
-   // intr_set_level(old_level);
 
 done:
    /* We arrive here whether the load is successful or not. */
@@ -855,20 +829,16 @@ setup_stack (struct intr_frame *if_) {
 void argument_stack(char **argv, int argc, struct intr_frame *if_)
 {
    /* insert arguments' address */
-   //char *argu_address[128];
+
    char **argu_address;
-//   argu_address = (char **)malloc(sizeof(char *) * 128);
    argu_address = palloc_get_page(PAL_ZERO);
 
-   // void **esp = if_->rsp;
-   // printf("base user stack : %#x \n", if_->rsp);
     for (int i = argc - 1; i >= 0; i--)
     {
       int argv_len = strlen(argv[i]);
         if_->rsp = if_->rsp - (argv_len + 1);
         memcpy(if_->rsp, argv[i], argv_len + 1);
         argu_address[i] = if_->rsp;
-      // printf("%d if_->rsp: %s %#x \n", i, if_->rsp, if_->rsp);
     }
 
     /* insert padding for word-align */
@@ -876,8 +846,6 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     {
         if_->rsp--;
         *(uint8_t *)(if_->rsp) = 0;
-      // memset(if_->rsp, 0, sizeof(uint8_t *));
-      // printf("if_->rsp: %s %#x \n", if_->rsp, if_->rsp);
     }
     
     /* insert address of strings including sentinel */
@@ -885,26 +853,21 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     {
         if_->rsp = if_->rsp - 8;
         if (i == argc){
-            // memset(if_->rsp, 0, sizeof(char **));
          *(char *)(if_->rsp) = 0;
-         // printf("%d: if_rsp value: %#x addr: %#x \n", i, *(uintptr_t  *)if_->rsp, if_->rsp);
       }
         else{
          memcpy(if_->rsp, &argu_address[i], sizeof(char **));
-         // printf("%d: if_rsp addr: %#x %#x %#x \n", i, *(uintptr_t  *)if_->rsp, argu_address[i], if_->rsp);
       }
             
     }
    
    if_->R.rdi = argc;
     if_->R.rsi =  if_->rsp;
-   // memcpy(if_->R.rsi, &(if_->rsp), sizeof(uintptr_t *));
 
     /* fake return address */
     if_->rsp = if_->rsp - 8;
     memset(if_->rsp, 0, sizeof(void *));
    
-//   free(argu_address);
    palloc_free_page(argu_address);
 }
 
@@ -914,7 +877,6 @@ argument_parse(const char *file_name, char **argv)
    char *token, *last;
    int token_count = 0;
    token = strtok_r(file_name, " ", &last);
-   // char *tmp_save = token;
    argv[token_count] = token;
    while (token != NULL)
    {
@@ -939,37 +901,3 @@ find_child(struct list *child_list, int tid)
          return t;
    }
 }
-
-// int
-// load_wait (tid_t child_tid) 
-// {
-//    /* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
-//     * XXX:       to add infinite loop here before
-//     * XXX:       implementing the process_wait. */
-//    // while(1);
-//    struct list_elem* e;
-//    struct thread* t = NULL;
-//    int exit_status;
-
-//    // lock_init(&t->fork_lock);
-//    // cond_init(&t->fork_cond);
-   
-//    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
-//    {
-//       t = list_entry(e, struct thread, child_elem);
-//       if (child_tid == t->tid) {
-//          if(t == NULL){
-//             list_remove(&t->child_elem);
-//             continue;
-//          }
-//          intr_disable ();
-//          lock_acquire(&t->fork_lock);
-//          if(t->status != THREAD_EXIT){
-//             cond_wait(&t->fork_cond, &t->fork_lock);
-//          }
-//          lock_release(&t->fork_lock);
-//          return t->tid;
-//       }   
-//    }
-//    return -1;
-// }

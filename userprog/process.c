@@ -301,9 +301,9 @@ process_exec (void *f_name) {
    free(argv);
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
-   
+    
    if(!success){
-      return -1;
+      return -1; 
    }
 
    /* Start switched process. */
@@ -400,7 +400,7 @@ process_exit (void) {
       curr->process_exit = true;
       cond_signal(&cur->exit_cond, &cur->exit_lock);
    }
-
+   
    process_cleanup ();
 
    lock_release(&cur->exit_lock);

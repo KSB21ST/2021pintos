@@ -36,6 +36,17 @@ struct thread;
 
 #define VM_TYPE(type) ((type) & 7)
 
+//start 20180109
+#include <hash.h>
+struct page_load
+{
+	struct file *file; 
+	off_t ofs;
+    uint32_t read_bytes;
+	uint32_t zero_bytes;
+};
+//end 20180109
+
 /* The representation of "page".
  * This is kind of "parent class", which has four "child class"es, which are
  * uninit_page, file_page, anon_page, and page cache (project4).
@@ -46,6 +57,10 @@ struct page {
 	struct frame *frame;   /* Back reference for frame */
 
 	/* Your implementation */
+	//start 20180109 proj3
+	struct hash_elem h_elem;
+	bool writable;
+	//end 20180109
 
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
@@ -63,6 +78,10 @@ struct page {
 struct frame {
 	void *kva;
 	struct page *page;
+
+	//start 20180109
+	struct list_elem elem;
+	//end 20180109
 };
 
 /* The function table for page operations.
@@ -85,6 +104,7 @@ struct page_operations {
  * We don't want to force you to obey any specific design for this struct.
  * All designs up to you for this. */
 struct supplemental_page_table {
+	struct hash spt_table;
 };
 
 #include "threads/thread.h"

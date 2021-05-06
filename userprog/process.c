@@ -18,6 +18,7 @@
 #include "threads/mmu.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
+// #define VM
 #ifdef VM
 #include "vm/vm.h"
 #endif
@@ -407,18 +408,37 @@ process_exit (void) {
    //start 20180109
    struct thread *cur = thread_current ();
    struct file **cur_fd_table = cur->fd_table;
+   /*
+   iterate through file descriptor table to close all open files.
+   Then palloc_free_page the fd_table that was allocated in thread_create.
+   should not remove the file, because that would effect other threads that also have
+   file descriptors pointing to it.
+
+   DON'T KNOW WHY MULTIOOM WILL NOT PASS, EVEN IF I CLOSE ALL THE FILES.
+   */
    for(int i=0;i<128;i++){
       struct file *_file = cur_fd_table[i];
       if(_file == NULL || _file == -1 || _file == -2) continue;
       lock_acquire(&file_locker);
       close(i);
       lock_release(&file_locker);
-      // remove(_file);
       cur_fd_table[i] = 0;
    }
    palloc_free_page(cur->fd_table);
 
-    //multioom
+   if(cur->executable)
+       file_close(cur->executable);
+
+   /*
+   So this is what I wrote about in process_wait().
+   Iterate child list before I die.
+   Tell the child that I am dying.(child->parent = NULL)
+   remove the child from the child_list.
+   If there's a waiting child which has THREAD_EXIT status, free the child.
+   No need to free the THREAD_EXIT child's fd_table, because it would already have been freed when
+   the child previously entered process_wait().
+   If a child has THREAD_EXIT status, the child SHOULD have entered process_exit().
+   */
    struct list_elem *e;
    struct thread *t;
    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
@@ -429,30 +449,36 @@ process_exit (void) {
       list_remove(&t->child_elem);
       if(t->status == THREAD_EXIT) palloc_free_page(t);
    }
-   //multioom end
 
+   /*
+   sema_up the fork_sema, where the parent will have been waiting for in process_fork if load in process_exec haven't failed.
+   sema_up in total may have occured two times, if a thread successfully loaded (fist sema_up) and exited normall (second sema_up)
+   because normal threads enter process_exit too.
+   However, it doesn't mater because once the parent is sema_up-ed, it will sema_init again in process_fork.
+   */
    if(cur->parent)
       sema_up(&(cur->parent)->fork_sema);
 
-
-   //end 20180109
-   // lock_acquire(&cur->fork_lock);
+   /*
+   signal waiting parent if there is a parent. 
+   Use cond_signal.
+   If the parent didn't wait for this child, it must have freed the child when it exited by the loop right above,
+   or will deallocate this child even after it's died after this child by the loop right above(if child->status == THREAD_EXIT).
+   */
    lock_acquire(&cur->exit_lock);
    if(cur->parent){
-      // cond_signal(&cur->fork_cond, &cur->fork_lock);
+      /*
+      set process_exit as true so that it can change it's status to THREAD_EXIT instead of THERAD_DYING in thread_exit() in thread.c.
+      Only when this one has parent.
+      Initialized as false in init_thread() in thread.c
+      */
       curr->process_exit = true;
       cond_signal(&cur->exit_cond, &cur->exit_lock);
    }
 
    process_cleanup ();
-
-   // intr_disable ();
-   // lock_release(&cur->fork_lock);
+   /*release lock for cond_signal, exit_lock*/
    lock_release(&cur->exit_lock);
-   // cur->status = THREAD_EXIT;
-   //start 20180109
-   // sema_up(&cur->child_sema);
-   //end 20180109
 }
 
 /* Free the current process's resources. */
@@ -573,8 +599,12 @@ load (const char *file_name, struct intr_frame *if_) {
       goto done;
    process_activate (thread_current ());
 
+   lock_acquire(&file_locker);
+
    /* Open executable file. */
    file = filesys_open (file_name);
+
+   lock_release(&file_locker);
 
    if (file == NULL) {
       printf ("load: %s: open failed\n", file_name);
@@ -585,13 +615,18 @@ load (const char *file_name, struct intr_frame *if_) {
    if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
          || memcmp (ehdr.e_ident, "\177ELF\2\1\1", 7)
          || ehdr.e_type != 2
-         || ehdr.e_machine != 0x3E // amd64
+         || ehdr.e_machine != 0x3E // amd64 
          || ehdr.e_version != 1
          || ehdr.e_phentsize != sizeof (struct Phdr)
          || ehdr.e_phnum > 1024) {
-      printf ("load: %s: error loading executable\n", file_name);
+      printf ("load: %s: error loading executable\n", file_name); 
       goto done;
    }
+
+   //start 20180109 for proj3 fist part
+   t->executable = file;
+   file_deny_write(t->executable);
+   //end 20180109
 
    /* Read program headers. */
    file_ofs = ehdr.e_phoff;
@@ -665,7 +700,7 @@ load (const char *file_name, struct intr_frame *if_) {
 
 done:
    /* We arrive here whether the load is successful or not. */
-   file_close (file);
+   // file_close (file); //cannot close file because of lazy_load_segment in poj3
    return success;
 }
 
@@ -823,6 +858,23 @@ lazy_load_segment (struct page *page, void *aux) {
    /* TODO: Load the segment from the file */
    /* TODO: This called when the first page fault occurs on address VA. */
    /* TODO: VA is available when calling this function. */
+   ASSERT(aux != NULL);
+   if (page->frame == NULL || page->va == NULL)
+      return false;
+   struct page_load *temp_aux = (struct page_load *)aux;
+   void *kva = page->frame->kva;
+   off_t ofs = temp_aux->ofs;
+   struct file *file = temp_aux->file;
+   size_t read_bytes = temp_aux->read_bytes;
+   size_t zero_bytes = temp_aux->zero_bytes;
+   ASSERT(zero_bytes == PGSIZE - read_bytes);
+
+   file_seek (file, ofs);
+   if(file_read(file, kva, read_bytes) == (int)read_bytes){
+      memset (kva + read_bytes, 0, zero_bytes);
+      return true;
+   }
+   return false;
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
@@ -854,15 +906,30 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
       /* TODO: Set up aux to pass information to the lazy_load_segment. */
-      void *aux = NULL;
+      // void *aux = NULL;
+      //start 20180109
+      struct page_load *aux = malloc(sizeof(struct page_load));
+      if(aux == NULL){
+         free(aux);
+         return false;
+      }
+      aux->file = file;
+      aux->ofs = ofs;
+      aux->read_bytes = page_read_bytes;
+      aux->zero_bytes = page_zero_bytes;
+      //end 20180109
+      lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
                writable, lazy_load_segment, aux))
          return false;
-
+      lock_release(&file_locker);
       /* Advance. */
       read_bytes -= page_read_bytes;
       zero_bytes -= page_zero_bytes;
       upage += PGSIZE;
+      //start 20180109
+      ofs += page_read_bytes; //why? because of the main loop?
+      //end 20180109
    }
    return true;
 }
@@ -878,64 +945,57 @@ setup_stack (struct intr_frame *if_) {
     * TODO: You should mark the page is stack. */
    /* TODO: Your code goes here */
 
+/* comment above vm_alloc_page_with_initializer: If you want to create a
+ * page, do not create it directly and make it through this function or
+ * `vm_alloc_page`. */
+   //20180109 not sure of this part. reimplement!
+   if(vm_alloc_page(VM_MARKER_0 | VM_ANON, stack_bottom, true)){ //why VM_MARKER_0 | VM_ANON??
+      if(vm_claim_page(stack_bottom)){
+           if_->rsp = USER_STACK;
+           success = true;
+      }
+   }
    return success;
 }
+//end 20180109
 #endif /* VM */
 
 
 void argument_stack(char **argv, int argc, struct intr_frame *if_)
 {
-   /* insert arguments' address */
-   //char *argu_address[128];
    char **argu_address;
-//   argu_address = (char **)malloc(sizeof(char *) * 128);
    argu_address = palloc_get_page(PAL_ZERO);
-
-   // void **esp = if_->rsp;
-   // printf("base user stack : %#x \n", if_->rsp);
-    for (int i = argc - 1; i >= 0; i--)
-    {
+   for (int i = argc - 1; i >= 0; i--)
+   {
       int argv_len = strlen(argv[i]);
-        if_->rsp = if_->rsp - (argv_len + 1);
-        memcpy(if_->rsp, argv[i], argv_len + 1);
-        argu_address[i] = if_->rsp;
-      // printf("%d if_->rsp: %s %#x \n", i, if_->rsp, if_->rsp);
-    }
-
-    /* insert padding for word-align */
+      if_->rsp = if_->rsp - (argv_len + 1);
+      memcpy(if_->rsp, argv[i], argv_len + 1);
+      argu_address[i] = if_->rsp;
+   }
     while (if_->rsp % 8 != 0)
     {
-        if_->rsp--;
-        *(uint8_t *)(if_->rsp) = 0;
-      // memset(if_->rsp, 0, sizeof(uint8_t *));
-      // printf("if_->rsp: %s %#x \n", if_->rsp, if_->rsp);
+      if_->rsp--;
+      *(uint8_t *)(if_->rsp) = 0;
     }
     
     /* insert address of strings including sentinel */
     for (int i = argc; i >= 0; i--)
     {
-        if_->rsp = if_->rsp - 8;
-        if (i == argc){
-            // memset(if_->rsp, 0, sizeof(char **));
+      if_->rsp = if_->rsp - 8;
+      if (i == argc){
          *(char *)(if_->rsp) = 0;
-         // printf("%d: if_rsp value: %#x addr: %#x \n", i, *(uintptr_t  *)if_->rsp, if_->rsp);
-      }
-        else{
+      }else{
          memcpy(if_->rsp, &argu_address[i], sizeof(char **));
-         // printf("%d: if_rsp addr: %#x %#x %#x \n", i, *(uintptr_t  *)if_->rsp, argu_address[i], if_->rsp);
       }
             
     }
    
-   if_->R.rdi = argc;
-    if_->R.rsi =  if_->rsp;
-   // memcpy(if_->R.rsi, &(if_->rsp), sizeof(uintptr_t *));
+      if_->R.rdi = argc;
+      if_->R.rsi =  if_->rsp;
 
-    /* fake return address */
-    if_->rsp = if_->rsp - 8;
-    memset(if_->rsp, 0, sizeof(void *));
+      if_->rsp = if_->rsp - 8;
+      memset(if_->rsp, 0, sizeof(void *));
    
-//   free(argu_address);
    palloc_free_page(argu_address);
 }
 
@@ -945,7 +1005,6 @@ argument_parse(const char *file_name, char **argv)
    char *token, *last;
    int token_count = 0;
    token = strtok_r(file_name, " ", &last);
-   // char *tmp_save = token;
    argv[token_count] = token;
    while (token != NULL)
    {

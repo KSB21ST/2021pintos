@@ -1,0 +1,46 @@
+Kernel command line: -q -f put page-parallel put child-linear run page-parallel
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  130,867,200 loops/s.
+hd0:0: detected 337 sector (168 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 209 sector (104 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
+Formatting file system...done.
+Boot complete.
+Putting 'page-parallel' into the file system...
+Putting 'child-linear' into the file system...
+Executing 'page-parallel':
+(page-parallel) begin
+(page-parallel) wait for child 0
+(page-parallel) wait for child 0: FAILED
+page-parallel: exit(1)
+Interrupt 0x0d (#GP General Protection Exception) at rip=800421c84b
+ cr2=00000000004037ec error=               0
+rax cccccccccccccc14 rbx 0000000000008004 rcx 0000000000000003 rdx fffffffffffffff7
+rsp 0000008004244e70 rbp 0000008004244eb0 rsi 0000000000000243 rdi 0000008004244098
+rip 000000800421c84b r8 0000008004244df8  r9 000000800421bce2 r10 0000000000000000
+r11 0000000000000206 r12 000000800421dcc7 r13 2460180000008004 r14 244ef00000008004
+r15 2190170000008004 rflags 00000286
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004218804 0x800421da51 0x8004209325 0x8004209743 0x80042071f3 0x800421e1f9 0x800421dd43 0x800421dbf0 0x400407 0x4001cc 0x400c8c 0x400cd5 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421583e
+ cr2=00000000004037ec error=               0
+rax 2460780000008004 rbx 0000000000008004 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004244cb0 rbp 0000008004244cc0 rsi 000000000000c90f rdi 0000000000000000
+rip 000000800421583e r8 0000008004244bc8  r9 000000800421bce2 r10 0000000000000000
+r11 0000000000000206 r12 000000800421dcc7 r13 2460180000008004 r14 244ef00000008004
+r15 2190170000008004 rflags 00000002
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
+Timer: 67 ticks
+Thread: 30 idle ticks, 33 kernel ticks, 4 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 107 reads, 456 writes
+hd1:0: 209 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 2423 characters output
+Key

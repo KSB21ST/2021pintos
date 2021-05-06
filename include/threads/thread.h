@@ -155,6 +155,9 @@ struct thread {
 	//end 20180109
 
 // #endif
+	//start 20180109 for proj3
+	struct file *executable;
+	//end 20180109
 
 
 

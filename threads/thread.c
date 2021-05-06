@@ -530,7 +530,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 	// #endif
 	//end 20180109
 
-	
+	t->executable = NULL;
 
 
 	//edit-for mlfqs

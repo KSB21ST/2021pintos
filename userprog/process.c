@@ -219,7 +219,6 @@ __do_fork (void *aux) {
    lock_release(&file_locker);
    /*if we memcpy parent's fd table to child's fd table without duplicating file, multioom pass but other tests fail*/
    // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table)); 
-
    process_init ();
    /* Finally, switch to the newly created process. */
    if (succ){
@@ -311,7 +310,9 @@ process_exec (void *f_name) {
    */
    if(success){
       argument_stack(argv, argc, &_if);
+      #ifndef VM
       sema_up(&(thread_current()->parent)->fork_sema);
+      #endif
    }
    
    /*
@@ -466,6 +467,11 @@ process_exit (void) {
       list_remove(&t->child_elem);
       if(t->status == THREAD_EXIT) palloc_free_page(t);
    }
+
+   #ifdef VM
+      if(thread_current()->parent != NULL)
+         sema_up(&(thread_current()->parent)->fork_sema);
+   #endif
 
    /*
    sema_up the fork_sema, where the parent will have been waiting for in process_fork if load in process_exec haven't failed.
@@ -890,8 +896,12 @@ lazy_load_segment (struct page *page, void *aux) {
    file_seek (file, ofs);
    if(file_read(file, kva, read_bytes) == (int)read_bytes){
       memset (kva + read_bytes, 0, zero_bytes);
+      // if(thread_current()->parent != NULL)
+      //    sema_up(&(thread_current()->parent)->fork_sema);
       return true;
    }
+   // if(thread_current()->parent != NULL)
+   //       sema_up(&(thread_current()->parent)->fork_sema);
    return false;
 }
 
@@ -1001,10 +1011,11 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     for (int i = argc; i >= 0; i--)
     {
       if_->rsp = if_->rsp - 8;
-      if (i == argc){
-         *(char *)(if_->rsp) = 0;
-      }else{
+      if (i != argc){
+         // *(char *)(if_->rsp) = 0;
          memcpy(if_->rsp, &argu_address[i], sizeof(char **));
+      }else{
+         memset(if_->rsp, 0, sizeof(char**));
       }
             
     }

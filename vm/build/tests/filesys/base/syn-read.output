@@ -4,7 +4,7 @@ Kernel command line: -q -f put syn-read put child-syn-read run syn-read
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  130,867,200 loops/s.
 hd0:0: detected 337 sector (168 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 225 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -19,56 +19,46 @@ Executing 'syn-read':
 (syn-read) open "data"
 (syn-read) write "data"
 (syn-read) close "data"
+child-syn-read: exit(0)
 (syn-read) exec child 1 of 10: "child-syn-read 0"
-(child-syn-read) open "data": FAILED
 child-syn-read: exit(1)
 (syn-read) exec child 2 of 10: "child-syn-read 1"
+child-syn-read: exit(2)
 (syn-read) exec child 3 of 10: "child-syn-read 2"
-(child-syn-read) open "data": FAILED
-child-syn-read: exit(1)
+child-syn-read: exit(3)
 (syn-read) exec child 4 of 10: "child-syn-read 3"
+child-syn-read: exit(4)
 (syn-read) exec child 5 of 10: "child-syn-read 4"
-(child-syn-read) open "data": FAILED
-child-syn-read: exit(1)
+child-syn-read: exit(5)
 (syn-read) exec child 6 of 10: "child-syn-read 5"
+child-syn-read: exit(6)
 (syn-read) exec child 7 of 10: "child-syn-read 6"
-(child-syn-read) open "data": FAILED
-child-syn-read: exit(1)
+child-syn-read: exit(7)
 (syn-read) exec child 8 of 10: "child-syn-read 7"
+child-syn-read: exit(8)
 (syn-read) exec child 9 of 10: "child-syn-read 8"
-(child-syn-read) open "data": FAILED
-child-syn-read: exit(1)
+child-syn-read: exit(9)
 (syn-read) exec child 10 of 10: "child-syn-read 9"
-(syn-read) wait for child 1 of 10 returned 1 (expected 0)
-(syn-read) wait for child 1 of 10 returned 1 (expected 0): FAILED
-syn-read: exit(1)
-(child-syn-read) open "data": FAILED
-child-syn-read: exit(1)
-(child-syn-read) open "data": FAILED
-child-syn-read: exit(1)
-Interrupt 0x0d (#GP General Protection Exception) at rip=800421c84b
- cr2=0000000000405400 error=               0
-rax cccccccccccccc14 rbx 0000000000008004 rcx 0000000000000017 rdx ffffffffff7fffff
-rsp 0000008004244e70 rbp 0000008004244eb0 rsi 0000000000000257 rdi 0000008004244098
-rip 000000800421c84b r8 0000008004244df8  r9 000000800421bce2 r10 0000000000000000
-r11 0000000000000206 r12 000000800421dcc7 r13 2460180000008004 r14 244ef00000008004
-r15 2190170000008004 rflags 00000286
-es: 001b ds: 001b cs: 0008 ss: 0010
-Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x8004218804 0x800421da51 0x8004209325 0x8004209743 0x80042071f3 0x800421e1f9 0x800421dd43 0x800421dbf0 0x4004ef 0x400833 0x4002be 0x400fa7 0x400ff0 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421583e
- cr2=0000000000405400 error=               0
-rax 2460780000008004 rbx 0000000000008004 rcx 00000080040b8000 rdx 00000000000003d4
-rsp 0000008004244cb0 rbp 0000008004244cc0 rsi 000000000000820f rdi 0000000000000000
-rip 000000800421583e r8 0000008004244bc8  r9 000000800421bce2 r10 0000000000000000
-r11 0000000000000206 r12 000000800421dcc7 r13 2460180000008004 r14 244ef00000008004
-r15 2190170000008004 rflags 00000002
-es: 0010 ds: 0010 cs: 0008 ss: 0010
-Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
-Timer: 113 ticks
-Thread: 44 idle ticks, 42 kernel ticks, 27 user ticks
+(syn-read) wait for child 1 of 10 returned 0 (expected 0)
+(syn-read) wait for child 2 of 10 returned 1 (expected 1)
+(syn-read) wait for child 3 of 10 returned 2 (expected 2)
+(syn-read) wait for child 4 of 10 returned 3 (expected 3)
+(syn-read) wait for child 5 of 10 returned 4 (expected 4)
+(syn-read) wait for child 6 of 10 returned 5 (expected 5)
+(syn-read) wait for child 7 of 10 returned 6 (expected 6)
+(syn-read) wait for child 8 of 10 returned 7 (expected 7)
+(syn-read) wait for child 9 of 10 returned 8 (expected 8)
+(syn-read) wait for child 10 of 10 returned 9 (expected 9)
+(syn-read) end
+syn-read: exit(0)
+Execution of 'syn-read' complete.
+Timer: 676 ticks
+Thread: 229 idle ticks, 42 kernel ticks, 405 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 546 reads, 504 writes
+hd0:1: 10946 reads, 504 writes
 hd1:0: 225 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 3482 characters output
-Key
+Console: 2433 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

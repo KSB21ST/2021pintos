@@ -286,6 +286,12 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
    bool res = false;
    while(hash_next(&i)){
       struct page *p = hash_entry(hash_cur(&i), struct page, h_elem);
+
+      // if(p->uninit.type & VM_MARKER_0)
+      // {
+      //    setup_stack(&thread_current()->tf);
+      // }
+
       if(p->operations->type == VM_UNINIT){
          temp_load = malloc(sizeof(struct page_load));
          memcpy(temp_load, p->uninit.aux, sizeof(struct page_load));

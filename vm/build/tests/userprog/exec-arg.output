@@ -4,7 +4,7 @@ Kernel command line: -q -f put exec-arg put child-args run exec-arg
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  117,760,000 loops/s.
+Calibrating timer...  209,510,400 loops/s.
 hd0:0: detected 337 sector (168 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 205 sector (102 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -20,23 +20,17 @@ Executing 'exec-arg':
 (args) argc = 2
 (args) argv[0] = 'child-args'
 (args) argv[1] = 'childarg'
-exec-arg: dying due to interrupt 0x0d (#GP General Protection Exception).
-Interrupt 0x0d (#GP General Protection Exception) at rip=402e98
- cr2=00000000004037bd error=               0
-rax cccccccccccccc00 rbx 00000000000003f9 rcx 0000000000000018 rdx cccccccccccccc00
-rsp 000000004747fdf0 rbp 000000004747fe10 rsi ffffffffffffffff rdi cccccccccccccc00
-rip 0000000000402e98 r8 000000004747fe48  r9 0000000000401026 r10 0000000000000000
-r11 0000000000000202 r12 244e200000000000 r13 0000060000008004 r14 244e200000008004
-r15 20852b0000008004 rflags 00000286
-es: 001b ds: 001b cs: 0023 ss: 001b
+(args) argv[2] = null
+(args) end
+exec-arg: exit(0)
 Execution of 'exec-arg' complete.
 Timer: 83 ticks
-Thread: 42 idle ticks, 39 kernel ticks, 3 user ticks
+Thread: 45 idle ticks, 34 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 154 reads, 448 writes
 hd1:0: 205 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1673 characters output
+Console: 1133 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

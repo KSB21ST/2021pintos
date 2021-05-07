@@ -107,6 +107,8 @@ struct supplemental_page_table {
 	struct hash spt_table;
 };
 
+struct lock spt_lock;
+
 #include "threads/thread.h"
 void supplemental_page_table_init (struct supplemental_page_table *spt);
 bool supplemental_page_table_copy (struct supplemental_page_table *dst,

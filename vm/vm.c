@@ -23,7 +23,7 @@ static bool vm_less_func(const struct hash_elem *a, const struct hash_elem *b){
     return fst->va < snd->va;
 }
 //end 20180109
-
+void spt_destroy(struct hash_elem *e, void *aux);
 
 /* Initializes the virtual memory subsystem by invoking each subsystem's
  * intialize codes. */
@@ -191,13 +191,15 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
    /* TODO: Validate the fault */
    /* TODO: Your code goes here */
    //start 20180109
+   //printf("\nstart vm_try_handle_fault\n");
    if(addr == NULL || not_present == false || is_kernel_vaddr(addr))
       exit(-1);
    // Locate the page that faulted in the supplemental page table
    /*If the memory reference is valid, 
    use the supplemental page table entry to locate the data that goes in the page, 
    which might be in the file system, or in a swap slot, or it might simply be an all-zero page*/
-   page = spt_find_page(spt,addr);
+   page = spt_find_page(spt, addr);
+   //printf("after spt_find_page\n");
 
    if(page != NULL){
       /*If the supplemental page table indicates 
@@ -217,6 +219,7 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
       If you implement sharing, the page you need may already be in a frame, in which case no action is necessary in this step.*/
       return vm_do_claim_page (page);
    }
+   //printf("vm_try_handle_fault returns false!\n");
    return false;
 }
 
@@ -242,6 +245,7 @@ vm_claim_page (void *va UNUSED) {
 static bool
 vm_do_claim_page (struct page *page) {
    //start 20180109
+   //printf("starting point of do_claim\n");
    if(page == NULL)
       return false;
    //end 20180109
@@ -254,7 +258,7 @@ vm_do_claim_page (struct page *page) {
    /* Set links */
    frame->page = page;
    page->frame = frame;
-
+   //printf("after linking");
    /* TODO: Insert page table entry to map page's VA to frame's PA. */
    /*Point the page table entry for the faulting virtual address to the physical page. You can use the functions in threads/mmu.c*/
    if(pml4_get_page(thread_current()->pml4, page->va)!=NULL)
@@ -268,12 +272,37 @@ vm_do_claim_page (struct page *page) {
 void
 supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
    hash_init(&spt->spt_table, vm_hash_func, vm_less_func, NULL);
+   lock_init(&spt_lock);
 }
 
 /* Copy supplemental page table from src to dst */
 bool
 supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
       struct supplemental_page_table *src UNUSED) {
+   struct hash_iterator i;
+   lock_acquire(&spt_lock);
+   hash_first(&i, &src->spt_table);
+   struct page_load *temp_load;
+   bool res = false;
+   while(hash_next(&i)){
+      struct page *p = hash_entry(hash_cur(&i), struct page, h_elem);
+      if(p->operations->type == VM_UNINIT){
+         temp_load = malloc(sizeof(struct page_load));
+         memcpy(temp_load, p->uninit.aux, sizeof(struct page_load));
+         res = vm_alloc_page_with_initializer(p->uninit.type, p->va, p->writable, p->uninit.init, temp_load);
+      }else{
+         res = vm_alloc_page(p->operations->type, p->va, p->writable);
+         if(res == 1){
+            struct page *d = spt_find_page(&thread_current()->spt, p->va);
+            if(vm_claim_page(p->va) == 0){
+               printf("somethings wrong!\n");
+            }
+            memcpy(d->frame->kva, p->frame->kva, PGSIZE);
+         }
+      }
+   }
+   lock_release(&spt_lock);
+   return res;
 }
 
 /* Free the resource hold by the supplemental page table */
@@ -281,4 +310,13 @@ void
 supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
    /* TODO: Destroy all the supplemental_page_table hold by thread and
     * TODO: writeback all the modified contents to the storage. */
+   if(hash_empty(&spt->spt_table))
+		return;
+   hash_clear(&spt->spt_table, spt_destroy);
+}
+
+void spt_destroy(struct hash_elem *e, void *aux){
+   struct page* page = hash_entry(e, struct page, h_elem);
+   destroy(page);
+   free(page);
 }

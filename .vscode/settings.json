@@ -14,6 +14,10 @@
         "main.h": "c",
         "lib.h": "c",
         "syn-read.h": "c",
-        "filesys.h": "c"
+        "filesys.h": "c",
+        "vm.h": "c",
+        "vaddr.h": "c",
+        "malloc.h": "c",
+        "hash.h": "c"
     }
 }

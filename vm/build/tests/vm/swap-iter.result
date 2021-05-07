@@ -4,9 +4,9 @@ Call stack: 0x8004218804 0x80042222c8 0x8004222581 0x80042224a8 0x800421db48 0x8
 Translation of call stack:
 0x0000008004218804: debug_panic (lib/kernel/debug.c:32)
 0x00000080042222c8: vm_get_frame (vm/vm.c:168)
-0x0000008004222581: vm_do_claim_page (vm/vm.c:250)
-0x00000080042224a8: vm_try_handle_fault (vm/vm.c:218)
-0x000000800421db48: page_fault (userprog/exception.c:151)
+0x0000008004222581: vm_do_claim_page (vm/vm.c:254)
+0x00000080042224a8: vm_try_handle_fault (vm/vm.c:220)
+0x000000800421db48: page_fault (userprog/exception.c:153)
 0x0000008004209325: intr_handler (threads/interrupt.c:352)
 0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
 0x0000000000400e2e: (unknown)

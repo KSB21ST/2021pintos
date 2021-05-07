@@ -248,6 +248,7 @@ process_exec (void *f_name) {
    */
    char *argv;
    argv = palloc_get_page(PAL_ZERO); 
+   //argv = (char *)malloc(sizeof(char)*1024);
    if(f_name == NULL) exit(-1);
 
    /* We cannot use the intr_frame in the thread structure.
@@ -271,11 +272,15 @@ process_exec (void *f_name) {
    char *fn_copy2;
    fn_copy = palloc_get_page(0);
    fn_copy2 = palloc_get_page (0);
+   //fn_copy = (char*)malloc(sizeof(char)*1024);
+   //fn_copy2 = (char*)malloc(sizeof(char)*1024);
    if (fn_copy == NULL || fn_copy2 == NULL){
        return -1;
    }
    strlcpy (fn_copy, file_name, PGSIZE);
    strlcpy (fn_copy2, file_name, PGSIZE);
+   //strlcpy(fn_copy, file_name, sizeof(char)*1024);
+   //strlcpy(fn_copy2, file_name, sizeof(char)*1024);
    char *next_ptr;
    char *realname;
 
@@ -305,15 +310,18 @@ process_exec (void *f_name) {
    free all the allocated pages. important for multioom, memory leak.
    */
    palloc_free_page(argv);
+   //free(argv);
 
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
+   //free(fn_copy);
+   //free(fn_copy2);
    // palloc_free_page(file_name); 
    /*
    file_name was allocated in process_create_initd, if this is the second created process. 
    But if not second thread, where was it allocated?
    */
-   
+   //hex_dump(_if.rsp , _if.rsp , KERN_BASE - _if.rsp, true);
    /*
    if load fails, return -1.
    just by returning -1 will eventually call thread_exit().
@@ -858,6 +866,7 @@ lazy_load_segment (struct page *page, void *aux) {
    /* TODO: Load the segment from the file */
    /* TODO: This called when the first page fault occurs on address VA. */
    /* TODO: VA is available when calling this function. */
+   //printf("in lazy loading\n");
    ASSERT(aux != NULL);
    if (page->frame == NULL || page->va == NULL)
       return false;
@@ -963,6 +972,7 @@ setup_stack (struct intr_frame *if_) {
 
 void argument_stack(char **argv, int argc, struct intr_frame *if_)
 {
+   printf("in argument stack\n");
    char **argu_address;
    argu_address = palloc_get_page(PAL_ZERO);
    for (int i = argc - 1; i >= 0; i--)

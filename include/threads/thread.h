@@ -2,6 +2,7 @@
 #define THREADS_THREAD_H
 
 #define USERPROG
+#define VM
 
 #include <debug.h>
 #include <list.h>
@@ -17,6 +18,7 @@
 //start 20180109
 #include "threads/synch.h"
 //end 20180109
+
 
 /* States in a thread's life cycle. */
 enum thread_status {

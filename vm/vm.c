@@ -280,6 +280,7 @@ bool
 supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
       struct supplemental_page_table *src UNUSED) {
    struct hash_iterator i;
+//   printf("copy??\n");
    lock_acquire(&spt_lock);
    hash_first(&i, &src->spt_table);
    struct page_load *temp_load;
@@ -312,11 +313,12 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
     * TODO: writeback all the modified contents to the storage. */
    if(hash_empty(&spt->spt_table))
 		return;
+//   printf("I will kill you \n");
    hash_clear(&spt->spt_table, spt_destroy);
 }
 
 void spt_destroy(struct hash_elem *e, void *aux){
-   struct page* page = hash_entry(e, struct page, h_elem);
-   destroy(page);
-   free(page);
+   struct page* p = hash_entry(e, struct page, h_elem);
+   destroy(p);
+   free(p);
 }

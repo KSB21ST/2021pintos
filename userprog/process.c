@@ -293,6 +293,10 @@ process_exec (void *f_name) {
    /*parse arguments. use fn_copy, which is copy of f_name. argv is list for arguments.*/
    int argc = argument_parse(fn_copy, argv);
 
+#ifdef VM
+//   supplemental_page_table_init(&thread_current()->spt);
+#endif
+
    /*load - did not change anything in load*/
    success = load(realname, &_if);
 
@@ -302,8 +306,10 @@ process_exec (void *f_name) {
    parent thread will be running from now, woken up from sema_down in process_fork
    */
    if(success){
+//      enum intr_level old_level = intr_disable();
       argument_stack(argv, argc, &_if);
-      sema_up(&(thread_current()->parent)->fork_sema);
+//      intr_set_level(old_level);
+//      sema_up(&(thread_current()->parent)->fork_sema);
    }
    
    /*
@@ -487,6 +493,7 @@ process_exit (void) {
    process_cleanup ();
    /*release lock for cond_signal, exit_lock*/
    lock_release(&cur->exit_lock);
+   sema_up(&cur->fork_sema);
 }
 
 /* Free the current process's resources. */
@@ -633,7 +640,7 @@ load (const char *file_name, struct intr_frame *if_) {
 
    //start 20180109 for proj3 fist part
    t->executable = file;
-   file_deny_write(t->executable);
+   //file_deny_write(t->executable);
    //end 20180109
 
    /* Read program headers. */
@@ -961,6 +968,7 @@ setup_stack (struct intr_frame *if_) {
    if(vm_alloc_page(VM_MARKER_0 | VM_ANON, stack_bottom, true)){ //why VM_MARKER_0 | VM_ANON??
       if(vm_claim_page(stack_bottom)){
            if_->rsp = USER_STACK;
+           // if_->rsp = stack_bottom + PGSIZE;
            success = true;
       }
    }
@@ -972,7 +980,7 @@ setup_stack (struct intr_frame *if_) {
 
 void argument_stack(char **argv, int argc, struct intr_frame *if_)
 {
-   printf("in argument stack\n");
+   //printf("in argument stack\n");
    char **argu_address;
    argu_address = palloc_get_page(PAL_ZERO);
    for (int i = argc - 1; i >= 0; i--)
@@ -993,7 +1001,8 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     {
       if_->rsp = if_->rsp - 8;
       if (i == argc){
-         *(char *)(if_->rsp) = 0;
+         //*(char *)(if_->rsp) = 0;
+         memset(if_->rsp, 0, sizeof(char **));
       }else{
          memcpy(if_->rsp, &argu_address[i], sizeof(char **));
       }

@@ -240,6 +240,7 @@ sema_up(fork_sema) will be done in thread_exit, no need to be done here.
  * Returns -1 on fail. */
 int
 process_exec (void *f_name) {
+   struct thread *cur = thread_current();
    char *file_name = f_name;
    bool success;
 
@@ -248,7 +249,8 @@ process_exec (void *f_name) {
    */
    char *argv;
    argv = palloc_get_page(PAL_ZERO); 
-   //argv = (char *)malloc(sizeof(char)*1024);
+   // argv = malloc(128);
+   // argv = (char *)malloc(sizeof(char)*1024);
    if(f_name == NULL) exit(-1);
 
    /* We cannot use the intr_frame in the thread structure.
@@ -287,6 +289,12 @@ process_exec (void *f_name) {
    /* We first kill the current context */
    process_cleanup ();
 
+   //start 20180109 - proj3 exec-arg
+   #ifdef VM
+    supplemental_page_table_init(&thread_current()->spt);
+   #endif
+   //end 20180109
+
    /*return the thread name. use fn_copy2, which is copy of f_name*/
    realname = strtok_r(fn_copy2," ", &next_ptr);
 
@@ -310,7 +318,7 @@ process_exec (void *f_name) {
    free all the allocated pages. important for multioom, memory leak.
    */
    palloc_free_page(argv);
-   //free(argv);
+   // free(argv);
 
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
@@ -321,7 +329,8 @@ process_exec (void *f_name) {
    file_name was allocated in process_create_initd, if this is the second created process. 
    But if not second thread, where was it allocated?
    */
-   //hex_dump(_if.rsp , _if.rsp , KERN_BASE - _if.rsp, true);
+   // if(!strcmp(thread_current()->name, 'child-arg'))
+      // hex_dump(_if.rsp , _if.rsp , KERN_BASE - _if.rsp, true);
    /*
    if load fails, return -1.
    just by returning -1 will eventually call thread_exit().
@@ -972,7 +981,7 @@ setup_stack (struct intr_frame *if_) {
 
 void argument_stack(char **argv, int argc, struct intr_frame *if_)
 {
-   printf("in argument stack\n");
+   // printf("in argument stack\n");
    char **argu_address;
    argu_address = palloc_get_page(PAL_ZERO);
    for (int i = argc - 1; i >= 0; i--)
@@ -999,7 +1008,6 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
       }
             
     }
-   
       if_->R.rdi = argc;
       if_->R.rsi =  if_->rsp;
 
@@ -1022,6 +1030,7 @@ argument_parse(const char *file_name, char **argv)
       token_count++;
       argv[token_count] = token;
    }
+   // argv[token_count] = NULL;
    return token_count;
 }
 

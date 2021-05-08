@@ -68,6 +68,9 @@ syscall_init (void) {
 void
 syscall_handler (struct intr_frame *f) {
    // TODO: Your implementation goes here.
+   //start 20180109 - proj3 stack growth
+   thread_current()->rsp = f->rsp;
+   //end 20180109
    int sys_num = f->R.rax;
    switch (sys_num)
    {

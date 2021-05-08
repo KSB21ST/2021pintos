@@ -4,7 +4,7 @@ Kernel command line: -q -f put swap-anon run swap-anon
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x9e0000 (Usable: 9,088 kB)
-Calibrating timer...  131,686,400 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 337 sector (168 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 104 sector (52 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -18,17 +18,17 @@ Executing 'swap-anon':
 (swap-anon) write sparsely over page 512
 (swap-anon) write sparsely over page 1024
 Kernel PANIC at ../../vm/vm.c:166 in vm_get_frame(): TODO VM_GET_FRAME
-Call stack: 0x8004218804 0x8004222327 0x80042225e0 0x8004222507 0x800421dba7 0x8004209325 0x8004209743 0x400cac 0x400cf5 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421583e
+Call stack: 0x8004218804 0x800422234e 0x80042226b4 0x8004222597 0x800421dba7 0x8004209325 0x8004209743 0x400cac 0x400cf5 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421583e
  cr2=0000000000abbd60 error=               0
 rax 23ff60ffffffff04 rbx 21ae640000008004 rcx 00000080040b8000 rdx 00000000000003d4
-rsp 000000800423fd80 rbp 000000800423fd90 rsi 000000000000aa0f rdi 0000000000000000
-rip 000000800421583e r8 000000800423fc98  r9 000000800421bce2 r10 0000000000000000
+rsp 000000800423fd70 rbp 000000800423fd80 rsi 000000000000aa0f rdi 0000000000000000
+rip 000000800421583e r8 000000800423fc88  r9 000000800421bce2 r10 0000000000000000
 r11 0000000000000202 r12 2410180000008004 r13 23fef00000008004 r14 2190170000008004
 r15 23fee00000008004 rflags 00000002
 es: 0010 ds: 0010 cs: 0008 ss: 0010
 Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
-Timer: 141 ticks
-Thread: 35 idle ticks, 37 kernel ticks, 69 user ticks
+Timer: 132 ticks
+Thread: 33 idle ticks, 32 kernel ticks, 67 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 236 writes
 hd1:0: 104 reads, 0 writes

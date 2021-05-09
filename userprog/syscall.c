@@ -312,6 +312,9 @@ read (int fd, void *buffer, unsigned length)
 {  
    #ifdef VM
    check_buffer(buffer, length);
+   struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
+   if(p->writable != true)
+      exit(-1);
    #endif
    check_addr(buffer);
    int cnt = 0;
@@ -498,7 +501,7 @@ check_buffer(void *buffer, unsigned size)
       struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
       if(!p)
          exit(-1);
-      if(!p->writable)
-         exit(-1);
+      // if(writable && !p->writable)
+      //    exit(-1);
    }
 }

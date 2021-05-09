@@ -175,6 +175,14 @@ vm_get_frame (void) {
 /* Growing the stack. */
 static void
 vm_stack_growth (void *addr UNUSED) {
+   //printf("do stack growth!!\n");
+   void *real_addr = pg_round_down(addr);
+   void *cur_addr = thread_current()->rsp;
+   while (real_addr < cur_addr){
+      vm_alloc_page(VM_MARKER_0 | VM_ANON, real_addr, true);
+      vm_claim_page(real_addr);
+      real_addr += PGSIZE;
+   }
 }
 
 /* Handle the fault on write_protected page */
@@ -194,12 +202,24 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
    //printf("\nstart vm_try_handle_fault\n");
    if(addr == NULL || not_present == false || is_kernel_vaddr(addr))
       exit(-1);
+   if(write && !not_present){
+      exit(-1);
+   }
+
    // Locate the page that faulted in the supplemental page table
    /*If the memory reference is valid, 
    use the supplemental page table entry to locate the data that goes in the page, 
    which might be in the file system, or in a swap slot, or it might simply be an all-zero page*/
    page = spt_find_page(spt, addr);
    //printf("after spt_find_page\n");
+
+   uint64_t rsp_temp = NULL;
+   if(user){
+      rsp_temp = f->rsp;
+      //thread_current()->rsp = f->rsp;
+   }else{
+      rsp_temp = thread_current()->rsp;
+   }
 
    if(page != NULL){
       /*If the supplemental page table indicates 
@@ -219,6 +239,16 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
       If you implement sharing, the page you need may already be in a frame, in which case no action is necessary in this step.*/
       return vm_do_claim_page (page);
    }
+   //printf("herere?\n");
+   //printf("first: %d, second: %d\n", (uint64_t)addr < rsp_temp, USER_STACK - PGSIZE * 256 < pg_round_down(addr) + PGSIZE);
+   //현재 rsp(rsp_temp)보다 addr이 더 밑에 있고, stack limit는 넘지 않았을 때
+   if((uint64_t)addr > rsp_temp - PGSIZE && USER_STACK - PGSIZE * 256 <= addr && addr <= USER_STACK){
+      //printf("before stack grouth\n");
+      vm_stack_growth(addr);
+      //printf("after stack growth\n");
+      return true;
+   }
+   
    //printf("vm_try_handle_fault returns false!\n");
    return false;
 }

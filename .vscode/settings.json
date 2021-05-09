@@ -18,6 +18,9 @@
         "vm.h": "c",
         "vaddr.h": "c",
         "malloc.h": "c",
-        "hash.h": "c"
+        "hash.h": "c",
+        "inode.h": "c",
+        "loader.h": "c",
+        "gdt.h": "c"
     }
 }

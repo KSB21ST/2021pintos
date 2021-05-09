@@ -1,15 +1,42 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (swap-file) begin
-  (swap-file) open "large.txt"
-  (swap-file) mmap "large.txt"
-  (swap-file) end
-Differences in `diff -u' format:
-  (swap-file) begin
-  (swap-file) open "large.txt"
-  (swap-file) mmap "large.txt"
-- (swap-file) end
-
-(Process exit codes are excluded for matching purposes.)
+Kernel panic in run: PANIC at ../../threads/thread.c:295 in thread_current(): assertion `is_thread (t)' failed.
+Call stack: 0x8004218804 0x80042070fa 0x800420a94e 0x800420c411 0x80042222cd 0x80042226ac 0x800421db5b 0x8004209325 0x8004209743 0x80042226ac 0x800421db5b 0x8004209325 0x8004209743 0x80042226ac 0x800421db5b 0x8004209325 0x8004209743 0x80042226ac 0x800421db5b 0x8004209325 0x8004209743 0x80042226ac 0x800421db5b 0x8004209325 0x8004209743 0x80042226ac 0x800421db5b 0x8004209325 0x8004209743 0x8004222368 0x8004222296 0x8004222fef 0x800421ed2e 0x800421e1a1 0x800421dc03 0x400197 0x400d85 0x400dce
+Translation of call stack:
+0x0000008004218804: debug_panic (lib/kernel/debug.c:32)
+0x00000080042070fa: thread_current (threads/thread.c:296)
+0x000000800420a94e: lock_acquire (threads/synch.c:228)
+0x000000800420c411: malloc (threads/malloc.c:118)
+0x00000080042222cd: spt_find_page (vm/vm.c:102)
+0x00000080042226ac: vm_try_handle_fault (vm/vm.c:213)
+0x000000800421db5b: page_fault (userprog/exception.c:153)
+0x0000008004209325: intr_handler (threads/interrupt.c:352)
+0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
+0x00000080042226ac: vm_try_handle_fault (vm/vm.c:213)
+0x000000800421db5b: page_fault (userprog/exception.c:153)
+0x0000008004209325: intr_handler (threads/interrupt.c:352)
+0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
+0x00000080042226ac: vm_try_handle_fault (vm/vm.c:213)
+0x000000800421db5b: page_fault (userprog/exception.c:153)
+0x0000008004209325: intr_handler (threads/interrupt.c:352)
+0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
+0x00000080042226ac: vm_try_handle_fault (vm/vm.c:213)
+0x000000800421db5b: page_fault (userprog/exception.c:153)
+0x0000008004209325: intr_handler (threads/interrupt.c:352)
+0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
+0x00000080042226ac: vm_try_handle_fault (vm/vm.c:213)
+0x000000800421db5b: page_fault (userprog/exception.c:153)
+0x0000008004209325: intr_handler (threads/interrupt.c:352)
+0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
+0x00000080042226ac: vm_try_handle_fault (vm/vm.c:213)
+0x000000800421db5b: page_fault (userprog/exception.c:153)
+0x0000008004209325: intr_handler (threads/interrupt.c:352)
+0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
+0x0000008004222368: spt_insert_page (vm/vm.c:119)
+0x0000008004222296: vm_alloc_page_with_initializer (vm/vm.c:90)
+0x0000008004222fef: do_mmap (vm/file.c:103)
+0x000000800421ed2e: mmap (userprog/syscall.c:437)
+0x000000800421e1a1: syscall_handler (userprog/syscall.c:167)
+0x000000800421dc03: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400197: (unknown)
+0x0000000000400d85: (unknown)
+0x0000000000400dce: (unknown)

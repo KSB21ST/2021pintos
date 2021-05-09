@@ -20,10 +20,10 @@ Executing 'mmap-kernel':
 (mmap-kernel) try to mmap over kernel 0: FAILED
 mmap-kernel: exit(1)
 Execution of 'mmap-kernel' complete.
-Timer: 70 ticks
-Thread: 33 idle ticks, 35 kernel ticks, 3 user ticks
+Timer: 67 ticks
+Thread: 35 idle ticks, 28 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 112 reads, 252 writes
+hd0:1: 129 reads, 252 writes
 hd1:0: 107 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1126 characters output

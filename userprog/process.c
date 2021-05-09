@@ -888,8 +888,10 @@ lazy_load_segment (struct page *page, void *aux) {
    file_seek (file, ofs);
    if(file_read(file, kva, read_bytes) == (int)read_bytes){
       memset (kva + read_bytes, 0, zero_bytes);
+      free(aux);
       return true;
    }
+   free(aux);
    return false;
 }
 

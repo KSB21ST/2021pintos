@@ -1,6 +1,8 @@
 /* file.c: Implementation of memory backed file object (mmaped object). */
 
 #include "vm/vm.h"
+#include "include/userprog/process.h" //edit for mmap
+#include "include/threads/vaddr.h" //edit for mmap
 
 static bool file_backed_swap_in (struct page *page, void *kva);
 static bool file_backed_swap_out (struct page *page);
@@ -13,6 +15,9 @@ static const struct page_operations file_ops = {
 	.destroy = file_backed_destroy,
 	.type = VM_FILE,
 };
+
+static bool
+lazy_load_segment (struct page *page, void *aux);
 
 /* The initializer of file vm */
 void
@@ -50,9 +55,91 @@ file_backed_destroy (struct page *page) {
 void *
 do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
+
+	uint32_t zero_bytes;
+	uint32_t read_bytes;
+	if (length <= PGSIZE){
+		zero_bytes = 0;
+		read_bytes = length;
+	}else{
+		zero_bytes = length % PGSIZE;
+		read_bytes = length - zero_bytes;
+	}
+/*
+	struct page_load *page_load = malloc(sizeof(struct page_load));
+	page_load->ofs = offset;
+	page_load->file = file;
+	page_load->read_bytes = read_bytes;
+	page_load->zero_bytes = zero_bytes;
+	if(vm_alloc_page_with_initializer(VM_FILE, addr, writable, lazy_load_segment, page_load)){
+		free(page_load);
+		return addr;
+	}else{
+		free(page_load);
+		return NULL;
+	}
+*/
+	while (read_bytes > 0 || zero_bytes > 0) {
+		/* Do calculate how to fill this page.
+		* We will read PAGE_READ_BYTES bytes from FILE
+		* and zero the final PAGE_ZERO_BYTES bytes. */
+		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+		size_t page_zero_bytes = PGSIZE - page_read_bytes;
+
+		/* TODO: Set up aux to pass information to the lazy_load_segment. */
+		// void *aux = NULL;
+		//start 20180109
+		struct page_load *aux = malloc(sizeof(struct page_load));
+		if(aux == NULL){
+			free(aux);
+			return NULL;
+		}
+		aux->file = file;
+		aux->ofs = offset;
+		aux->read_bytes = page_read_bytes;
+		aux->zero_bytes = page_zero_bytes;
+		//end 20180109
+//		lock_acquire(&file_locker);
+		if (!vm_alloc_page_with_initializer (VM_ANON, addr,
+				writable, lazy_load_segment, aux))
+			return false;
+//		lock_release(&file_locker);
+		/* Advance. */
+		read_bytes -= page_read_bytes;
+		zero_bytes -= page_zero_bytes;
+		addr += PGSIZE;
+		//start 20180109
+		offset += page_read_bytes; //why? because of the main loop?
+		//end 20180109
+	}
+   return true;
 }
 
 /* Do the munmap */
 void
 do_munmap (void *addr) {
+}
+
+static bool
+lazy_load_segment (struct page *page, void *aux) {
+   /* TODO: Load the segment from the file */
+   /* TODO: This called when the first page fault occurs on address VA. */
+   /* TODO: VA is available when calling this function. */
+   //printf("in lazy loading\n");
+   ASSERT(aux != NULL);
+   if (page->frame == NULL || page->va == NULL)
+      return false;
+   struct page_load *temp_aux = (struct page_load *)aux;
+   void *kva = page->frame->kva;
+   off_t ofs = temp_aux->ofs;
+   struct file *file = temp_aux->file;
+   size_t read_bytes = temp_aux->read_bytes;
+   size_t zero_bytes = temp_aux->zero_bytes;
+
+   file_seek (file, ofs);
+   if(file_read(file, kva, read_bytes) == (int)read_bytes){
+      memset (kva + read_bytes, 0, zero_bytes);
+      return true;
+   }
+   return false;
 }

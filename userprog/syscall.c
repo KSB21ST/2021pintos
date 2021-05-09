@@ -28,6 +28,7 @@ void syscall_handler (struct intr_frame *);
 //start 20180109
 void check_addr(const void* sp);
 void check_stack_addr(const void* sp, void *va);
+void *mmap (void *addr, unsigned long length, int writable, int fd, off_t offset);
 // struct semaphore file_lock; /*syncrhonization for file open, create, remove*/
 int ans = -1;
 static struct lock file_lock;
@@ -69,6 +70,7 @@ void
 syscall_handler (struct intr_frame *f) {
    // TODO: Your implementation goes here.
    int sys_num = f->R.rax;
+   thread_current()->rsp = f->rsp;
    switch (sys_num)
    {
    case SYS_HALT:
@@ -119,9 +121,9 @@ syscall_handler (struct intr_frame *f) {
       f->R.rax = ans;
       break;
    case SYS_READ:
-      check_addr(f->R.rdi);
-      check_addr(f->R.rsi);
-      check_addr(f->R.rdx);
+//      check_addr(f->R.rdi);
+      check_addr2(f->R.rsi, f->R.rdx, true);
+//      check_addr(f->R.rdx);
       // check_stack_addr(f->rsp, f->R.rsi);
       // check_stack_addr(f->rsp, f->R.rdi);
       // check_stack_addr(f->rsp, f->R.rdx);
@@ -129,9 +131,9 @@ syscall_handler (struct intr_frame *f) {
       f->R.rax = ans;
       break;
    case SYS_WRITE:
-      check_addr(f->R.rdi);
-      check_addr(f->R.rsi);
-      check_addr(f->R.rdx);
+//      check_addr(f->R.rdi);
+      //check_addr2(f->R.rsi, f->R.rdx, false);
+//      check_addr(f->R.rdx);
       // check_stack_addr(f->rsp, f->R.rsi);
       // check_stack_addr(f->rsp, f->R.rdi);
       // check_stack_addr(f->rsp, f->R.rdx);
@@ -160,9 +162,13 @@ syscall_handler (struct intr_frame *f) {
       check_addr(f->R.rsi);
       f->R.rax = dup2(f->R.rdi, f->R.rsi);
       break;
-   case SYS_MOUNT:
+   case SYS_MMAP:
+//      printf("hello??\n");
+      ans = mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8); 
+      f->R.rax = ans;
       break;
-	case SYS_UMOUNT:
+	case SYS_MUNMAP:
+      munmap(f->R.rdi);
       break;
    }
 }
@@ -180,35 +186,6 @@ exit (int status)
    printf("%s: exit(%d)\n", t->name, status);
    t->exit_status = status;
    thread_exit();
-   /*
-  	struct thread *cur = thread_current();
-	char real_file_name[128];
-	int idx = 0, i;
-	while((cur->name)[idx] != ' ' && (cur->name)[idx] != '\0'){
-		real_file_name[idx] = (cur->name)[idx];
-		idx++;
-	}
-	real_file_name[idx] = '\0';
-	printf("%s: exit(%d)\n", real_file_name, status);
-	cur->exit_status = status;
-
-	for (i = 2; i < 128; i++){
-		if(cur->fd_table[i] != 0){
-			close(i);
-		}
-	}
-	struct thread *temp_thread = NULL;
-	struct list_elem *temp_elem = NULL;
-
-	for(temp_elem = list_begin(&thread_current()->child_list);
-			temp_elem != list_end(&thread_current()->child_list);
-			temp_elem = list_next(temp_elem)){
-				temp_thread = list_entry(temp_elem, struct thread, child_elem);
-
-				process_wait(temp_thread->tid);
-	}
-	thread_exit();
-   */
 } 
 
 int
@@ -235,6 +212,7 @@ wait (int pid){
 bool
 create (const char *file, unsigned initial_size)
 {
+   //printf("create!!!!!\n");
    if (file == NULL) exit(-1);
    lock_acquire(&file_lock);
     bool result = (filesys_create (file, initial_size));
@@ -255,12 +233,13 @@ remove (const char *file)
 int 
 open (const char *file)
 {
+   //printf("open!!!\n");
    if(file==NULL) exit(-1);
 
    struct file* opened_file;
    struct thread *cur =thread_current();
-   if(cur->open_cnt > 10)
-      return-1;
+//   if(cur->open_cnt > 10)
+//      return-1;
    lock_acquire(&file_lock);
    opened_file = filesys_open (file);
    if(opened_file==NULL){
@@ -311,27 +290,6 @@ read (int fd, void *buffer, unsigned length)
    int cnt = 0;
    struct thread *cur =thread_current();
    lock_acquire(&file_lock);
-   // if (fd > 1){
-   //    if(cur->fd_table[fd] == 0){
-   //       lock_release(&file_lock);
-   //       exit(-1);
-   //    }
-   //    if(length > 0){
-   //       cnt = file_read(cur->fd_table[fd], buffer, length);
-   //    }
-   // }else if(fd == 0){
-   //    for(int i=0; i<length; i++){
-   //       if(input_getc() == NULL){
-   //          break;
-   //       }
-   //       cnt++;
-   //    }
-   // }else{
-   //    lock_release(&file_lock);
-   //    return -1;
-   // }
-   // lock_release(&file_lock);
-   // return cnt;
    struct file *temp = cur->fd_table[fd];
    if(temp == -1){
       for(int i=0; i<length; i++){
@@ -353,31 +311,12 @@ read (int fd, void *buffer, unsigned length)
 
 int 
 write (int fd, const void *buffer, unsigned length)
-{
+{  
    /* check the validity of buffer pointer */
-   check_addr(buffer);
+   //check_addr(buffer);
    struct thread *cur = thread_current();
    int cnt = 0;
    lock_acquire(&file_lock);
-   // /* Fd 1 means standard output(ex)printf) */
-   // if(fd == 1){
-   //       putbuf(buffer, length);
-   //       lock_release(&file_lock);
-   //       return length;
-   //    }
-   // }else{
-   //    if(fd == 0) {
-   //       lock_release(&file_lock);
-   //       return;
-   //    }
-   //    if(cur->fd_table[fd] == 0) {
-   //       lock_release(&file_lock);
-   //       return;
-   //    }
-   //    if(length > 0){
-   //       cnt = file_write(cur->fd_table[fd], buffer, length);
-   //    }
-   // }
    struct file *temp = cur->fd_table[fd];
    if(temp == -2){
          putbuf(buffer, length);
@@ -483,6 +422,25 @@ dup2 (int oldfd, int newfd)
    return newfd;
 }
 
+void *
+mmap (void *addr, unsigned long length, int writable, int fd, off_t offset){
+   struct file *map_file = open(thread_current()->fd_table[fd]);
+//   printf("do you know me??\n");
+   if(map_file == NULL || length == 0 || pg_ofs(addr) != 0 || offset > PGSIZE){
+//      printf("\nmmap failed\n");
+      return NULL;
+   }
+   else{
+//      printf("reached herer????\n");
+      return do_mmap(addr, length, writable, map_file, offset);
+   }
+}
+
+void 
+munmap (void *addr){
+   do_munmap(addr);
+}
+
 
 
 void 
@@ -493,6 +451,21 @@ check_addr(const void* va)
   }
 }
 
+void
+check_addr2(const void *va, unsigned size, bool to_write){
+   for (int i=0; i<size; i++){
+      if(!is_user_vaddr(va + i)){
+         exit(-1);
+      }
+      struct page *p = spt_find_page(&thread_current()->spt, va + i);
+      if(p == NULL){
+         exit(-1);
+      }
+      if(to_write == true && p->writable == false){ //이건 빼줘도 되지 않을까?
+         exit(-1);
+      }
+   }
+}
 // void 
 // check_stack_addr(const void* sp, void *va)
 // {

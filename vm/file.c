@@ -100,9 +100,14 @@ do_mmap (void *addr, size_t length, int writable,
 		aux->read_bytes = page_read_bytes;
 		aux->zero_bytes = page_zero_bytes;
 		//end 20180109
+		lock_acquire(&unmap_lock);
 		if (!vm_alloc_page_with_initializer (VM_FILE, pg_round_down(temp_addr),
-				writable, file_lazy_load_segment, aux))
+				writable, file_lazy_load_segment, aux)){
 			return NULL;
+			lock_release(&unmap_lock);
+		}
+			
+		lock_release(&unmap_lock);
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
@@ -116,19 +121,42 @@ do_mmap (void *addr, size_t length, int writable,
 void
 do_munmap (void *addr) 
 {	
-	struct page *upage;
-	lock_acquire(&unmap_lock);
-	while(upage = spt_find_page(&thread_current()->spt, addr)){
+	struct page *upage = spt_find_page(&thread_current()->spt, addr);
+	while(upage != NULL){
 		struct page_load *temp_aux = (struct page_load *)(upage->uninit).aux;
-		struct file *page_file = temp_aux->file;
+		if(temp_aux == NULL)
+			break;
 		if(pml4_is_dirty(thread_current()->pml4, upage->va)){ //why???
-			// file_seek (page_file, temp_aux->ofs);
-			file_write_at(page_file, addr, temp_aux->read_bytes, temp_aux->ofs);
+			lock_acquire(&unmap_lock);
+			// file_seek (temp_aux->file, temp_aux->ofs);
+			// file_write(temp_aux->file, addr, temp_aux->read_bytes);
+			file_write_at(temp_aux->file, addr, temp_aux->read_bytes, temp_aux->ofs);
+			lock_release(&unmap_lock);
 			pml4_set_dirty(thread_current()->pml4, upage->va, 0);
 		}
 		pml4_clear_page (thread_current()->pml4, upage->va);
-		spt_remove_page(&thread_current()->spt, upage);
 		addr += PGSIZE;
+		upage = spt_find_page(&thread_current()->spt, addr);
 	}
-	lock_release(&unmap_lock);
+
+	//     while (true)
+    // {
+    //     struct page* page = spt_find_page(&thread_current()->spt, addr);
+        
+    //     if (page == NULL)
+    //         break;
+
+    //     struct page_load * aux = (struct page_load *) (page->uninit).aux;
+        
+    //     //!DIRTY CHECK 
+    //     if(pml4_is_dirty(thread_current()->pml4, page->va)){
+    //         file_write_at(aux->file, addr, aux->read_bytes, aux->ofs);
+    //         //! turn off dirty bit
+	// 		pml4_set_dirty(thread_current()->pml4, page->va, 0);
+    //     }
+	// 	pml4_clear_page (thread_current()->pml4, page->va);
+
+    //     // destroy(page);
+    //     addr += PGSIZE;
+    // }
 }	

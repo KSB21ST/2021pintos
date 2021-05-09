@@ -949,7 +949,11 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
                writable, lazy_load_segment, aux))
+      {
          return false;
+         lock_release(&file_locker);
+      }
+         
       lock_release(&file_locker);
       /* Advance. */
       read_bytes -= page_read_bytes;

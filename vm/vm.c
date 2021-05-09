@@ -13,6 +13,7 @@
 //start 20180109
 struct lock frame_lock;
 struct list frame_list;
+void hash_file_backup(struct hash_elem *e, void *aux);
 static uint64_t vm_hash_func(const struct hash_elem *e, void * aux ){
     struct page * temp = hash_entry(e, struct page, h_elem);
     return hash_int(temp->va); //20180109 - I'm not sure I should put temp->va as argument
@@ -335,11 +336,22 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
     * TODO: writeback all the modified contents to the storage. */
    if(hash_empty(&spt->spt_table))
 		return;
+   hash_apply(&spt->spt_table, hash_file_backup);
    hash_clear(&spt->spt_table, spt_destroy);
 }
 
 void spt_destroy(struct hash_elem *e, void *aux){
    struct page* page = hash_entry(e, struct page, h_elem);
+   // if((page->uninit).type == VM_FILE)
+      // munmap(page->va);
    destroy(page);
    free(page);
+}
+
+void 
+hash_file_backup(struct hash_elem *e, void *aux)
+{
+   struct page* page = hash_entry(e, struct page, h_elem);
+   if((page->uninit).type == VM_FILE)
+      munmap(page->va);
 }

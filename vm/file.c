@@ -138,25 +138,4 @@ do_munmap (void *addr)
 		addr += PGSIZE;
 		upage = spt_find_page(&thread_current()->spt, addr);
 	}
-
-	//     while (true)
-    // {
-    //     struct page* page = spt_find_page(&thread_current()->spt, addr);
-        
-    //     if (page == NULL)
-    //         break;
-
-    //     struct page_load * aux = (struct page_load *) (page->uninit).aux;
-        
-    //     //!DIRTY CHECK 
-    //     if(pml4_is_dirty(thread_current()->pml4, page->va)){
-    //         file_write_at(aux->file, addr, aux->read_bytes, aux->ofs);
-    //         //! turn off dirty bit
-	// 		pml4_set_dirty(thread_current()->pml4, page->va, 0);
-    //     }
-	// 	pml4_clear_page (thread_current()->pml4, page->va);
-
-    //     // destroy(page);
-    //     addr += PGSIZE;
-    // }
 }	

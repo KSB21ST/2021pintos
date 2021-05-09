@@ -24,8 +24,8 @@ child: exit(1)
 (cow-simple) end
 cow-simple: exit(0)
 Execution of 'cow-simple' complete.
-Timer: 350 ticks
-Thread: 194 idle ticks, 146 kernel ticks, 10 user ticks
+Timer: 306 ticks
+Thread: 144 idle ticks, 141 kernel ticks, 22 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 90 reads, 8066 writes
 hd1:0: 4019 reads, 0 writes

@@ -4,7 +4,7 @@ Kernel command line: -q -f put mmap-off put large.txt run mmap-off
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  117,760,000 loops/s.
+Calibrating timer...  130,867,200 loops/s.
 hd0:0: detected 337 sector (168 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 7,933 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -17,16 +17,43 @@ Executing 'mmap-off':
 (mmap-off) begin
 (mmap-off) open "large.txt"
 (mmap-off) try to mmap with offset 0x1000
-(mmap-off) try to mmap with offset 0x1000: FAILED
-mmap-off: exit(1)
-Execution of 'mmap-off' complete.
-Timer: 603 ticks
-Thread: 318 idle ticks, 276 kernel ticks, 9 user ticks
+(mmap-off) validate mmap.
+(mmap-off) validated.
+(mmap-off) write to mmap
+(mmap-off) validate contents.
+(mmap-off) open "large.txt"
+(mmap-off) read "large.txt" Page 0
+(mmap-off) validate page 0.
+(mmap-off) validated.
+(mmap-off) read "large.txt" Page 1
+(mmap-off) validate page 1.
+(mmap-off) validated.
+(mmap-off) success
+(mmap-off) end
+mmap-off: exit(0)
+Interrupt 0x0d (#GP General Protection Exception) at rip=8004219069
+ cr2=0000000000605100 error=               0
+rax cccccccccccccccc rbx 000000004747ff60 rcx 0000000000000080 rdx cccccccccccccccc
+rsp 0000008004244d90 rbp 0000008004244da0 rsi 0000008004253098 rdi 0000008004260230
+rip 0000008004219069 r8 0000008004244de8  r9 000000800421bce2 r10 0000000000000000
+r11 0000000000000206 r12 000000800421df05 r13 244ef00000008004 r14 2190170000008004
+r15 244ee00000008004 rflags 00000202
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004218804 0x800421dc8f 0x8004209325 0x8004209743 0x80042190bf 0x800421ae0b 0x8004222eec 0x800421ca00 0x800421c9b3 0x80042071f3 0x800421e4a2 0x800421dfa3 0x800421de2e 0x400fff 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421583e
+ cr2=0000000000605100 error=               0
+rax 244f60ffffffff04 rbx 000000004747ff60 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004244bd0 rbp 0000008004244be0 rsi 0000000000009f0f rdi 0000000000000000
+rip 000000800421583e r8 0000008004244ae8  r9 000000800421bce2 r10 0000000000000000
+r11 0000000000000206 r12 000000800421df05 r13 244ef00000008004 r14 2190170000008004
+r15 244ee00000008004 rflags 00000002
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
+Timer: 568 ticks
+Thread: 279 idle ticks, 266 kernel ticks, 23 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 112 reads, 15904 writes
+hd0:1: 165 reads, 15912 writes
 hd1:0: 7933 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1110 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 2763 characters output
+Key

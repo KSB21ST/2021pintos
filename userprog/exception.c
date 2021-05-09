@@ -127,8 +127,6 @@ page_fault (struct intr_frame *f) {
 	   accessed to cause the fault.  It may point to code or to
 	   data.  It is not necessarily the address of the instruction
 	   that caused the fault (that's f->rip). */
-	
-	//printf("page fault is occured!\n");
 
 	fault_addr = (void *) rcr2();
 

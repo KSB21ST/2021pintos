@@ -12,6 +12,7 @@
 #include "filesys/file.h" //없어도 될듯?
 #include "filesys/inode.h"
 #include "filesys/filesys.h"
+#include "vm/file.h"
 
 
 // register uint64_t *num asm ("rax") = (uint64_t *) num_;
@@ -27,8 +28,7 @@ void syscall_handler (struct intr_frame *);
 
 //start 20180109
 void check_addr(const void* sp);
-void check_stack_addr(const void* sp, void *va);
-// struct semaphore file_lock; /*syncrhonization for file open, create, remove*/
+void check_buffer(void *buffer, unsigned size);
 int ans = -1;
 static struct lock file_lock;
 //end 20180109
@@ -122,22 +122,12 @@ syscall_handler (struct intr_frame *f) {
       f->R.rax = ans;
       break;
    case SYS_READ:
-      check_addr(f->R.rdi);
       check_addr(f->R.rsi);
-      check_addr(f->R.rdx);
-      // check_stack_addr(f->rsp, f->R.rsi);
-      // check_stack_addr(f->rsp, f->R.rdi);
-      // check_stack_addr(f->rsp, f->R.rdx);
       ans = read(f->R.rdi, f->R.rsi, f->R.rdx);
       f->R.rax = ans;
       break;
    case SYS_WRITE:
-      check_addr(f->R.rdi);
       check_addr(f->R.rsi);
-      check_addr(f->R.rdx);
-      // check_stack_addr(f->rsp, f->R.rsi);
-      // check_stack_addr(f->rsp, f->R.rdi);
-      // check_stack_addr(f->rsp, f->R.rdx);
       ans = write(f->R.rdi, f->R.rsi, f->R.rdx);
       f->R.rax = ans;
       break;
@@ -166,6 +156,14 @@ syscall_handler (struct intr_frame *f) {
    case SYS_MOUNT:
       break;
 	case SYS_UMOUNT:
+      break;
+   case SYS_MMAP:  /* Map a file into memory. */
+      check_addr(f->R.rdi);
+      f->R.rax =  mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8); 
+      break;
+	case SYS_MUNMAP: /* Remove a memory mapping. */
+      check_addr(f->R.rdi);
+      munmap(f->R.rdi);
       break;
    }
 }
@@ -262,8 +260,10 @@ open (const char *file)
 
    struct file* opened_file;
    struct thread *cur =thread_current();
+   #ifndef VM
    if(cur->open_cnt > 10)
       return-1;
+   #endif
    lock_acquire(&file_lock);
    opened_file = filesys_open (file);
    if(opened_file==NULL){
@@ -309,32 +309,14 @@ filesize (int fd)
 
 int 
 read (int fd, void *buffer, unsigned length)
-{
+{  
+   #ifdef VM
+   check_buffer(buffer, length);
+   #endif
    check_addr(buffer);
    int cnt = 0;
    struct thread *cur =thread_current();
    lock_acquire(&file_lock);
-   // if (fd > 1){
-   //    if(cur->fd_table[fd] == 0){
-   //       lock_release(&file_lock);
-   //       exit(-1);
-   //    }
-   //    if(length > 0){
-   //       cnt = file_read(cur->fd_table[fd], buffer, length);
-   //    }
-   // }else if(fd == 0){
-   //    for(int i=0; i<length; i++){
-   //       if(input_getc() == NULL){
-   //          break;
-   //       }
-   //       cnt++;
-   //    }
-   // }else{
-   //    lock_release(&file_lock);
-   //    return -1;
-   // }
-   // lock_release(&file_lock);
-   // return cnt;
    struct file *temp = cur->fd_table[fd];
    if(temp == -1){
       for(int i=0; i<length; i++){
@@ -358,29 +340,15 @@ int
 write (int fd, const void *buffer, unsigned length)
 {
    /* check the validity of buffer pointer */
+   // check_buffer(buffer);
+   // check_addr(buffer);
+   #ifdef VM
+   check_buffer(buffer, length);
+   #endif
    check_addr(buffer);
    struct thread *cur = thread_current();
    int cnt = 0;
    lock_acquire(&file_lock);
-   // /* Fd 1 means standard output(ex)printf) */
-   // if(fd == 1){
-   //       putbuf(buffer, length);
-   //       lock_release(&file_lock);
-   //       return length;
-   //    }
-   // }else{
-   //    if(fd == 0) {
-   //       lock_release(&file_lock);
-   //       return;
-   //    }
-   //    if(cur->fd_table[fd] == 0) {
-   //       lock_release(&file_lock);
-   //       return;
-   //    }
-   //    if(length > 0){
-   //       cnt = file_write(cur->fd_table[fd], buffer, length);
-   //    }
-   // }
    struct file *temp = cur->fd_table[fd];
    if(temp == -2){
          putbuf(buffer, length);
@@ -486,6 +454,32 @@ dup2 (int oldfd, int newfd)
    return newfd;
 }
 
+/* Project 3 and optionally project 4. */
+/* Map a file into memory. */
+void *
+mmap (void *addr, unsigned long length, int writable, int fd, off_t offset){
+   // struct file *map_file = open(thread_current()->fd_table[fd]);
+   struct file *map_file = thread_current()->fd_table[fd];
+   if(map_file == NULL || length == 0 || pg_ofs(addr) != 0 || offset > PGSIZE || addr == NULL){
+      return NULL;
+   }
+   else{
+      lock_acquire(&file_lock);
+      void *ans = do_mmap(addr, length, writable, map_file, offset);
+      lock_release(&file_lock);
+      return ans;
+   }
+}
+
+/* Remove a memory mapping. */
+void 
+munmap (void *addr)
+{
+   lock_acquire(&file_lock);
+   do_munmap(addr);
+   lock_release(&file_lock);
+}
+
 
 
 void 
@@ -496,9 +490,15 @@ check_addr(const void* va)
   }
 }
 
-// void 
-// check_stack_addr(const void* sp, void *va)
-// {
-//    if (va == NULL) return;
-//    if(!is_user_vaddr(sp) || sp > va) exit(-1);
-// }
+void
+check_buffer(void *buffer, unsigned size)
+{
+   for (int i=0;i<size;i++){
+      check_addr(buffer);
+      struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
+      if(!p)
+         exit(-1);
+      if(!p->writable)
+         exit(-1);
+   }
+}

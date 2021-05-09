@@ -1059,3 +1059,32 @@ find_child(struct list *child_list, int tid)
          return t;
    }
 }
+
+
+//start 20180109
+bool
+file_lazy_load_segment (struct page *page, void *aux) {
+   /* TODO: Load the segment from the file */
+   /* TODO: This called when the first page fault occurs on address VA. */
+   /* TODO: VA is available when calling this function. */
+   //printf("in lazy loading\n");
+   ASSERT(aux != NULL);
+   ASSERT(page->uninit.type == VM_FILE);
+   if (page->frame == NULL || page->va == NULL)
+      return false;
+   struct page_load *temp_aux = (struct page_load *)aux;
+   void *kva = page->frame->kva;
+   off_t ofs = temp_aux->ofs;
+   size_t read_bytes = temp_aux->read_bytes;
+   size_t zero_bytes = temp_aux->zero_bytes;
+   ASSERT(zero_bytes == PGSIZE - read_bytes);
+
+   struct file *opend_file = file_reopen(temp_aux->file);
+   file_seek (opend_file, ofs);
+   if(file_read(opend_file, kva, read_bytes) == (int)read_bytes){
+      memset (kva + read_bytes, 0, zero_bytes);
+      return true;
+   }
+   return false;
+}
+//end 20180109

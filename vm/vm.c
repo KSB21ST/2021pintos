@@ -100,6 +100,7 @@ err:
 struct page *
 spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
    struct page* p = (struct page*)malloc(sizeof(struct page));
+    ASSERT(thread_current() != NULL);
    /* TODO: Fill this function. */
    //pg_round_down: Returns the start of the virtual page that va points within, that is, va with the page offset set to 0.
    p->va = pg_round_down(va); 
@@ -175,10 +176,17 @@ vm_get_frame (void) {
 /* Growing the stack. */
 static void
 vm_stack_growth (void *addr UNUSED) {
-   if(vm_alloc_page(VM_ANON | VM_MARKER_0, addr, 1))
-      {
-         vm_claim_page(addr);
-      }
+   // if(vm_alloc_page(VM_ANON | VM_MARKER_0, addr, 1))
+   // {
+   //    vm_claim_page(addr);
+   // }
+   void *real_addr = pg_round_down(addr);
+   void *cur_addr = thread_current()->rsp;
+   while (real_addr < cur_addr){
+      vm_alloc_page(VM_MARKER_0 | VM_ANON, real_addr, true);
+      vm_claim_page(real_addr);
+      real_addr += PGSIZE;
+   }
 }
 
 /* Handle the fault on write_protected page */
@@ -190,6 +198,7 @@ vm_handle_wp (struct page *page UNUSED) {
 bool
 vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
       bool user UNUSED, bool write UNUSED, bool not_present UNUSED) {
+   ASSERT(thread_current() != NULL);
 
    struct supplemental_page_table *spt UNUSED = &thread_current ()->spt;
    struct page *page = NULL;
@@ -228,8 +237,8 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
       return vm_do_claim_page (page);
    }
    if((addr > stack_rsp - PGSIZE )&& (USER_STACK - 0x100000) <= addr  &&  addr <= USER_STACK){
-			vm_stack_growth(pg_round_down(addr));
-			return true;
+      vm_stack_growth(pg_round_down(addr));
+      return true;
 	}
    return false;
 }
@@ -238,6 +247,10 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
  * DO NOT MODIFY THIS FUNCTION. */
 void
 vm_dealloc_page (struct page *page) {
+   //start 20180109
+   void *temp_aux = (page->uninit).aux;
+   free(temp_aux);
+   //end 20180109
    destroy (page);
    free (page);
 }

@@ -188,6 +188,11 @@ vm_stack_growth (void *addr UNUSED) {
       vm_claim_page(real_addr);
       real_addr += PGSIZE;
    }
+   // while(vm_alloc_page(VM_MARKER_0 | VM_ANON, addr, true))
+   // {
+   //    vm_claim_page(addr);
+   //    addr += PGSIZE;
+   // }
 }
 
 /* Handle the fault on write_protected page */

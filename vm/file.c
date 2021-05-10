@@ -60,21 +60,11 @@ file_backed_destroy (struct page *page) {
 void *
 do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
-	// ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
-	// ASSERT (pg_ofs (upage) == 0);
-	// ASSERT (ofs % PGSIZE == 0);
-
-	size_t zero_bytes;
-	size_t read_bytes;
-	size_t real_length = length < file_length(file) ? length : file_length(file);
-	// if (real_length % PGSIZE == 0){
-	// 	zero_bytes = 0;
-	// 	read_bytes = real_length;
-	// }else{
-		read_bytes = real_length;
-		// zero_bytes = PGSIZE - real_length % PGSIZE;
-		zero_bytes = (PGSIZE - read_bytes)%PGSIZE; //why?????
-	// }
+	// uint32_t read_bytes = (uint32_t)length;
+	// uint32_t zero_bytes = (PGSIZE - read_bytes)%PGSIZE; //why?????
+	// size_t read_bytes = length;
+	size_t read_bytes = length < file_length(file) ? length : file_length(file);
+	size_t zero_bytes = (PGSIZE - read_bytes)%PGSIZE; //why?????
 
 	void *temp_addr = addr;
 
@@ -84,9 +74,8 @@ do_mmap (void *addr, size_t length, int writable,
 		* We will read PAGE_READ_BYTES bytes from FILE
 		* and zero the final PAGE_ZERO_BYTES bytes. */
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+		size_t page_zero_bytes = page_read_bytes % PGSIZE == 0 ? 0 : (PGSIZE - page_read_bytes)%PGSIZE;
 		// size_t page_zero_bytes = PGSIZE - page_read_bytes;
-		size_t page_zero_bytes = page_read_bytes % PGSIZE == 0 ? 0 : (PGSIZE - page_read_bytes)%PGSIZE;;
-
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
 		// void *aux = NULL;
 		//start 20180109
@@ -103,8 +92,8 @@ do_mmap (void *addr, size_t length, int writable,
 		lock_acquire(&unmap_lock);
 		if (!vm_alloc_page_with_initializer (VM_FILE, pg_round_down(temp_addr),
 				writable, file_lazy_load_segment, aux)){
-			return NULL;
 			lock_release(&unmap_lock);
+			return NULL;
 		}
 			
 		lock_release(&unmap_lock);

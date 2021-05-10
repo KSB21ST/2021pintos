@@ -238,7 +238,7 @@ create (const char *file, unsigned initial_size)
 {
    if (file == NULL) exit(-1);
    lock_acquire(&file_lock);
-    bool result = (filesys_create (file, initial_size));
+   bool result = (filesys_create (file, initial_size));
    lock_release(&file_lock);
     return result;
 }
@@ -247,6 +247,10 @@ bool
 remove (const char *file)
 {
    if(file==NULL||*file==NULL) exit(-1);
+   // #ifdef VM
+   // struct page *page = spt_find_page(&thread_current()->spt, file);
+   // munmap(page->va);
+   // #endif
    lock_acquire(&file_lock);
    bool success = filesys_remove(file);
    lock_release(&file_lock);
@@ -460,7 +464,7 @@ dup2 (int oldfd, int newfd)
 /* Project 3 and optionally project 4. */
 /* Map a file into memory. */
 void *
-mmap (void *addr, unsigned long length, int writable, int fd, off_t offset){
+mmap (void *addr, unsigned long int length, int writable, int fd, off_t offset){
    // struct file *map_file = open(thread_current()->fd_table[fd]);
    struct file *map_file = thread_current()->fd_table[fd];
    if(map_file == NULL || length == 0 || pg_ofs(addr) != 0 || offset > PGSIZE || addr == NULL){

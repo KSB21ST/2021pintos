@@ -158,7 +158,8 @@ syscall_handler (struct intr_frame *f) {
 	case SYS_UMOUNT:
       break;
    case SYS_MMAP:  /* Map a file into memory. */
-      check_addr(f->R.rdi);
+//      printf("helloooo\n");
+//      check_addr(f->R.rdi);
       f->R.rax =  mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8); 
       break;
 	case SYS_MUNMAP: /* Remove a memory mapping. */
@@ -427,14 +428,14 @@ close (int fd) {
          cnt++;
    }
    if (cnt > 0){ // _file 을 가리키고 있는 fd가 더 있다는 뜻이다.
-      t->fd_table[fd] = NULL;
+      t->fd_table[fd] = 0;
       return;
    }else{
       lock_acquire(&file_lock);
       t->open_cnt--;
       file_close(_file);
       lock_release(&file_lock);
-      t->fd_table[fd] = NULL;
+      t->fd_table[fd] = 0;
    }
       
 }
@@ -467,9 +468,14 @@ void *
 mmap (void *addr, unsigned long int length, int writable, int fd, off_t offset){
    // struct file *map_file = open(thread_current()->fd_table[fd]);
    struct file *map_file = thread_current()->fd_table[fd];
-   if(map_file == NULL || length == 0 || pg_ofs(addr) != 0 || offset > PGSIZE || addr == NULL){
+   for(int i=0; i<length; i++){
+      if(is_kernel_vaddr(addr+i))
+         return NULL;
+   }
+   if(map_file == NULL || length <= 0 || pg_ofs(addr) != 0 || offset > PGSIZE || addr == NULL){
       return NULL;
    }
+
    else{
       lock_acquire(&file_lock);
       void *ans = do_mmap(addr, length, writable, map_file, offset);

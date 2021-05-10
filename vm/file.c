@@ -10,6 +10,7 @@
 struct lock unmap_lock;
 //end 20180109
 
+
 static bool file_backed_swap_in (struct page *page, void *kva);
 static bool file_backed_swap_out (struct page *page);
 static void file_backed_destroy (struct page *page);
@@ -68,6 +69,7 @@ do_mmap (void *addr, size_t length, int writable,
 
 	void *temp_addr = addr;
 
+	struct file *reopen_file = file_reopen(file);
 
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
@@ -84,7 +86,8 @@ do_mmap (void *addr, size_t length, int writable,
 			free(aux);
 			return NULL;
 		}
-		aux->file = file;
+//		aux->file = file;
+		aux->file = reopen_file;
 		aux->ofs = offset;
 		aux->read_bytes = page_read_bytes;
 		aux->zero_bytes = page_zero_bytes;

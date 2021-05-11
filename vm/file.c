@@ -71,6 +71,7 @@ do_mmap (void *addr, size_t length, int writable,
 
 	struct file *reopen_file = file_reopen(file);
 
+
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
 		* We will read PAGE_READ_BYTES bytes from FILE
@@ -86,7 +87,7 @@ do_mmap (void *addr, size_t length, int writable,
 			free(aux);
 			return NULL;
 		}
-//		aux->file = file;
+		// aux->file = file;
 		aux->file = reopen_file;
 		aux->ofs = offset;
 		aux->read_bytes = page_read_bytes;

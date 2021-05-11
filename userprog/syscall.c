@@ -8,11 +8,13 @@
 #include "threads/flags.h"
 #include "intrinsic.h"
 
-//edit
+//start 20180109
 #include "filesys/file.h" //없어도 될듯?
 #include "filesys/inode.h"
 #include "filesys/filesys.h"
 #include "vm/file.h"
+#include <hash.h>
+//end 20180109
 
 
 // register uint64_t *num asm ("rax") = (uint64_t *) num_;
@@ -244,14 +246,29 @@ create (const char *file, unsigned initial_size)
     return result;
 }
 
+void 
+hash_file_claim(struct hash_elem *e, void *aux)
+{
+   struct page* page = hash_entry(e, struct page, h_elem);
+   if(page->operations->type == VM_FILE){
+      struct file *f = (struct file *)aux;
+      // vm_claim_page(page->va);
+   }
+   vm_claim_page(page->va);
+}
 bool 
 remove (const char *file)
 {
    if(file==NULL||*file==NULL) exit(-1);
-   // #ifdef VM
+   #ifdef VM
    // struct page *page = spt_find_page(&thread_current()->spt, file);
-   // munmap(page->va);
-   // #endif
+   // mmap(page->va);
+   struct hash *h;
+   // h = &(&thread_current()->spt)->spt_table;
+   // h->aux = malloc(sizeof(struct file *));
+   // h->aux = filesys_open(file);
+   hash_apply(&(&thread_current()->spt)->spt_table, hash_file_claim);
+   #endif
    lock_acquire(&file_lock);
    bool success = filesys_remove(file);
    lock_release(&file_lock);

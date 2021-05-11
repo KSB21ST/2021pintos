@@ -891,7 +891,7 @@ lazy_load_segment (struct page *page, void *aux) {
    struct file *file = temp_aux->file;
    size_t read_bytes = temp_aux->read_bytes;
    size_t zero_bytes = temp_aux->zero_bytes;
-   ASSERT(zero_bytes == PGSIZE - read_bytes);
+   // ASSERT(zero_bytes == PGSIZE - read_bytes);
 
    file_seek (file, ofs);
    if(file_read(file, kva, read_bytes) == (int)read_bytes){
@@ -1085,7 +1085,7 @@ file_lazy_load_segment (struct page *page, void *aux) {
 
    // read_bytes = read_bytes < file_length(temp_aux->file) ? read_bytes : file_length(temp_aux->file);
 
-//   struct file *opend_file = file_reopen(temp_aux->file);
+//   struct file *opend_file = filesys_open(temp_aux->file);
    struct file *opend_file = temp_aux->file;
    size_t _read_bytes = file_read_at(opend_file, kva, read_bytes, ofs);
    size_t _zero_bytes = PGSIZE - _read_bytes; 

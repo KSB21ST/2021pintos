@@ -6,8 +6,8 @@
 //start 20180109
 #include "threads/vaddr.h"
 #include <bitmap.h>
-struct bitmap *swap_table;
-size_t swap_size;
+// struct bitmap *swap_table;
+// size_t swap_size;
 static void anon_disk_connect(bool read, int index, void *kva);
 //end 2018019
 

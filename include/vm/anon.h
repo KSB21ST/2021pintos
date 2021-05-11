@@ -4,6 +4,11 @@
 struct page;
 enum vm_type;
 
+//start 20180109
+struct bitmap *swap_table;
+size_t swap_size;
+//end 20180109
+
 struct anon_page {
     int swap_index;
 };

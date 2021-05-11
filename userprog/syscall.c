@@ -250,10 +250,6 @@ void
 hash_file_claim(struct hash_elem *e, void *aux)
 {
    struct page* page = hash_entry(e, struct page, h_elem);
-   if(page->operations->type == VM_FILE){
-      struct file *f = (struct file *)aux;
-      // vm_claim_page(page->va);
-   }
    vm_claim_page(page->va);
 }
 bool 

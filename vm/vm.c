@@ -134,10 +134,54 @@ spt_remove_page (struct supplemental_page_table *spt, struct page *page) {
 /* Get the struct frame, that will be evicted. */
 static struct frame *
 vm_get_victim (void) {
-   struct frame *victim = NULL;
+   // struct frame *victim = NULL;
     /* TODO: The policy for eviction is up to you. */
+     struct frame *victim;
+    /* TODO: The policy for eviction is up to you. */
+    
+    struct thread* current = thread_current();
+    //! 삭제했음
+    // struct list frame_table = current->frame_table;
+    struct list_elem *start = list_begin(&frame_list);
+    struct list_elem *e = start;
+    // printf("<<<<<<<<<<< (vm_get_victim) >>>>>>>>>> \n");
 
-   return victim;
+    //! 할당 해제 같은거 여기서 할 것!
+    for (start = e ; start != list_end(&frame_list); start = list_next(start))
+    {
+        victim = list_entry(start, struct frame, elem);
+        // printf("1번쨰 for문 (vm_get_victim) >>>> 1 victim->kva : %p\n",victim->kva);
+        if(pml4_is_accessed(current->pml4, victim->page->va))
+        {
+            pml4_set_accessed(current->pml4, victim->page->va, 0);
+        }
+        else
+        {
+            // printf("(vm_get_victim) >>>> 2 victim: %p\n",victim);
+            return victim;
+        }
+
+    }
+    //! next fit 하려고 for 문 두개 돌림
+    for (start= list_begin(&frame_list); start != e; start = list_next (start))
+    {
+        victim = list_entry(start, struct frame, elem);
+        // printf("2번째 for문 (vm_get_victim) >>>> 1 victim->kva : %p\n",victim->kva);
+        if(pml4_is_accessed(current->pml4, victim->page->va))
+        {
+            pml4_set_accessed(current->pml4, victim->page->va, 0);
+        }
+        else
+        {
+            // printf("(vm_get_victim) >>>> 3 victim: %p\n",victim);
+            return victim;
+        }
+    }
+
+    // printf("(vm_get_victim) >>>> 4 victim: %p\n",victim);
+    return victim;
+
+   // return victim;
 }
 
 /* Evict one page and return the corresponding frame.
@@ -146,8 +190,10 @@ static struct frame *
 vm_evict_frame (void) {
    struct frame *victim UNUSED = vm_get_victim ();
    /* TODO: swap out the victim and return the evicted frame. */
-   PANIC('TODO');
-   return NULL;
+   // PANIC('TODO');
+   swap_out(victim->page);
+   return victim;
+   // return NULL;
 }
 
 /* palloc() and get frame. If there is no available page, evict the page
@@ -162,10 +208,10 @@ vm_get_frame (void) {
    frame->kva = palloc_get_page(PAL_USER);
    if (frame->kva == NULL){
       // free(frame); //not sure of this
-      // lock_acquire(&frame_lock);
-      // frame = vm_evict_frame();
-      // lock_release(&frame_lock);
-      PANIC("TODO VM_GET_FRAME");
+      lock_acquire(&frame_lock);
+      frame = vm_evict_frame();
+      lock_release(&frame_lock);
+      // PANIC("TODO VM_GET_FRAME");
    }
    frame->page = NULL;
    list_push_back(&frame_list, &frame->elem);

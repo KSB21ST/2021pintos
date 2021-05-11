@@ -1087,20 +1087,6 @@ file_lazy_load_segment (struct page *page, void *aux) {
 
 //   struct file *opend_file = file_reopen(temp_aux->file);
    struct file *opend_file = temp_aux->file;
-   // struct file *opend_file = file_duplicate(temp_aux->file);
-   // size_t _read_bytes = read_bytes < file_length(temp_aux->file) ? read_bytes : file_length(temp_aux->file);
-   // size_t _zero_bytes = PGSIZE - _read_bytes;
-   // file_seek (opend_file, ofs);
-   // if(file_read(opend_file, kva, read_bytes) == (off_t)read_bytes){
-   // // if(_read_bytes = file_read_at(opend_file, kva, read_bytes, temp_aux->file)){
-   // // if(file_read(opend_file, kva, read_bytes)){
-   //    memset (kva + read_bytes, 0, zero_bytes);
-   //    return true;
-   // }
-   // return false;
-
-
-   // read_bytes = read_bytes < file_length(temp_aux->file) ? read_bytes : file_length(temp_aux->file);
    size_t _read_bytes = file_read_at(opend_file, kva, read_bytes, ofs);
    size_t _zero_bytes = PGSIZE - _read_bytes; 
    memset (kva + _read_bytes, 0, _zero_bytes);

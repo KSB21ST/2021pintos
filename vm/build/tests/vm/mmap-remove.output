@@ -4,10 +4,10 @@ Kernel command line: -q -f put mmap-remove put sample.txt run mmap-remove
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  209,510,400 loops/s.
+Calibrating timer...  106,291,200 loops/s.
 hd0:0: detected 345 sector (172 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 111 sector (55 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 110 sector (55 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
 Formatting file system...done.
 Boot complete.
@@ -20,35 +20,16 @@ Executing 'mmap-remove':
 (mmap-remove) remove "sample.txt"
 (mmap-remove) try to open "sample.txt"
 (mmap-remove) create "another"
-''
-
- '===  ALL USERS PLEASE NOTE  ========================
-
-CAR and CDR now return extra values.
-
-The function CAR now returns two values.  Since it has to go to the
-trouble to figure out if the object is carcdr-able anyway, we figured
-you might as well get both halves at once.  For example, the following
-code shows how to destructure a cons (SOME-CONS) into its two slots
-(THE-CAR and THE-CDR):
-
-        (MULTIPLE-VALUE-BIND (THE-CAR THE-CDR) (CAR SOME-CONS) ...)
-
-For symmetry with CAR, CDR returns a second value which is the CAR of
-the object.  In a related change, the functions MAKE-ARRAY and CONS
-have been fixed so they don't allocate any storage except on the
-stack.  This should hopefully help people who don't like using the
-garbage collector because it cold boots the machine so often.
-'(mmap-remove) read of mmap'd file reported bad data: FAILED
+(mmap-remove) read of mmap'd file reported bad data: FAILED
 mmap-remove: exit(1)
 Execution of 'mmap-remove' complete.
-Timer: 71 ticks
-Thread: 32 idle ticks, 31 kernel ticks, 8 user ticks
+Timer: 89 ticks
+Thread: 40 idle ticks, 40 kernel ticks, 10 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 170 reads, 363 writes
-hd1:0: 111 reads, 0 writes
+hd0:1: 170 reads, 361 writes
+hd1:0: 110 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 2035 characters output
+Console: 1235 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

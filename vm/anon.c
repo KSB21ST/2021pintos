@@ -7,7 +7,8 @@
 #include "threads/vaddr.h"
 #include <bitmap.h>
 struct bitmap *swap_table;
-const size_t SECTORS_PER_PAGE = PGSIZE / DISK_SECTOR_SIZE;
+size_t swap_size;
+static void anon_disk_connect(bool read, int index, void *kva);
 //end 2018019
 
 /* DO NOT MODIFY BELOW LINE */
@@ -30,9 +31,8 @@ vm_anon_init (void) {
 	/* TODO: Set up the swap_disk. */
 	// swap_disk = NULL;
 
-	  swap_disk = disk_get(1, 1);
-    size_t swap_size = disk_size(swap_disk) / SECTORS_PER_PAGE;
-    // printf("swap size :: %d\n", swap_size);
+	swap_disk = disk_get(1, 1);
+    swap_size = disk_size(swap_disk) / 8;
     swap_table = bitmap_create(swap_size);
 }
 
@@ -49,53 +49,34 @@ anon_initializer (struct page *page, enum vm_type type, void *kva) {
 static bool
 anon_swap_in (struct page *page, void *kva) {
 	struct anon_page *anon_page = &page->anon;
-
-    //!ADD
+    ASSERT((page->uninit).type == VM_ANON);
+    ASSERT(page != NULL);
+    ASSERT(kva != NULL);
+    ASSERT(is_kernel_vaddr(kva));
+    bool success = false;
     int page_no = anon_page->swap_index;
-
-    // printf("page number 000:: %d\n", page_no);
-    if (bitmap_test(swap_table, page_no) == false)
-    {
-        
-        // printf("*** swap in failed ****\n");
-        return false;
+    ASSERT(page_no <= swap_size);
+    if (bitmap_test(swap_table, page_no)){
+        anon_disk_connect(true, page_no, kva);
+        success = true;
     }
-
-    for (int i = 0; i < SECTORS_PER_PAGE; i++)
-    {
-        disk_read(swap_disk, page_no * SECTORS_PER_PAGE + i, kva + DISK_SECTOR_SIZE * i);
-    }
-
-    bitmap_set(swap_table, page_no, false);
-
-    // printf("+++++++++++ swap in success\n");
-    return true;
-	
-	
+    return success;
 }
 
 /* Swap out the page by writing contents to the swap disk. */
 static bool
 anon_swap_out (struct page *page) {
 	struct anon_page *anon_page = &page->anon;
+    ASSERT((page->uninit).type == VM_ANON);
+    ASSERT(page != NULL);
+    ASSERT(page->frame != NULL);
 
-	  int page_no = bitmap_scan(swap_table, 0, 1, false);
+    void *kva = page->frame->kva;
 
-    if (page_no == BITMAP_ERROR)
-    {
-        return false;
-    }
-        
-    for (int i = 0; i < SECTORS_PER_PAGE; i++)
-    {
-        disk_write(swap_disk, page_no * SECTORS_PER_PAGE + i, page->va + DISK_SECTOR_SIZE * i);
-    }
-
-    bitmap_set(swap_table, page_no, true);
+	int page_no = bitmap_scan(swap_table, 0, 1, false);
+    anon_disk_connect(false, page_no, kva);
     pml4_clear_page(thread_current()->pml4, page->va);
     anon_page->swap_index = page_no;
-
-    // printf("---------- swap out success\n");
     return true;
 }
 
@@ -104,4 +85,20 @@ static void
 anon_destroy (struct page *page) {
 	struct anon_page *anon_page = &page->anon;
 	// free(page->frame);//edit
+}
+
+static void
+anon_disk_connect(bool read, int index, void *kva)
+{
+    bool set_bitmap = true;
+    for (int i = 0; i < 8; i++)
+        {
+            if(read){
+                set_bitmap = false;
+                disk_read(swap_disk, index * 8 + i, kva + 512 * i);
+            }
+            else
+                disk_write(swap_disk, index * 8 + i, kva + 512 * i);
+        }
+    bitmap_set(swap_table, index, set_bitmap);
 }

@@ -144,20 +144,16 @@ vm_get_victim (void) {
     // struct list frame_table = current->frame_table;
     struct list_elem *start = list_begin(&frame_list);
     struct list_elem *e = start;
-    // printf("<<<<<<<<<<< (vm_get_victim) >>>>>>>>>> \n");
 
-    //! 할당 해제 같은거 여기서 할 것!
     for (start = e ; start != list_end(&frame_list); start = list_next(start))
     {
         victim = list_entry(start, struct frame, elem);
-        // printf("1번쨰 for문 (vm_get_victim) >>>> 1 victim->kva : %p\n",victim->kva);
         if(pml4_is_accessed(current->pml4, victim->page->va))
         {
             pml4_set_accessed(current->pml4, victim->page->va, 0);
         }
         else
         {
-            // printf("(vm_get_victim) >>>> 2 victim: %p\n",victim);
             return victim;
         }
 
@@ -166,19 +162,15 @@ vm_get_victim (void) {
     for (start= list_begin(&frame_list); start != e; start = list_next (start))
     {
         victim = list_entry(start, struct frame, elem);
-        // printf("2번째 for문 (vm_get_victim) >>>> 1 victim->kva : %p\n",victim->kva);
         if(pml4_is_accessed(current->pml4, victim->page->va))
         {
             pml4_set_accessed(current->pml4, victim->page->va, 0);
         }
         else
         {
-            // printf("(vm_get_victim) >>>> 3 victim: %p\n",victim);
             return victim;
         }
     }
-
-    // printf("(vm_get_victim) >>>> 4 victim: %p\n",victim);
     return victim;
 
    // return victim;

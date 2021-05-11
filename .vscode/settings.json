@@ -20,6 +20,7 @@
         "malloc.h": "c",
         "hash.h": "c",
         "inode.h": "c",
-        "gdt.h": "c"
+        "gdt.h": "c",
+        "disk.h": "c"
     }
 }

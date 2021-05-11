@@ -1,2 +1,2 @@
 FAIL
-run: '(mmap-remove) read of mmap'd file reported bad data: FAILED
+run: read of mmap'd file reported bad data: FAILED

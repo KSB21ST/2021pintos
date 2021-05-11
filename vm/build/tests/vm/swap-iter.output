@@ -27,3 +27,4 @@ Executing 'swap-iter':
 (swap-iter) write sparsely over page 4608
 (swap-iter) open "large.txt"
 (swap-iter) mmap "large.txt"
+TIMEOUT

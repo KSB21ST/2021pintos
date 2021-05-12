@@ -138,10 +138,11 @@ vm_get_victim (void) {
    struct thread *t = thread_current();
    struct list_elem* e;
    struct frame *victim;
+   struct page *p;
    for (e = list_begin(&frame_list); e != list_end(&frame_list); e = list_next(e)) 
    {
       victim = list_entry(e, struct frame, elem);
-      struct page *p = victim->page;
+      p = victim->page;
       if((p->uninit).type == VM_ANON){
          if(pml4_is_accessed(t->pml4, victim->page->va))
             pml4_set_accessed(t->pml4, victim->page->va, 0);
@@ -149,6 +150,7 @@ vm_get_victim (void) {
             break;
       }
    }
+   // printf("in vm_get_victim: %s \n", p->operations->type);
    return victim;
 }
 

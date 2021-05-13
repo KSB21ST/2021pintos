@@ -1085,6 +1085,7 @@ file_lazy_load_segment (struct page *page, void *aux) {
    size_t zero_bytes = temp_aux->zero_bytes;
    ASSERT(zero_bytes == PGSIZE - read_bytes);
 
+
    // read_bytes = read_bytes < file_length(temp_aux->file) ? read_bytes : file_length(temp_aux->file);
 
 //   struct file *opend_file = filesys_open(temp_aux->file);
@@ -1094,6 +1095,7 @@ file_lazy_load_segment (struct page *page, void *aux) {
    lock_release(&mmap_lock);
    size_t _zero_bytes = PGSIZE - _read_bytes; 
    memset (kva + _read_bytes, 0, _zero_bytes);
+
    return true;
 }
 //end 20180109

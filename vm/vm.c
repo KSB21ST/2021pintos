@@ -89,6 +89,7 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
          uninit_new(p, upage, init, type, aux, &file_backed_initializer);
       }
       p->writable = writable;
+      p->thread = thread_current();
       /* TODO: Insert the page into the spt. */
       if(spt_insert_page(spt, p))
          return true;
@@ -143,8 +144,8 @@ vm_get_victim (void) {
    while(1){
       e = list_pop_front(&victim_list);
       victim = list_entry(e, struct page, victim);
-         if(pml4_is_accessed(t->pml4, victim->va)){
-            pml4_set_accessed(t->pml4, victim->va, 0);
+         if(pml4_is_accessed(victim->thread->pml4, victim->va)){
+            pml4_set_accessed(victim->thread->pml4, victim->va, 0);
             list_push_back(&victim_list, e);
          }
          else{
@@ -349,7 +350,7 @@ void
 hash_file_backup(struct hash_elem *e, void *aux)
 {
    struct page* page = hash_entry(e, struct page, h_elem);
-   if((page->uninit).type == VM_FILE)
+   if(page->operations->type == VM_FILE)
       munmap(page->va);
 }
 

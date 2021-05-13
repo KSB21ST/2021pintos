@@ -64,6 +64,7 @@ struct page {
 	bool writable;
 	//end 20180109
 	struct list_elem victim;
+	struct thread *thread;
 
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */

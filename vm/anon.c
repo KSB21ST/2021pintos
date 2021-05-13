@@ -78,6 +78,7 @@ anon_swap_out (struct page *page) {
     anon_disk_connect(false, page_no, kva);
     pml4_clear_page(thread_current()->pml4, page->va);
     anon_page->swap_index = page_no;
+    page->frame = NULL;
     return true;
 }
 

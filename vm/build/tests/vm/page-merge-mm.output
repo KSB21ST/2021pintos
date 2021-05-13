@@ -42,17 +42,16 @@ child-qsort-mm: exit(80)
 (page-merge-mm) wait for child 7
 (page-merge-mm) merge
 (page-merge-mm) verify
-(page-merge-mm) success, buf_idx=1,048,576
-(page-merge-mm) end
-page-merge-mm: exit(0)
+(page-merge-mm) bad value 16 in byte 0: FAILED
+page-merge-mm: exit(1)
 Execution of 'page-merge-mm' complete.
-Timer: 2897 ticks
-Thread: 96 idle ticks, 55 kernel ticks, 2746 user ticks
+Timer: 2388 ticks
+Thread: 136 idle ticks, 50 kernel ticks, 2202 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 4888 reads, 6726 writes
+hd0:1: 4888 reads, 4678 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1861 characters output
+Console: 1846 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

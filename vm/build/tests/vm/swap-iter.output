@@ -27,4 +27,26 @@ Executing 'swap-iter':
 (swap-iter) write sparsely over page 4608
 (swap-iter) open "large.txt"
 (swap-iter) mmap "large.txt"
-TIMEOUT
+(swap-iter) check consistency in page 0
+(swap-iter) check consistency in page 512
+(swap-iter) check consistency in page 1024
+(swap-iter) check consistency in page 1536
+(swap-iter) check consistency in page 2048
+(swap-iter) check consistency in page 2560
+(swap-iter) check consistency in page 3072
+(swap-iter) check consistency in page 3584
+(swap-iter) check consistency in page 4096
+(swap-iter) check consistency in page 4608
+(swap-iter) end
+swap-iter: exit(0)
+Execution of 'swap-iter' complete.
+Timer: 3297 ticks
+Thread: 1102 idle ticks, 215 kernel ticks, 1981 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 11858 reads, 15902 writes
+hd1:0: 7932 reads, 0 writes
+hd1:1: 45096 reads, 84232 writes
+Console: 1928 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

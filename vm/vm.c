@@ -43,6 +43,7 @@ vm_init (void) {
    list_init(&frame_list);
    lock_init(&frame_lock);
    //end 20180109
+   list_init(&victim_list);
 }
 
 /* Get the type of the page. This function is useful if you want to know the
@@ -137,21 +138,21 @@ static struct frame *
 vm_get_victim (void) {
    struct thread *t = thread_current();
    struct list_elem* e;
-   struct frame *victim;
-   struct page *p;
-   for (e = list_begin(&frame_list); e != list_end(&frame_list); e = list_next(e)) 
-   {
-      victim = list_entry(e, struct frame, elem);
-      p = victim->page;
-      if((p->uninit).type == VM_ANON){
-         if(pml4_is_accessed(t->pml4, victim->page->va))
-            pml4_set_accessed(t->pml4, victim->page->va, 0);
-         else
-            break;
-      }
+   struct page *victim;
+//   struct page *p;
+   while(1){
+      e = list_pop_front(&victim_list);
+      victim = list_entry(e, struct page, victim);
+         if(pml4_is_accessed(t->pml4, victim->va)){
+            pml4_set_accessed(t->pml4, victim->va, 0);
+            list_push_back(&victim_list, e);
+         }
+         else{
+            return victim->frame;
+         }
    }
    // printf("in vm_get_victim: %s \n", p->operations->type);
-   return victim;
+//   return victim;
 }
 
 /* Evict one page and return the corresponding frame.

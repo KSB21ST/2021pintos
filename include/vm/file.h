@@ -8,6 +8,7 @@ enum vm_type;
 
 struct file_page {
 	struct file *file;
+	struct page_load *aux;
 	// int page_cnt;
 };
 

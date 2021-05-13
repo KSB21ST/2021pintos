@@ -30,6 +30,7 @@ int argument_parse(const char *file_name, char **argv); //parse argument before 
 static struct lock file_locker; //lock for file access, before proj3 implementation
 struct thread *find_child(struct list *child_list, int tid);
 //end 20180109
+struct lock mmap_lock;
 
 static void process_cleanup (void);
 static bool load (const char *file_name, struct intr_frame *if_);
@@ -55,6 +56,7 @@ process_create_initd (const char *file_name) {
    //start 20180109 careful!
    lock_init(&file_locker); 
    //end 20180109
+   lock_init(&mmap_lock);
 
    /* Make a copy of FILE_NAME.
     * Otherwise there's a race between the caller and load(). */
@@ -1073,7 +1075,7 @@ file_lazy_load_segment (struct page *page, void *aux) {
    /* TODO: VA is available when calling this function. */
    //printf("in lazy loading\n");
    ASSERT(aux != NULL);
-   ASSERT(page->uninit.type == VM_FILE);
+//   ASSERT(page->uninit.type == VM_FILE);
    if (page->frame == NULL || page->va == NULL)
       return false;
    struct page_load *temp_aux = (struct page_load *)aux;
@@ -1087,7 +1089,9 @@ file_lazy_load_segment (struct page *page, void *aux) {
 
 //   struct file *opend_file = filesys_open(temp_aux->file);
    struct file *opend_file = temp_aux->file;
+   lock_acquire(&mmap_lock);
    size_t _read_bytes = file_read_at(opend_file, kva, read_bytes, ofs);
+   lock_release(&mmap_lock);
    size_t _zero_bytes = PGSIZE - _read_bytes; 
    memset (kva + _read_bytes, 0, _zero_bytes);
    return true;

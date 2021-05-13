@@ -490,9 +490,7 @@ mmap (void *addr, unsigned long int length, int writable, int fd, off_t offset){
    }
 
    else{
-      lock_acquire(&file_lock);
       void *ans = do_mmap(addr, length, writable, map_file, offset);
-      lock_release(&file_lock);
       return ans;
    }
 }

@@ -49,7 +49,7 @@ anon_initializer (struct page *page, enum vm_type type, void *kva) {
 static bool
 anon_swap_in (struct page *page, void *kva) {
 	struct anon_page *anon_page = &page->anon;
-    ASSERT((page->uninit).type == VM_ANON);
+//    ASSERT((page->uninit).type == VM_ANON);
     ASSERT(page != NULL);
     ASSERT(kva != NULL);
     ASSERT(is_kernel_vaddr(kva));
@@ -60,6 +60,7 @@ anon_swap_in (struct page *page, void *kva) {
         anon_disk_connect(true, page_no, kva);
         success = true;
     }
+   	list_push_back(&victim_list, &page->victim);
     return success;
 }
 
@@ -67,7 +68,7 @@ anon_swap_in (struct page *page, void *kva) {
 static bool
 anon_swap_out (struct page *page) {
 	struct anon_page *anon_page = &page->anon;
-    ASSERT((page->uninit).type == VM_ANON);
+//    ASSERT((page->uninit).type == VM_ANON);
     ASSERT(page != NULL);
     ASSERT(page->frame != NULL);
 

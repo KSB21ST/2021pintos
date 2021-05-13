@@ -34,6 +34,8 @@ enum vm_type {
 struct page_operations;
 struct thread;
 
+struct list victim_list;
+
 #define VM_TYPE(type) ((type) & 7)
 
 //start 20180109
@@ -61,6 +63,7 @@ struct page {
 	struct hash_elem h_elem;
 	bool writable;
 	//end 20180109
+	struct list_elem victim;
 
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */

@@ -52,8 +52,8 @@ child-syn-read: exit(9)
 (syn-read) end
 syn-read: exit(0)
 Execution of 'syn-read' complete.
-Timer: 533 ticks
-Thread: 100 idle ticks, 48 kernel ticks, 385 user ticks
+Timer: 567 ticks
+Thread: 122 idle ticks, 38 kernel ticks, 407 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 10946 reads, 504 writes
 hd1:0: 225 reads, 0 writes

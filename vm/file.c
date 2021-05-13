@@ -37,6 +37,8 @@ file_backed_initializer (struct page *page, enum vm_type type, void *kva) {
 
 	struct file_page *file_page = &page->file;
 	// file_page->page_cnt ++;
+
+	file_page->aux = (struct page_load *)(page->uninit).aux;
 }
 
 /* Swap in the page by read contents from the file. */
@@ -115,6 +117,7 @@ do_mmap (void *addr, size_t length, int writable,
 		aux->ofs = offset;
 		aux->read_bytes = page_read_bytes;
 		aux->zero_bytes = page_zero_bytes;
+		// aux->tid = thread_current()->tid;
 		//end 20180109
 		// lock_acquire(&unmap_lock);
 		if (!vm_alloc_page_with_initializer (VM_FILE, pg_round_down(temp_addr),
@@ -139,7 +142,8 @@ do_munmap (void *addr)
 {	
 	struct page *upage = spt_find_page(&thread_current()->spt, addr);
 	while(upage != NULL){
-		struct page_load *temp_aux = (struct page_load *)(upage->uninit).aux;
+		// struct page_load *temp_aux = (struct page_load *)(upage->uninit).aux;
+		struct page_load *temp_aux = (struct page_load *)(upage->file).aux;
 		if(temp_aux == NULL)
 			break;
 		if(pml4_is_dirty(thread_current()->pml4, upage->va)){ //why???

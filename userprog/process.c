@@ -947,6 +947,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       aux->ofs = ofs;
       aux->read_bytes = page_read_bytes;
       aux->zero_bytes = page_zero_bytes;
+      // aux->tid = thread_current()->tid;
       //end 20180109
       lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
@@ -1075,7 +1076,7 @@ file_lazy_load_segment (struct page *page, void *aux) {
    /* TODO: VA is available when calling this function. */
    //printf("in lazy loading\n");
    ASSERT(aux != NULL);
-   ASSERT(page->uninit.type == VM_FILE);
+   // ASSERT(page->uninit.type == VM_FILE);
    if (page->frame == NULL || page->va == NULL)
       return false;
    struct page_load *temp_aux = (struct page_load *)aux;

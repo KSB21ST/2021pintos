@@ -49,6 +49,7 @@ struct page_load
 	off_t ofs;
     uint32_t read_bytes;
 	uint32_t zero_bytes;
+	// int tid;
 };
 //end 20180109
 
@@ -60,6 +61,8 @@ struct page {
 	const struct page_operations *operations;
 	void *va;              /* Address in terms of user space */
 	struct frame *frame;   /* Back reference for frame */
+
+	int p_tid;
 
 	/* Your implementation */
 	//start 20180109 proj3

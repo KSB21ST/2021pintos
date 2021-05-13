@@ -21,6 +21,8 @@
         "hash.h": "c",
         "inode.h": "c",
         "gdt.h": "c",
-        "disk.h": "c"
+        "disk.h": "c",
+        "inspect.h": "c",
+        "mmu.h": "c"
     }
 }

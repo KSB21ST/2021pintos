@@ -24,6 +24,23 @@ static bool vm_less_func(const struct hash_elem *a, const struct hash_elem *b){
     const struct page * snd = hash_entry(b,struct page, h_elem);
     return fst->va < snd->va;
 }
+
+bool 
+page_in_victim(struct list *victim_list, void *va)
+{
+   struct list_elem* e;
+   struct page* p = NULL;
+
+   for (e = list_begin(&victim_list); e != list_end(&victim_list); e = list_next(e)) 
+   {
+      p = list_entry(e, struct page, victim);
+      if(p->va == va) {
+         ASSERT(p != NULL);
+         return true;
+      }
+   }
+   return false;
+}
 //end 20180109
 void spt_destroy(struct hash_elem *e, void *aux);
 
@@ -41,6 +58,7 @@ vm_init (void) {
    /* TODO: Your code goes here. */
    //start 20180109
    list_init(&frame_list);
+   list_init(&victim_list);
    lock_init(&frame_lock);
    //end 20180109
 }
@@ -137,28 +155,29 @@ static struct frame *
 vm_get_victim (void) {
    struct thread *t = thread_current();
    struct list_elem* e;
-   struct frame *victim;
-   struct page *p;
-   for (e = list_begin(&frame_list); e != list_end(&frame_list); e = list_next(e)) 
-   {
-      victim = list_entry(e, struct frame, elem);
-      p = victim->page;
-      if((p->uninit).type == VM_ANON){
-         if(pml4_is_accessed(t->pml4, victim->page->va))
-            pml4_set_accessed(t->pml4, victim->page->va, 0);
-         else
-            break;
+   struct page *victim;
+   while(1){
+      e = list_pop_front(&victim_list);
+      victim = list_entry(e, struct page, victim);
+      if(victim->operations->type == VM_UNINIT)
+         continue;
+      if(list_size_int(&victim_list) == 0)
+         break;
+      if(pml4_is_accessed(t->pml4, victim->va)){
+         pml4_set_accessed(t->pml4, victim->va, 0);
+         list_push_back(&victim_list, e);
+      }
+      else{
+         return victim->frame;
       }
    }
-   // printf("in vm_get_victim: %s \n", p->operations->type);
-   return victim;
 }
 
 /* Evict one page and return the corresponding frame.
  * Return NULL on error.*/
 static struct frame *
 vm_evict_frame (void) {
-   struct frame *victim UNUSED = vm_get_victim ();
+   struct frame *victim = vm_get_victim ();
    /* TODO: swap out the victim and return the evicted frame. */
    swap_out(victim->page);
    victim->page = NULL;

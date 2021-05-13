@@ -43,12 +43,36 @@ file_backed_initializer (struct page *page, enum vm_type type, void *kva) {
 static bool
 file_backed_swap_in (struct page *page, void *kva) {
 	struct file_page *file_page UNUSED = &page->file;
+
+	struct page_load *aux = (struct page_load *)(page->file).aux;
+    struct file *file = aux->file;
+	off_t ofs = aux->ofs;
+    // uint8_t *upage = ((struct box *)aux)->upage;
+    size_t page_read_bytes = aux->read_bytes;
+    size_t page_zero_bytes = (PGSIZE - page_read_bytes)%PGSIZE; 
+	file_seek (file, ofs);
+    if (file_read (file, kva, page_read_bytes) != (int) page_read_bytes) {
+        palloc_free_page (kva);
+        return false;
+    }
+    memset (kva + page_read_bytes, 0, page_zero_bytes);
+    list_push_back(&victim_list, &page->victim);
+	return true;
 }
 
 /* Swap out the page by writeback contents to the file. */
 static bool
 file_backed_swap_out (struct page *page) {
 	struct file_page *file_page UNUSED = &page->file;
+
+    struct page_load * aux = (struct page_load *) (page->file).aux;
+        
+    if(pml4_is_dirty(thread_current()->pml4, page->va)){
+		file_write_at(aux->file, page->va, aux->read_bytes, aux->ofs);
+	}
+	pml4_clear_page (thread_current()->pml4, page->va);
+	// if(page_in_victim(&victim_list, page->va))
+		list_remove(&page->victim);
 }
 
 /* Destory the file backed page. PAGE will be freed by the caller. */
@@ -64,12 +88,11 @@ do_mmap (void *addr, size_t length, int writable,
 	// uint32_t read_bytes = (uint32_t)length;
 	// uint32_t zero_bytes = (PGSIZE - read_bytes)%PGSIZE; //why?????
 	// size_t read_bytes = length;
-	size_t read_bytes = length < file_length(file) ? length : file_length(file);
+	struct file *reopen_file = file_reopen(file);
+	size_t read_bytes = length < file_length(reopen_file) ? length : file_length(reopen_file);
 	size_t zero_bytes = (PGSIZE - read_bytes)%PGSIZE; //why?????
 
 	void *temp_addr = addr;
-
-	struct file *reopen_file = file_reopen(file);
 
 
 	while (read_bytes > 0 || zero_bytes > 0) {
@@ -93,14 +116,14 @@ do_mmap (void *addr, size_t length, int writable,
 		aux->read_bytes = page_read_bytes;
 		aux->zero_bytes = page_zero_bytes;
 		//end 20180109
-		lock_acquire(&unmap_lock);
+		// lock_acquire(&unmap_lock);
 		if (!vm_alloc_page_with_initializer (VM_FILE, pg_round_down(temp_addr),
 				writable, file_lazy_load_segment, aux)){
-			lock_release(&unmap_lock);
+			// lock_release(&unmap_lock);
 			return NULL;
 		}
 			
-		lock_release(&unmap_lock);
+		// lock_release(&unmap_lock);
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;

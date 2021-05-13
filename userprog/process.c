@@ -28,6 +28,7 @@
 void argument_stack(char **argv, int argc, struct intr_frame *if_); //stack arguments after load
 int argument_parse(const char *file_name, char **argv); //parse argument before load in process_exec
 static struct lock file_locker; //lock for file access, before proj3 implementation
+static struct lock lazy_lock;
 struct thread *find_child(struct list *child_list, int tid);
 //end 20180109
 
@@ -54,6 +55,7 @@ process_create_initd (const char *file_name) {
 
    //start 20180109 careful!
    lock_init(&file_locker); 
+   lock_init(&lazy_lock);
    //end 20180109
 
    /* Make a copy of FILE_NAME.
@@ -1087,7 +1089,9 @@ file_lazy_load_segment (struct page *page, void *aux) {
 
 //   struct file *opend_file = filesys_open(temp_aux->file);
    struct file *opend_file = temp_aux->file;
+   lock_acquire(&lazy_lock);
    size_t _read_bytes = file_read_at(opend_file, kva, read_bytes, ofs);
+   lock_release(&lazy_lock);
    size_t _zero_bytes = PGSIZE - _read_bytes; 
    memset (kva + _read_bytes, 0, _zero_bytes);
    return true;

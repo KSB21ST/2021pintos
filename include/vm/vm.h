@@ -3,6 +3,11 @@
 #include <stdbool.h>
 #include "threads/palloc.h"
 
+//start 20180109
+struct list victim_list;
+bool page_in_victim(struct list *victim_list, void *va);
+//end 20180109
+
 enum vm_type {
 	/* page not initialized */
 	VM_UNINIT = 0,
@@ -60,6 +65,7 @@ struct page {
 	//start 20180109 proj3
 	struct hash_elem h_elem;
 	bool writable;
+	struct list_elem victim;
 	//end 20180109
 
 	/* Per-type data are binded into the union.

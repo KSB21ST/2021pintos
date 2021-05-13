@@ -48,35 +48,42 @@ anon_initializer (struct page *page, enum vm_type type, void *kva) {
 /* Swap in the page by read contents from the swap disk. */
 static bool
 anon_swap_in (struct page *page, void *kva) {
+    // printf("swap in, %#x \n", page->va);
 	struct anon_page *anon_page = &page->anon;
-    ASSERT((page->uninit).type == VM_ANON);
+    // ASSERT((page->uninit).type == VM_ANON);
     ASSERT(page != NULL);
     ASSERT(kva != NULL);
     ASSERT(is_kernel_vaddr(kva));
     bool success = false;
     int page_no = anon_page->swap_index;
+
     ASSERT(page_no <= swap_size);
     if (bitmap_test(swap_table, page_no)){
         anon_disk_connect(true, page_no, kva);
         success = true;
     }
+    page->frame->page = page;
+    anon_page->swap_index = page_no;
+    list_push_back(&victim_list, &page->victim);
     return success;
 }
 
 /* Swap out the page by writing contents to the swap disk. */
 static bool
 anon_swap_out (struct page *page) {
+    // printf("swap out, %#x \n", page->va);
 	struct anon_page *anon_page = &page->anon;
-    ASSERT((page->uninit).type == VM_ANON);
+    // ASSERT((page->uninit).type == VM_ANON);
     ASSERT(page != NULL);
     ASSERT(page->frame != NULL);
 
     void *kva = page->frame->kva;
-
 	int page_no = bitmap_scan(swap_table, 0, 1, false);
     anon_disk_connect(false, page_no, kva);
     pml4_clear_page(thread_current()->pml4, page->va);
     anon_page->swap_index = page_no;
+    page->frame = NULL;
+    list_remove(&page->victim);
     return true;
 }
 

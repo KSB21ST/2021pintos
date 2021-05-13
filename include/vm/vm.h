@@ -61,6 +61,7 @@ struct page {
 	struct hash_elem h_elem;
 	bool writable;
 	//end 20180109
+	int swap_slot;
 
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
@@ -83,6 +84,8 @@ struct frame {
 	struct list_elem elem;
 	//end 20180109
 };
+
+struct list frame_list;
 
 /* The function table for page operations.
  * This is one way of implementing "interface" in C.
@@ -108,6 +111,8 @@ struct supplemental_page_table {
 };
 
 struct lock spt_lock;
+
+struct bitmap *swap_table;
 
 #include "threads/thread.h"
 void supplemental_page_table_init (struct supplemental_page_table *spt);

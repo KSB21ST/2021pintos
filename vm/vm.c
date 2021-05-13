@@ -12,7 +12,7 @@
 
 //start 20180109
 struct lock frame_lock;
-struct list frame_list;
+//struct list frame_list;
 void hash_file_backup(struct hash_elem *e, void *aux);
 static uint64_t vm_hash_func(const struct hash_elem *e, void * aux ){
     struct page * temp = hash_entry(e, struct page, h_elem);
@@ -87,6 +87,7 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
          uninit_new(p, upage, init, type, aux, &file_backed_initializer);
       }
       p->writable = writable;
+      p->swap_slot = -1;
       /* TODO: Insert the page into the spt. */
       if(spt_insert_page(spt, p))
          return true;
@@ -136,8 +137,21 @@ static struct frame *
 vm_get_victim (void) {
    struct frame *victim = NULL;
     /* TODO: The policy for eviction is up to you. */
+   struct list_elem *e;
+   uint64_t *pml4 = thread_current()->pml4;
 
-   return victim;
+   while(1){
+      for(e = list_begin(&frame_list); e != list_end(&frame_list); e = list_next(e)){
+         victim = list_entry(e, struct frame, elem);
+         void *upage = victim->page->va;
+         if(pml4_is_accessed(pml4, upage)){
+            pml4_set_accessed(pml4, upage, false);
+         }else{
+            return victim;
+         }
+      }
+   }
+
 }
 
 /* Evict one page and return the corresponding frame.
@@ -146,8 +160,11 @@ static struct frame *
 vm_evict_frame (void) {
    struct frame *victim UNUSED = vm_get_victim ();
    /* TODO: swap out the victim and return the evicted frame. */
-   PANIC('TODO');
-   return NULL;
+//   printf("before swap_out\n");
+   swap_out(victim->page);
+   //printf("return victim\n");
+   return victim;
+//   return NULL;
 }
 
 /* palloc() and get frame. If there is no available page, evict the page
@@ -161,11 +178,11 @@ vm_get_frame (void) {
    frame = malloc(sizeof(struct frame));
    frame->kva = palloc_get_page(PAL_USER);
    if (frame->kva == NULL){
-      // free(frame); //not sure of this
-      // lock_acquire(&frame_lock);
-      // frame = vm_evict_frame();
-      // lock_release(&frame_lock);
-      PANIC("TODO VM_GET_FRAME");
+      free(frame); //not sure of this
+//      lock_acquire(&frame_lock);
+      frame = vm_evict_frame();
+      //printf("after vm_evict_frame\n");
+//      lock_release(&frame_lock);
    }
    frame->page = NULL;
    list_push_back(&frame_list, &frame->elem);
@@ -282,7 +299,6 @@ vm_do_claim_page (struct page *page) {
    /*Obtain a frame to store the page*/ 
    /*If you implement sharing, the data you need may already be in a frame, in which case you must be able to locate that frame.*/
    struct frame *frame = vm_get_frame ();
-
    /*Fetch the data into the frame, by reading it from the file system or swap, zeroing it, etc. 
    If you implement sharing, the page you need may already be in a frame, in which case no action is necessary in this step.*/
    /* Set links */
@@ -294,7 +310,8 @@ vm_do_claim_page (struct page *page) {
    if(pml4_get_page(thread_current()->pml4, page->va)!=NULL)
       return false;
    pml4_set_page(thread_current()->pml4, page->va, frame->kva, page->writable);
-
+//   printf("before swap_in\n");
+//   return true;
    return swap_in (page, frame->kva);
 }
 

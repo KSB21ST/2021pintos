@@ -50,23 +50,28 @@ static bool
 anon_swap_in (struct page *page, void *kva) {
 	struct anon_page *anon_page = &page->anon;
 //    ASSERT((page->uninit).type == VM_ANON);
+    // printf("start of anon_swap_in\n");
     ASSERT(page != NULL);
     ASSERT(kva != NULL);
     ASSERT(is_kernel_vaddr(kva));
     bool success = false;
     int page_no = anon_page->swap_index;
     ASSERT(page_no <= swap_size);
+    // printf("bitmap_test res: %d\n", bitmap_test(swap_table, page_no));
     if (bitmap_test(swap_table, page_no)){
         anon_disk_connect(true, page_no, kva);
         success = true;
     }
    	list_push_back(&victim_list, &page->victim);
+    // printf("end of anon_swap_in, res: %d\n", success);
     return success;
+//    return true;
 }
 
 /* Swap out the page by writing contents to the swap disk. */
 static bool
 anon_swap_out (struct page *page) {
+    // printf("start of anon_swap_out\n");
 	struct anon_page *anon_page = &page->anon;
 //    ASSERT((page->uninit).type == VM_ANON);
     ASSERT(page != NULL);
@@ -79,6 +84,7 @@ anon_swap_out (struct page *page) {
     pml4_clear_page(thread_current()->pml4, page->va);
     anon_page->swap_index = page_no;
     page->frame = NULL;
+    // printf("end of anon_swap_out\n");
     return true;
 }
 

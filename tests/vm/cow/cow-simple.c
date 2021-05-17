@@ -22,7 +22,9 @@ test_main (void)
 	pa_parent = get_phys_addr((void*)large);
 
 	child = fork ("child");
+//	printf("tid = %d\n", child);
 	if (child == 0) {
+//		printf("[step1]\n");
 		CHECK (memcmp (buf, large, strlen (buf)) == 0, "check data consistency");
 
 		pa_child = get_phys_addr((void*)large);

@@ -221,8 +221,10 @@ __do_fork (void *aux) {
    lock_release(&file_locker);
    /*if we memcpy parent's fd table to child's fd table without duplicating file, multioom pass but other tests fail*/
    // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table)); 
+   // printf("before process_init\n");
    process_init ();
    /* Finally, switch to the newly created process. */
+   // printf("after process_init\n");
    if (succ){
       /*child's return should be 0. rax is the return register*/
       if_.R.rax = 0; 
@@ -894,6 +896,8 @@ lazy_load_segment (struct page *page, void *aux) {
    size_t read_bytes = temp_aux->read_bytes;
    size_t zero_bytes = temp_aux->zero_bytes;
    // ASSERT(zero_bytes == PGSIZE - read_bytes);
+   page->origin_writable = temp_aux->origin_writable;
+//   page->need_frame = temp_aux->need_frame;
 
    file_seek (file, ofs);
    if(file_read(file, kva, read_bytes) == (int)read_bytes){
@@ -948,6 +952,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       aux->read_bytes = page_read_bytes;
       aux->zero_bytes = page_zero_bytes;
       //end 20180109
+      aux->origin_writable = writable;
+//      aux->need_frame = true;
       lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
                writable, lazy_load_segment, aux))

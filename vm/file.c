@@ -44,7 +44,7 @@ file_backed_initializer (struct page *page, enum vm_type type, void *kva) {
 /* Swap in the page by read contents from the file. */
 static bool
 file_backed_swap_in (struct page *page, void *kva) {
-//	printf("file_backed_swap_in\n");
+	// printf("file_backed_swap_in\n");
 	struct file_page *file_page UNUSED = &page->file;
 
    	struct page_load *aux = (struct page_load *)(page->file).aux;
@@ -55,11 +55,12 @@ file_backed_swap_in (struct page *page, void *kva) {
     size_t page_zero_bytes = (PGSIZE - page_read_bytes)%PGSIZE; 
    	file_seek (file, ofs);
     if (file_read (file, kva, page_read_bytes) != (int) page_read_bytes) {
-        palloc_free_page (kva);
+		palloc_free_page (kva);
         return false;
     }
     memset (kva + page_read_bytes, 0, page_zero_bytes);
    	list_push_back(&victim_list, &page->victim);
+	// printf("end of file_backed_swap_in\n");
    	return true;
 }
 
@@ -123,6 +124,8 @@ do_mmap (void *addr, size_t length, int writable,
 		aux->read_bytes = page_read_bytes;
 		aux->zero_bytes = page_zero_bytes;
 		//end 20180109
+		aux->origin_writable = writable; // not sure
+		aux->need_frame = true; // not sure
 //		lock_acquire(&unmap_lock);
 		if (!vm_alloc_page_with_initializer (VM_FILE, pg_round_down(temp_addr),
 				writable, file_lazy_load_segment, aux)){

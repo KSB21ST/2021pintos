@@ -16,18 +16,22 @@ Executing 'fork-boundary':
 (fork-boundary) begin
 (fork-boundary) child run
 child-simple: exit(54)
-(fork-boundary) fork
-(fork-boundary) wait
-(fork-boundary) end
-fork-boundary: exit(0)
-Execution of 'fork-boundary' complete.
-Timer: 72 ticks
-Thread: 35 idle ticks, 34 kernel ticks, 3 user ticks
+child-simple: exit(-1)
+Kernel PANIC at ../../threads/palloc.c:321 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
+Call stack: 0x8004218804 0x800420c04d 0x800420c09a 0x800421c7fc 0x80042071f3 0x800421e42d 0x800421dd5b 0x8004209325 0x8004209743 0x800421b1a2 0x80042230c7 0x800421ca16 0x800421c9c9 0x80042071f3 0x800421e42d 0x800421df45 0x800421ddd0 0x40014a 0x400302 0x400da3 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421583e
+ cr2=0000000000000010 error=               0
+rax 246f60ffffffff04 rbx 000000004747ff20 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004251af0 rbp 0000008004251b00 rsi 000000000000950f rdi 0000000000000000
+rip 000000800421583e r8 0000008004251a08  r9 000000800421bce2 r10 0000000000000000
+r11 0000000000000202 r12 000000800421dea7 r13 0000000000008004 r14 2190170000008004
+r15 246ee00000008004 rflags 00000002
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
+Timer: 71 ticks
+Thread: 36 idle ticks, 32 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 240 writes
 hd1:0: 106 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1070 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1956 characters output
+Key

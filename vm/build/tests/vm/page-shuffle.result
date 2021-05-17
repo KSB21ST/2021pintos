@@ -1,1 +1,22 @@
-PASS
+FAIL
+Kernel panic in run: PANIC at ../../threads/palloc.c:321 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
+Call stack: 0x8004218804 0x800420c04d 0x800420c09a 0x800421c7fc 0x80042071f3 0x800421e42d 0x800421dd5b 0x8004209325 0x8004209743 0x800421b1a2 0x80042230c7 0x800421ca16 0x800421c9c9 0x80042071f3 0x800421e42d 0x800421df45 0x800421ddd0 0x400fd8
+Translation of call stack:
+0x0000008004218804: debug_panic (lib/kernel/debug.c:32)
+0x000000800420c04d: palloc_free_multiple (threads/palloc.c:322)
+0x000000800420c09a: palloc_free_page (threads/palloc.c:329)
+0x000000800421c7fc: process_exit (userprog/process.c:451)
+0x00000080042071f3: thread_exit (threads/thread.c:331)
+0x000000800421e42d: fork (userprog/syscall.c:220)
+0x000000800421dd5b: page_fault (userprog/exception.c:152)
+0x0000008004209325: intr_handler (threads/interrupt.c:352)
+0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
+0x000000800421b1a2: hash_apply (lib/kernel/hash.c:160 (discriminator 3))
+0x00000080042230c7: supplemental_page_table_kill (vm/vm.c:452)
+0x000000800421ca16: process_cleanup (userprog/process.c:523)
+0x000000800421c9c9: process_exit (userprog/process.c:508)
+0x00000080042071f3: thread_exit (threads/thread.c:331)
+0x000000800421e42d: fork (userprog/syscall.c:220)
+0x000000800421df45: syscall_handler (userprog/syscall.c:88)
+0x000000800421ddd0: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400fd8: (unknown)

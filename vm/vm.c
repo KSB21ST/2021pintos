@@ -225,7 +225,8 @@ vm_handle_wp (struct page *page UNUSED) {
 
 //   page->need_frame = true;
    
-
+   // if(page->operations->type == VM_FILE)
+   //    munmap(page->va);
    struct frame *temp = page->frame;
    page->frame = NULL;
    pml4_clear_page (thread_current()->pml4, page->va);

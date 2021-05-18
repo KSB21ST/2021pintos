@@ -4,7 +4,7 @@ Kernel command line: -q -f put cow-simple run cow-simple
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  209,510,400 loops/s.
+Calibrating timer...  209,305,600 loops/s.
 hd0:0: detected 345 sector (172 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 4,019 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -21,18 +21,18 @@ Executing 'cow-simple':
 (cow-simple) two phys addrs should not be the same.
 (cow-simple) end
 child: exit(0)
-cow-simple: exit(-1)
-cow-simple: exit(-1)
-Kernel PANIC at ../../threads/palloc.c:321 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0x8004218804 0x800420c04d 0x800420c09a 0x800421c7fc 0x80042071f3 0x800421e42d 0x800421dd5b 0x8004209325 0x8004209743 0x800421b1a2 0x80042230c7 0x800421ca16 0x800421c9c9 0x80042071f3 0x800421e42d 0x8004222cc2 0x800421dd28 0x8004209325.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 222 ticks
-Thread: 99 idle ticks, 114 kernel ticks, 9 user ticks
+(cow-simple) two phys addrs should be the same.
+(cow-simple) check data consistency
+(cow-simple) end
+cow-simple: exit(0)
+Execution of 'cow-simple' complete.
+Timer: 257 ticks
+Thread: 106 idle ticks, 140 kernel ticks, 11 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 90 reads, 8066 writes
 hd1:0: 4019 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1703 characters output
-Key
+Console: 1281 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

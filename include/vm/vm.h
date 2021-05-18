@@ -87,7 +87,7 @@ struct page {
 struct frame {
 	void *kva;
 	struct page *page;
-	bool reference;
+	int reference;
 
 	//start 20180109
 	struct list_elem elem;

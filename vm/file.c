@@ -126,14 +126,14 @@ do_mmap (void *addr, size_t length, int writable,
 		//end 20180109
 		aux->origin_writable = writable; // not sure
 		aux->need_frame = true; // not sure
-//		lock_acquire(&unmap_lock);
+		lock_acquire(&unmap_lock);
 		if (!vm_alloc_page_with_initializer (VM_FILE, pg_round_down(temp_addr),
 				writable, file_lazy_load_segment, aux)){
-//			lock_release(&unmap_lock);
+			lock_release(&unmap_lock);
 			return NULL;
 		}
 			
-//		lock_release(&unmap_lock);
+		lock_release(&unmap_lock);
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
@@ -147,6 +147,7 @@ do_mmap (void *addr, size_t length, int writable,
 void
 do_munmap (void *addr) 
 {	
+	// printf("start of do_munmap!\n");
 	struct page *upage = spt_find_page(&thread_current()->spt, addr);
 	while(upage != NULL){
 		struct page_load *temp_aux = (struct page_load *)(upage->uninit).aux;

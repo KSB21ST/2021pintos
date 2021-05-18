@@ -4,7 +4,7 @@ Kernel command line: -q -f put multi-recurse run 'multi-recurse 15'
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  209,510,400 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 345 sector (172 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 113 sector (56 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -46,38 +46,44 @@ Executing 'multi-recurse 15':
 (multi-recurse) begin 0
 (multi-recurse) end 0
 multi-recurse: exit(0)
-multi-recurse: dying due to interrupt 0x03 (#BP Breakpoint Exception).
-Interrupt 0x03 (#BP Breakpoint Exception) at rip=403a9d
- cr2=000000000040355c error=               0
-rax 0000000000000012 rbx 295c580000008004 rcx 0000000000403a9c rdx 0000000000000000
-rsp 000000004747feb0 rbp 000000004747fef8 rsi 0000000000000000 rdi 0000000000404a90
-rip 0000000000403a9d r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000202 r12 22cd600000000000 r13 0000000000008004 r14 24d0180000000000
-r15 0000010000008004 rflags 00000202
-es: 001b ds: 001b cs: 0023 ss: 001b
-Interrupt 0x0d (#GP General Protection Exception) at rip=800421c86a
- cr2=000000000040355c error=               0
-rax cccccccccccccc14 rbx 0000000000000003 rcx 0000000000000019 rdx fffffffffdffffff
-rsp 00000080042d0e70 rbp 00000080042d0eb0 rsi 00000000000002d9 rdi 00000080042d0098
-rip 000000800421c86a r8 00000080042d0dc8  r9 000000800421bce2 r10 0000000000000000
-r11 0000000000000202 r12 0000008004228d08 r13 0000000000008004 r14 24d0180000000000
-r15 0000010000008004 rflags 00000286
-es: 0010 ds: 0010 cs: 0008 ss: 0010
-Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x8004218804 0x800421dc31 0x8004209325 0x8004209743 0x80042071f3 0x800421dbe9 0x8004209325 0x8004209743 0xccccccccccccccccInterrupt 0x0d (#GP General Protection Exception) at rip=800421583e
- cr2=000000000040355c error=               0
-rax cccccccccccccccc rbx 0000000000000003 rcx 00000080040b8000 rdx 00000000000003d4
-rsp 00000080042d0cb0 rbp 00000080042d0cc0 rsi 000000000000b60f rdi 0000000000000000
-rip 000000800421583e r8 00000080042d0bc8  r9 000000800421bce2 r10 0000000000000000
-r11 0000000000000202 r12 0000008004228d08 r13 0000000000008004 r14 24d0180000000000
-r15 0000010000008004 rflags 00000086
-es: 0010 ds: 0010 cs: 0008 ss: 0010
-Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
-Timer: 109 ticks
-Thread: 41 idle ticks, 36 kernel ticks, 32 user ticks
+(multi-recurse) end 1
+multi-recurse: exit(1)
+(multi-recurse) end 2
+multi-recurse: exit(2)
+(multi-recurse) end 3
+multi-recurse: exit(3)
+(multi-recurse) end 4
+multi-recurse: exit(4)
+(multi-recurse) end 5
+multi-recurse: exit(5)
+(multi-recurse) end 6
+multi-recurse: exit(6)
+(multi-recurse) end 7
+multi-recurse: exit(7)
+(multi-recurse) end 8
+multi-recurse: exit(8)
+(multi-recurse) end 9
+multi-recurse: exit(9)
+(multi-recurse) end 10
+multi-recurse: exit(10)
+(multi-recurse) end 11
+multi-recurse: exit(11)
+(multi-recurse) end 12
+multi-recurse: exit(12)
+(multi-recurse) end 13
+multi-recurse: exit(13)
+(multi-recurse) end 14
+multi-recurse: exit(14)
+(multi-recurse) end 15
+multi-recurse: exit(15)
+Execution of 'multi-recurse' complete.
+Timer: 141 ticks
+Thread: 45 idle ticks, 33 kernel ticks, 64 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 882 reads, 254 writes
 hd1:0: 113 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 3850 characters output
-Key
+Console: 2652 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

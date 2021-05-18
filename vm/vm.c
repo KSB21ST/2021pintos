@@ -152,7 +152,7 @@ vm_get_victim (void) {
             pml4_set_accessed(victim->thread->pml4, victim->va, 0);
             list_push_back(&victim_list, e);
          }
-         else{
+         else if(victim->frame->reference == 1){
             return victim->frame;
          }
    }
@@ -193,6 +193,7 @@ vm_get_frame (void) {
       frame = vm_evict_frame();
       lock_release(&frame_lock);
       frame->page = NULL;
+      frame->reference = 0;
       list_push_back(&frame_list, &frame->elem);
    }
    ASSERT (frame != NULL);
@@ -220,10 +221,11 @@ vm_handle_wp (struct page *page UNUSED) {
    bool suc = false;
    page->writable = true;
 //   page->need_frame = true;
+   
 
    struct frame *temp = page->frame;
    page->frame = NULL;
-   pml4_clear_page (thread_current()->pml4, page->va); //not sure
+   pml4_clear_page (thread_current()->pml4, page->va);
 
 //   suc = vm_do_claim_page(page); // get new frame
    // very similar with do_claim_page
@@ -233,6 +235,7 @@ vm_handle_wp (struct page *page UNUSED) {
    page->frame = frame;
 
    page->frame->reference++;
+   // printf("must be 1: %d\n", page->frame->reference);
    memcpy(page->frame->kva, temp->kva, PGSIZE); // copy to new frame
 
    if(pml4_get_page(thread_current()->pml4, page->va) != NULL){
@@ -243,20 +246,13 @@ vm_handle_wp (struct page *page UNUSED) {
    suc = true;
 
    temp->reference--; // if frame->reference == 0 frame have to be freed. 
+   //printf"(in wp) thread: %s, frame ref: %d\n", thread_current()->name, temp->reference);
    if(temp->reference == 0){
       // printf("here??\n");
       palloc_free_page(temp->kva);
       free(temp);
    }
 
-   //frame을 하나 얻어서(기존의 것 복사) 지금의 page를 복사한 frame과 연결.
-
-   // printf("before vm_claim_page in wp\n");
-   // if(vm_claim_page(page->va)){
-   //    suc = true;
-   // }
-   // printf("after vm_claim_page in wp\n");
-   // printf("wp is done, res: %d\n", suc);
    return suc;
 }
 
@@ -383,6 +379,7 @@ vm_do_claim_page (struct page *page) {
       page->frame = frame;
    }
    page->frame->reference++;
+   //printf"(in do claim) thread: %s, frame ref: %d\n", thread_current()->name, page->frame->reference);
    //printf("after linking");
    /* TODO: Insert page table entry to map page's VA to frame's PA. */
    /*Point the page table entry for the faulting virtual address to the physical page. You can use the functions in threads/mmu.c*/
@@ -448,8 +445,12 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
     * TODO: writeback all the modified contents to the storage. */
    if(hash_empty(&spt->spt_table))
 		return;
+   // printf("spt_kill!\n");
+   // lock_acquire(&spt_lock); // edit for cow
    hash_apply(&spt->spt_table, hash_file_backup);
+   // printf("after file_backup\n");
    hash_clear(&spt->spt_table, spt_destroy);
+   // lock_release(&spt_lock); // edit for cow
 }
 
 void 
@@ -462,11 +463,32 @@ spt_destroy(struct hash_elem *e, void *aux){
 void 
 hash_file_backup(struct hash_elem *e, void *aux)
 {
+   // printf("start of file_backup\n");
    struct page* page = hash_entry(e, struct page, h_elem);
-   page->frame->reference--; // edit for cow
-   if(page->operations->type == VM_FILE && page->frame->reference == 0){
-      munmap(page->va);
+   // printf("after struct page...\n");
+
+   if(page->frame != NULL){
+      page->frame->reference--;
+      //printf"thread: %s, frame ref: %d\n", thread_current()->name, page->frame->reference);
+      if(page->frame->reference == 0){
+         if(page->operations->type == VM_FILE){
+            // page->writable = page->origin_writable;
+            munmap(page->va);
+         }
+         palloc_free_page(page->frame->kva);
+         free(page->frame);
+         // pml4_clear_page(thread_current()->pml4, page->va);
+      }
+      pml4_clear_page(thread_current()->pml4, page->va);
    }
+   // page->frame->reference--; // edit for cow
+   // printf("after reducing reference\n");
+
+   // printf("after first if statement\n");
+   // if(page->frame->reference == 0){
+   //    palloc_free_page(page->frame->kva);
+   //    free(page->frame);
+   // }
 }
 
 

@@ -218,6 +218,7 @@ exit (int status)
 int
 fork (const char *thread_name, struct intr_frame *f)
 {
+//   printf("let's do fork!\n");
    tid_t num = process_fork(thread_name, f);
    return num;
 } 

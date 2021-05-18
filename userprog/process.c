@@ -493,6 +493,7 @@ process_exit (void) {
    or will deallocate this child even after it's died after this child by the loop right above(if child->status == THREAD_EXIT).
    */
    lock_acquire(&cur->exit_lock);
+   
    if(cur->parent){
       /*
       set process_exit as true so that it can change it's status to THREAD_EXIT instead of THERAD_DYING in thread_exit() in thread.c.
@@ -506,6 +507,7 @@ process_exit (void) {
    process_cleanup ();
    /*release lock for cond_signal, exit_lock*/
    lock_release(&cur->exit_lock);
+   // printf("process_exit is done!\n");
 }
 
 /* Free the current process's resources. */
@@ -516,6 +518,7 @@ process_cleanup (void) {
 #ifdef VM
    supplemental_page_table_kill (&curr->spt);
 #endif
+   // printf("spt kill is done!! in process.c\n");
 
    uint64_t *pml4;
    /* Destroy the current process's page directory and switch back
@@ -531,7 +534,9 @@ process_cleanup (void) {
        * that's been freed (and cleared). */
       curr->pml4 = NULL;
       pml4_activate (NULL);
+      // printf("before destroy\n");
       pml4_destroy (pml4);
+      // printf("after destroy\n");
    }
 }
 

@@ -1,13 +1,26 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x8004218804 0x800421dc31 0x8004209325 0x8004209743 0x80042071f3 0x800421dbe9 0x8004209325 0x8004209743 0xcccccccccccccccc
-Translation of call stack:
-0x0000008004218804: debug_panic (lib/kernel/debug.c:32)
-0x000000800421dc31: kill (userprog/exception.c:103)
-0x0000008004209325: intr_handler (threads/interrupt.c:352)
-0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
-0x00000080042071f3: thread_exit (threads/thread.c:331)
-0x000000800421dbe9: kill (userprog/exception.c:96)
-0x0000008004209325: intr_handler (threads/interrupt.c:352)
-0x0000008004209743: intr_entry (threads/intr-stubs.o:?)
-0xcccccccccccccccc: (unknown)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (multi-child-fd) begin
+  (multi-child-fd) open "sample.txt"
+  (child-close) begin
+  (child-close) verified contents of "sample.txt"
+  (child-close) end
+  child-close: exit(0)
+  (multi-child-fd) wait(exec()) = 0
+  (multi-child-fd) verified contents of "sample.txt"
+  (multi-child-fd) end
+  multi-child-fd: exit(0)
+Differences in `diff -u' format:
+  (multi-child-fd) begin
+  (multi-child-fd) open "sample.txt"
+  (child-close) begin
+  (child-close) verified contents of "sample.txt"
+  (child-close) end
+  child-close: exit(0)
+  (multi-child-fd) wait(exec()) = 0
+- (multi-child-fd) verified contents of "sample.txt"
+- (multi-child-fd) end
+- multi-child-fd: exit(0)
++ multi-child-fd: exit(-1)

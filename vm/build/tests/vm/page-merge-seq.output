@@ -18,23 +18,17 @@ Executing 'page-merge-seq':
 (page-merge-seq) init
 (page-merge-seq) sort chunk 0
 (page-merge-seq) child[0] exec
-child-sort: exit(-1)
-child-sort: exit(-1)
-Kernel PANIC at ../../threads/palloc.c:321 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0x8004218804 0x800420c04d 0x800420c09a 0x800421c7fc 0x80042071f3 0x800421e42d 0x800421dd5b 0x8004209325 0x8004209743 0x800421b1a2 0x80042230c7 0x800421ca16 0x800421c9c9 0x80042071f3 0x800421e42d 0x800421dd5b 0x8004209325 0x8004209743 0x800421b1a2 0x80042230c7 0x800421ca16 0x800421c41d 0x800421e4ab 0x800421dfbb 0x800421ddd0 0x400315 0x400728 0x401435 0x40147e 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421583e
- cr2=0000000000000010 error=               0
-rax 246f60ffffffff04 rbx 000000004747ff18 rcx 00000080040b8000 rdx 00000000000003d4
-rsp 000000800426d7c0 rbp 000000800426d7d0 rsi 000000000000b60f rdi 0000000000000000
-rip 000000800421583e r8 000000800426d6d8  r9 000000800421bce2 r10 0000000000000000
-r11 0000000000000216 r12 000000800421dea7 r13 0000000000008004 r14 2190170000008004
-r15 246ee00000008004 rflags 00000002
-es: 0010 ds: 0010 cs: 0008 ss: 0010
-Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
-Timer: 187 ticks
-Thread: 38 idle ticks, 34 kernel ticks, 115 user ticks
+child-sort: exit(123)
+(page-merge-seq) child[0] wait success
+page-merge-seq: exit(-1)
+Execution of 'page-merge-seq' complete.
+Timer: 457 ticks
+Thread: 47 idle ticks, 36 kernel ticks, 374 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 139 reads, 734 writes
+hd0:1: 306 reads, 860 writes
 hd1:0: 216 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 2192 characters output
-Key
+Console: 1176 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

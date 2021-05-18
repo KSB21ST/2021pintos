@@ -92,7 +92,7 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
       }
       p->writable = writable;
       p->thread = thread_current();
-      p->origin_writable = writable; // not sure;
+      // p->origin_writable = writable; // not sure;
 //      p->need_frame = true;
       /* TODO: Insert the page into the spt. */
       if(spt_insert_page(spt, p))
@@ -219,7 +219,10 @@ vm_stack_growth (void *addr UNUSED) {
 static bool
 vm_handle_wp (struct page *page UNUSED) {
    bool suc = false;
-   page->writable = true;
+   // page->writable = true;
+   // pml4_clear_page(thread_current()->pml4, page->va);
+   // pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, page->writable);
+
 //   page->need_frame = true;
    
 
@@ -273,7 +276,7 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
    if(addr == NULL || is_kernel_vaddr(addr)){
 //      printf("exit!!!\n addr == NULL: %d\n not_present == false: %d\n is_kernel: %d\n",
 //         addr == NULL, not_present == false, is_kernel_vaddr(addr));
-      // printf("\naddr is null or kernel_va\n");
+      // printf("\naddr is null : %d or kernel_va : %d\n", addr == NULL, is_kernel_vaddr(addr));
       exit(-1);
    }
 
@@ -298,12 +301,12 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
       }
       /*or if the access is an attempt to write to a read-only page, 
       then the access is invalid.*/
-      if(write && page->origin_writable != true){
+      if(write && page->writable != true){
          // printf("\ntry write, but origin_writable is false\n");
          exit(-1);
       }
 
-      if(write && page->writable != true && page->origin_writable == true){
+      if(not_present == false){
          // printf("let's go vm_handle_wp\n");
          return vm_handle_wp(page);
       } // in case of cow
@@ -368,7 +371,9 @@ vm_do_claim_page (struct page *page) {
    //end 20180109
    /*Obtain a frame to store the page*/ 
    /*If you implement sharing, the data you need may already be in a frame, in which case you must be able to locate that frame.*/
-   if(page->frame == NULL){
+   bool frame_is_null = (page->frame == NULL);
+   
+   if(frame_is_null){
        // printf("thread name: %s, get frame\n", thread_current()->name);
       struct frame *frame = vm_get_frame ();
 
@@ -387,7 +392,12 @@ vm_do_claim_page (struct page *page) {
       // printf("pml4_get_page is failed\n");
       return false;
    }
-   pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, page->writable);
+   if(frame_is_null){
+      pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, page->writable);
+   }else{ // child
+      pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, false);
+   }
+
    // printf("pml4 is OK!\n");
    return swap_in (page, page->frame->kva);
 }
@@ -447,7 +457,7 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 		return;
    // printf("spt_kill!\n");
    // lock_acquire(&spt_lock); // edit for cow
-   hash_apply(&spt->spt_table, hash_file_backup);
+   // hash_apply(&spt->spt_table, hash_file_backup);
    // printf("after file_backup\n");
    hash_clear(&spt->spt_table, spt_destroy);
    // lock_release(&spt_lock); // edit for cow
@@ -456,10 +466,20 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 void 
 spt_destroy(struct hash_elem *e, void *aux){
    struct page* page = hash_entry(e, struct page, h_elem);
+   
    destroy(page);
+
+   if(page->frame != NULL){
+      page->frame->reference--;
+      if(page->frame->reference == 0){
+         palloc_free_page(page->frame->kva);
+         free(page->frame);
+      }
+      pml4_clear_page(thread_current()->pml4, page->va);
+   }
    free(page);
 }
-
+/*
 void 
 hash_file_backup(struct hash_elem *e, void *aux)
 {
@@ -490,7 +510,7 @@ hash_file_backup(struct hash_elem *e, void *aux)
    //    free(page->frame);
    // }
 }
-
+*/
 
 void
 hash_fork_copy(struct hash_elem *e, void *aux)
@@ -498,16 +518,20 @@ hash_fork_copy(struct hash_elem *e, void *aux)
    struct page* p = hash_entry(e, struct page, h_elem);
    struct page *d;
 
-   p->writable = false;
+   // p->writable = false;
+   // pml4_clear_page(p->thread->pml4, p->va);
+   // printf("before set page\n");
+   // pml4_set_page(p->thread->pml4, p->va, p->frame->kva, false);
+   // printf("after set page\n");
 
    if(p->operations->type != VM_UNINIT){
       if(vm_alloc_page(p->operations->type, p->va, p->writable)){
          d = spt_find_page(&thread_current()->spt, p->va);
          if(d == NULL){
-            // printf("somethings wrong!\n");
+            printf("somethings wrong!\n");
          }
 //         d->need_frame = false; // because it's child.
-         d->origin_writable = p->origin_writable;
+         // d->origin_writable = p->origin_writable;
          d->frame = p->frame;
          vm_claim_page(p->va);
          if(d->frame->kva != p->frame->kva){

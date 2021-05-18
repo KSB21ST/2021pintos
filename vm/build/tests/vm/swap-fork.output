@@ -17,21 +17,34 @@ Executing 'swap-fork':
 (swap-fork) begin
 (child-swap) begin
 child-swap: exit(0)
-Kernel PANIC at ../../threads/malloc.c:253 in block_to_arena(): assertion `a->desc == NULL || (pg_ofs (b) - sizeof *a) % a->desc->block_size == 0' failed.
-Call stack: 0x8004218804 0x800420c9ce 0x800420c720 0x800422357e 0x8004223151 0x800421ae37 0x800422310c 0x800421ca16 0x800421c41d 0x800421e4ab 0x800421dfbb 0x800421ddd0 0xccccccccccccccccInterrupt 0x0d (#GP General Protection Exception) at rip=800421583e
- cr2=000000004747ff50 error=               0
-rax cccccccccccccccc rbx 000000004747ff08 rcx 00000080040b8000 rdx 00000000000003d4
-rsp 0000008004273bb0 rbp 0000008004273bc0 rsi 0000000000009a0f rdi 0000000000000000
-rip 000000800421583e r8 0000008004273ac8  r9 000000800421bce2 r10 0000000000000000
-r11 0000000000000212 r12 000000800421dea7 r13 251ef00000008004 r14 2190170000008004
-r15 251ee00000008004 rflags 00000086
-es: 001b ds: 001b cs: 0008 ss: 0010
-Kernel PANIC recursion at ../../userprog/exception.c:100 in kill().
-Timer: 267 ticks
-Thread: 95 idle ticks, 153 kernel ticks, 19 user ticks
+(child-swap) begin
+child-swap: exit(0)
+(child-swap) begin
+child-swap: exit(0)
+(child-swap) begin
+child-swap: exit(0)
+(child-swap) begin
+child-swap: exit(0)
+(child-swap) begin
+child-swap: exit(0)
+(child-swap) begin
+child-swap: exit(0)
+(child-swap) begin
+child-swap: exit(0)
+(child-swap) begin
+child-swap: exit(0)
+(child-swap) begin
+child-swap: exit(0)
+(swap-fork) end
+swap-fork: exit(0)
+Execution of 'swap-fork' complete.
+Timer: 350 ticks
+Thread: 110 idle ticks, 121 kernel ticks, 119 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 161 reads, 8276 writes
+hd0:1: 584 reads, 8276 writes
 hd1:0: 4119 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1917 characters output
-Key
+Console: 1410 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

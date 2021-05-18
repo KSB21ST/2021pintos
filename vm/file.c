@@ -86,6 +86,9 @@ file_backed_swap_out (struct page *page) {
 static void
 file_backed_destroy (struct page *page) {
 	struct file_page *file_page UNUSED = &page->file;
+
+	munmap(page->va);
+
 }
 
 /* Do the mmap */
@@ -124,8 +127,8 @@ do_mmap (void *addr, size_t length, int writable,
 		aux->read_bytes = page_read_bytes;
 		aux->zero_bytes = page_zero_bytes;
 		//end 20180109
-		aux->origin_writable = writable; // not sure
-		aux->need_frame = true; // not sure
+		// aux->origin_writable = writable; // not sure
+		// aux->need_frame = true; // not sure
 		lock_acquire(&unmap_lock);
 		if (!vm_alloc_page_with_initializer (VM_FILE, pg_round_down(temp_addr),
 				writable, file_lazy_load_segment, aux)){

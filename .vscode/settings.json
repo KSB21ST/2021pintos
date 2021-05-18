@@ -21,6 +21,11 @@
         "hash.h": "c",
         "inode.h": "c",
         "gdt.h": "c",
-        "disk.h": "c"
+        "disk.h": "c",
+        "palloc.h": "c",
+        "pte.h": "c",
+        "init.h": "c",
+        "mmu.h": "c",
+        "debug.h": "c"
     }
 }

@@ -901,7 +901,7 @@ lazy_load_segment (struct page *page, void *aux) {
    size_t read_bytes = temp_aux->read_bytes;
    size_t zero_bytes = temp_aux->zero_bytes;
    // ASSERT(zero_bytes == PGSIZE - read_bytes);
-   page->origin_writable = temp_aux->origin_writable;
+   // page->origin_writable = temp_aux->origin_writable;
 //   page->need_frame = temp_aux->need_frame;
 
    file_seek (file, ofs);
@@ -957,7 +957,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       aux->read_bytes = page_read_bytes;
       aux->zero_bytes = page_zero_bytes;
       //end 20180109
-      aux->origin_writable = writable;
+      // aux->origin_writable = writable;
 //      aux->need_frame = true;
       lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,

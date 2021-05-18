@@ -4,7 +4,7 @@ Kernel command line: -q -f put page-merge-mm put child-qsort-mm run page-merge-m
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  209,510,400 loops/s.
 hd0:0: detected 345 sector (172 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 224 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -33,30 +33,25 @@ child-qsort-mm: exit(80)
 (page-merge-mm) sort chunk 7
 child-qsort-mm: exit(80)
 (page-merge-mm) wait for child 0
-page-merge-mm: exit(-1)
-Interrupt 0x0d (#GP General Protection Exception) at rip=800421c86a
- cr2=0000000010018fff error=               0
-rax cccccccccccccc14 rbx 0000000000605000 rcx 000000000000002f rdx ffff7fffffffffff
-rsp 0000008004246e10 rbp 0000008004246e50 rsi 000000000000026f rdi 0000008004246098
-rip 000000800421c86a r8 0000008004246d98  r9 000000800421bce2 r10 0000000000000000
-r11 0000000000000206 r12 000000800421dea7 r13 0000000000008004 r14 2190170000008004
-r15 246ee00000008004 rflags 00000286
-es: 001b ds: 001b cs: 0008 ss: 0010
-Kernel PANIC at ../../userprog/exception.c:100 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x8004218804 0x800421dc31 0x8004209325 0x8004209743 0x80042071f3 0x800421e42d 0x800421e90e 0x800421e188 0x800421ddd0 0x400567 0x4007f7 0x400107 0x401504 0x40154d 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421583e
- cr2=0000000010018fff error=               0
-rax 246f60ffffffff04 rbx 0000000000605000 rcx 00000080040b8000 rdx 00000000000003d4
-rsp 0000008004246c50 rbp 0000008004246c60 rsi 0000000000008f0f rdi 0000000000000000
-rip 000000800421583e r8 0000008004246b68  r9 000000800421bce2 r10 0000000000000000
-r11 0000000000000206 r12 000000800421dea7 r13 0000000000008004 r14 2190170000008004
-r15 246ee00000008004 rflags 00000002
-es: 0010 ds: 0010 cs: 0008 ss: 0010
-Kernel PANIC recursion at ../../userprog/exception.c:100 in kill().
-Timer: 1415 ticks
-Thread: 38 idle ticks, 34 kernel ticks, 1343 user ticks
+(page-merge-mm) wait for child 1
+(page-merge-mm) wait for child 2
+(page-merge-mm) wait for child 3
+(page-merge-mm) wait for child 4
+(page-merge-mm) wait for child 5
+(page-merge-mm) wait for child 6
+(page-merge-mm) wait for child 7
+(page-merge-mm) merge
+(page-merge-mm) verify
+(page-merge-mm) bad value 16 in byte 0: FAILED
+page-merge-mm: exit(1)
+Execution of 'page-merge-mm' complete.
+Timer: 2318 ticks
+Thread: 112 idle ticks, 36 kernel ticks, 2171 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 2777 reads, 6726 writes
+hd0:1: 4888 reads, 4678 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 2871 characters output
-Key
+Console: 1846 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

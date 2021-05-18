@@ -332,7 +332,7 @@ read (int fd, void *buffer, unsigned length)
    #ifdef VM
    check_buffer(buffer, length);
    struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
-   if(p->writable != true)
+   if(p->writable != true) //edit for cow
       exit(-1);
    #endif
    check_addr(buffer);
@@ -353,6 +353,7 @@ read (int fd, void *buffer, unsigned length)
       if(temp == NULL)
          cnt = -1;
       cnt = file_read(cur->fd_table[fd], buffer, length);
+      // printf("after file_read\n");
    }
    lock_release(&file_lock);
    return cnt;

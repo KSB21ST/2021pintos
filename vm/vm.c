@@ -92,6 +92,7 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
       }
       p->writable = writable;
       p->thread = thread_current();
+      p->fork = -1;
       // p->origin_writable = writable; // not sure;
 //      p->need_frame = true;
       /* TODO: Insert the page into the spt. */
@@ -333,8 +334,8 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 void
 vm_dealloc_page (struct page *page) {
    //start 20180109
-   void *temp_aux = (page->uninit).aux;
-   free(temp_aux);
+   // void *temp_aux = (page->uninit).aux;
+   // free(temp_aux);
    //end 20180109
    destroy (page);
    free (page);
@@ -458,7 +459,7 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 		return;
    // printf("spt_kill!\n");
    // lock_acquire(&spt_lock); // edit for cow
-   // hash_apply(&spt->spt_table, hash_file_backup);
+   hash_apply(&spt->spt_table, hash_file_backup);
    // printf("after file_backup\n");
    hash_clear(&spt->spt_table, spt_destroy);
    // lock_release(&spt_lock); // edit for cow
@@ -467,7 +468,8 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 void 
 spt_destroy(struct hash_elem *e, void *aux){
    struct page* page = hash_entry(e, struct page, h_elem);
-   
+   // if(page->operations->type == VM_FILE)
+   //    munmap(page->va);
    destroy(page);
 
    if(page->frame != NULL){
@@ -480,7 +482,7 @@ spt_destroy(struct hash_elem *e, void *aux){
    }
    free(page);
 }
-/*
+
 void 
 hash_file_backup(struct hash_elem *e, void *aux)
 {
@@ -488,19 +490,20 @@ hash_file_backup(struct hash_elem *e, void *aux)
    struct page* page = hash_entry(e, struct page, h_elem);
    // printf("after struct page...\n");
 
-   if(page->frame != NULL){
-      page->frame->reference--;
+   // if(page->frame != NULL){
+      // page->frame->reference--;
       //printf"thread: %s, frame ref: %d\n", thread_current()->name, page->frame->reference);
-      if(page->frame->reference == 0){
+      // if(page->frame->reference == 0){
          if(page->operations->type == VM_FILE){
             // page->writable = page->origin_writable;
-            munmap(page->va);
+            // if(page->fork != 2)
+               munmap(page->va);
          }
-         palloc_free_page(page->frame->kva);
-         free(page->frame);
+         // palloc_free_page(page->frame->kva);
+         // free(page->frame);
          // pml4_clear_page(thread_current()->pml4, page->va);
-      }
-      pml4_clear_page(thread_current()->pml4, page->va);
+      // }
+      // pml4_clear_page(thread_current()->pml4, page->va);
    }
    // page->frame->reference--; // edit for cow
    // printf("after reducing reference\n");
@@ -510,8 +513,8 @@ hash_file_backup(struct hash_elem *e, void *aux)
    //    palloc_free_page(page->frame->kva);
    //    free(page->frame);
    // }
-}
-*/
+// }
+
 
 void
 hash_fork_copy(struct hash_elem *e, void *aux)
@@ -524,10 +527,12 @@ hash_fork_copy(struct hash_elem *e, void *aux)
    // printf("before set page\n");
    // pml4_set_page(p->thread->pml4, p->va, p->frame->kva, false);
    // printf("after set page\n");
+   p->fork  = 1;
 
    if(p->operations->type != VM_UNINIT){
       if(vm_alloc_page(p->operations->type, p->va, p->writable)){
          d = spt_find_page(&thread_current()->spt, p->va);
+         d->fork = 2;
          if(d == NULL){
             printf("somethings wrong!\n");
          }

@@ -67,6 +67,6 @@ uninit_destroy (struct page *page) {
 	struct uninit_page *uninit UNUSED = &page->uninit;
 	/* TODO: Fill this function.
 	 * TODO: If you don't have anything to do, just return. */
-	free(uninit->aux); //edit 
+	// free(uninit->aux); //edit 
 	return;
 }

@@ -86,9 +86,8 @@ file_backed_swap_out (struct page *page) {
 static void
 file_backed_destroy (struct page *page) {
 	struct file_page *file_page UNUSED = &page->file;
-
-	munmap(page->va);
-
+	// if(page->fork != 2)
+		// munmap(page->va);
 }
 
 /* Do the mmap */
@@ -153,7 +152,8 @@ do_munmap (void *addr)
 	// printf("start of do_munmap!\n");
 	struct page *upage = spt_find_page(&thread_current()->spt, addr);
 	while(upage != NULL){
-		struct page_load *temp_aux = (struct page_load *)(upage->uninit).aux;
+		// struct page_load *temp_aux = (struct page_load *)(upage->uninit).aux;
+		struct page_load *temp_aux = (struct page_load *)(upage->file).aux;
 		if(temp_aux == NULL)
 			break;
 		if(pml4_is_dirty(thread_current()->pml4, upage->va)){ //why???

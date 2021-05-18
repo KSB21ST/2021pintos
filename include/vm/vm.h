@@ -69,6 +69,7 @@ struct page {
 	//end 20180109
 	struct list_elem victim;
 	struct thread *thread;
+	int fork;
 	// bool origin_writable;
 
 	/* Per-type data are binded into the union.

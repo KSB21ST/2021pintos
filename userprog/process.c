@@ -951,7 +951,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       zero_bytes -= page_zero_bytes;
       read_bytes -= page_read_bytes;
       upage += PGSIZE;
-      ofs += page_read_bytes; //why? because of the main loop?
+      ofs += page_read_bytes;
    }
    return true;
 }
@@ -966,8 +966,7 @@ setup_stack (struct intr_frame *if_) {
     * TODO: If success, set the rsp accordingly.
     * TODO: You should mark the page is stack. */
    /* TODO: Your code goes here */
-   //20180109 not sure of this part. reimplement!
-   if(vm_alloc_page(VM_ANON, stack_bottom, true)){ //why VM_MARKER_0 | VM_ANON??
+   if(vm_alloc_page(VM_ANON, stack_bottom, true)){
       if(vm_claim_page(stack_bottom)){
            if_->rsp = USER_STACK;
            success = true;

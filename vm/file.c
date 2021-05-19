@@ -95,7 +95,7 @@ void *
 do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
 	size_t read_bytes = length < file_length(file) ? length : file_length(file);
-	size_t zero_bytes = (PGSIZE - read_bytes)%PGSIZE; //why?????
+	size_t zero_bytes = (PGSIZE - read_bytes)%PGSIZE;
 
 	void *temp_addr = addr;
 
@@ -135,11 +135,11 @@ do_munmap (void *addr)
 		struct page_load *temp_aux = (struct page_load *)(upage->file).aux;
 		if(temp_aux == NULL)
 			break;
-		if(pml4_is_dirty(thread_current()->pml4, upage->va)){ //why???
+		if(pml4_is_dirty(thread_current()->pml4, upage->va)){
 			// lock_acquire(&unmap_lock);
-			// file_seek (temp_aux->file, temp_aux->ofs);
-			// file_write(temp_aux->file, addr, temp_aux->read_bytes);
-			file_write_at(temp_aux->file, addr, temp_aux->read_bytes, temp_aux->ofs);
+			file_seek (temp_aux->file, temp_aux->ofs);
+			file_write(temp_aux->file, addr, temp_aux->read_bytes);
+			// file_write_at(temp_aux->file, addr, temp_aux->read_bytes, temp_aux->ofs);
 			// lock_release(&unmap_lock);
 			pml4_set_dirty(thread_current()->pml4, upage->va, 0);
 		}

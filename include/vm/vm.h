@@ -46,10 +46,6 @@ struct page_load
 	off_t ofs;
     uint32_t read_bytes;
 	uint32_t zero_bytes;
-
-	// edit for cow
-	// bool origin_writable;
-	// bool need_frame;
 };
 //end 20180109
 
@@ -63,14 +59,10 @@ struct page {
 	struct frame *frame;   /* Back reference for frame */
 
 	/* Your implementation */
-	//start 20180109 proj3
 	struct hash_elem h_elem;
 	bool writable;
-	//end 20180109
 	struct list_elem victim;
 	struct thread *thread;
-	int fork;
-	// bool origin_writable;
 
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
@@ -88,11 +80,8 @@ struct page {
 struct frame {
 	void *kva;
 	struct page *page;
+	//for cow
 	int reference;
-
-	//start 20180109
-	struct list_elem elem;
-	//end 20180109
 };
 
 /* The function table for page operations.

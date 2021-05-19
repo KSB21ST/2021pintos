@@ -890,7 +890,6 @@ lazy_load_segment (struct page *page, void *aux) {
    /* TODO: Load the segment from the file */
    /* TODO: This called when the first page fault occurs on address VA. */
    /* TODO: VA is available when calling this function. */
-   //printf("in lazy loading\n");
    ASSERT(aux != NULL);
    if (page->frame == NULL || page->va == NULL)
       return false;
@@ -900,19 +899,12 @@ lazy_load_segment (struct page *page, void *aux) {
    struct file *file = temp_aux->file;
    size_t read_bytes = temp_aux->read_bytes;
    size_t zero_bytes = temp_aux->zero_bytes;
-   // ASSERT(zero_bytes == PGSIZE - read_bytes);
-   // page->origin_writable = temp_aux->origin_writable;
-//   page->need_frame = temp_aux->need_frame;
 
    file_seek (file, ofs);
    if(file_read(file, kva, read_bytes) == (int)read_bytes){
       memset (kva + read_bytes, 0, zero_bytes);
-      // if(thread_current()->parent != NULL)
-      //    sema_up(&(thread_current()->parent)->fork_sema);
       return true;
    }
-   // if(thread_current()->parent != NULL)
-   //       sema_up(&(thread_current()->parent)->fork_sema);
    return false;
 }
 
@@ -945,36 +937,21 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
       /* TODO: Set up aux to pass information to the lazy_load_segment. */
-      // void *aux = NULL;
-      //start 20180109
-      struct page_load *aux = malloc(sizeof(struct page_load));
-      if(aux == NULL){
-         free(aux);
-         return false;
-      }
-      aux->file = file;
-      aux->ofs = ofs;
-      aux->read_bytes = page_read_bytes;
-      aux->zero_bytes = page_zero_bytes;
-      //end 20180109
-      // aux->origin_writable = writable;
-//      aux->need_frame = true;
+      struct page_load *aux = aux_load(file, ofs, page_read_bytes, page_zero_bytes);
       lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
                writable, lazy_load_segment, aux))
       {
-         return false;
          lock_release(&file_locker);
+         return false;
       }
          
       lock_release(&file_locker);
       /* Advance. */
-      read_bytes -= page_read_bytes;
       zero_bytes -= page_zero_bytes;
+      read_bytes -= page_read_bytes;
       upage += PGSIZE;
-      //start 20180109
       ofs += page_read_bytes; //why? because of the main loop?
-      //end 20180109
    }
    return true;
 }
@@ -989,12 +966,8 @@ setup_stack (struct intr_frame *if_) {
     * TODO: If success, set the rsp accordingly.
     * TODO: You should mark the page is stack. */
    /* TODO: Your code goes here */
-
-/* comment above vm_alloc_page_with_initializer: If you want to create a
- * page, do not create it directly and make it through this function or
- * `vm_alloc_page`. */
    //20180109 not sure of this part. reimplement!
-   if(vm_alloc_page(VM_MARKER_0 | VM_ANON, stack_bottom, true)){ //why VM_MARKER_0 | VM_ANON??
+   if(vm_alloc_page(VM_ANON, stack_bottom, true)){ //why VM_MARKER_0 | VM_ANON??
       if(vm_claim_page(stack_bottom)){
            if_->rsp = USER_STACK;
            success = true;
@@ -1008,7 +981,6 @@ setup_stack (struct intr_frame *if_) {
 
 void argument_stack(char **argv, int argc, struct intr_frame *if_)
 {
-   // printf("in argument stack\n");
    char **argu_address;
    argu_address = palloc_get_page(PAL_ZERO);
    for (int i = argc - 1; i >= 0; i--)
@@ -1029,7 +1001,6 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     {
       if_->rsp = if_->rsp - 8;
       if (i != argc){
-         // *(char *)(if_->rsp) = 0;
          memcpy(if_->rsp, &argu_address[i], sizeof(char **));
       }else{
          memset(if_->rsp, 0, sizeof(char**));
@@ -1058,7 +1029,6 @@ argument_parse(const char *file_name, char **argv)
       token_count++;
       argv[token_count] = token;
    }
-   // argv[token_count] = NULL;
    return token_count;
 }
 
@@ -1084,22 +1054,16 @@ file_lazy_load_segment (struct page *page, void *aux) {
    /* TODO: Load the segment from the file */
    /* TODO: This called when the first page fault occurs on address VA. */
    /* TODO: VA is available when calling this function. */
-   //printf("in lazy loading\n");
    ASSERT(aux != NULL);
-//   ASSERT(page->uninit.type == VM_FILE);
    if (page->frame == NULL || page->va == NULL)
       return false;
    struct page_load *temp_aux = (struct page_load *)aux;
    void *kva = page->frame->kva;
    off_t ofs = temp_aux->ofs;
-   size_t read_bytes = temp_aux->read_bytes;
    size_t zero_bytes = temp_aux->zero_bytes;
+   size_t read_bytes = temp_aux->read_bytes;
    ASSERT(zero_bytes == PGSIZE - read_bytes);
 
-
-   // read_bytes = read_bytes < file_length(temp_aux->file) ? read_bytes : file_length(temp_aux->file);
-
-//   struct file *opend_file = filesys_open(temp_aux->file);
    struct file *opend_file = temp_aux->file;
    lock_acquire(&mmap_lock);
    size_t _read_bytes = file_read_at(opend_file, kva, read_bytes, ofs);
@@ -1109,4 +1073,18 @@ file_lazy_load_segment (struct page *page, void *aux) {
 
    return true;
 }
-//end 20180109
+
+void *
+aux_load(struct file *_file, off_t ofs, uint32_t read_bytes, uint32_t zero_bytes)
+{
+   struct page_load *aux = malloc(sizeof(struct page_load));
+		if(aux == NULL){
+			free(aux);
+			return NULL;
+		}
+   aux->file = _file;
+   aux->ofs = ofs;
+   aux->read_bytes = read_bytes;
+   aux->zero_bytes = zero_bytes;
+   return aux;
+}

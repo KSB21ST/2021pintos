@@ -12,6 +12,7 @@ void process_activate (struct thread *next);
 
 #ifdef VM //changed lazy_load_segment from static to public to include in vm/file.c for do_mmap
 bool file_lazy_load_segment (struct page *page, void *aux);
+void * aux_load(struct file *file, off_t ofs, uint32_t read_bytes, uint32_t zero_bytes);
 #endif
 
 #endif /* userprog/process.h */

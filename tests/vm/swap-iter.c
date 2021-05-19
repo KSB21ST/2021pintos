@@ -49,6 +49,7 @@ test_main (void)
     }
     // printf("actual : %s \n", actual);
     /* Check file map'd page again */
+    // printf("memcmp value: %d\n", memcmp(actual, large, strlen(large)));
     if (memcmp (actual, large, strlen (large)))
         fail ("read of mmap'd file reported bad data");
 

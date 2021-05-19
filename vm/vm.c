@@ -153,7 +153,7 @@ vm_get_victim (void) {
             pml4_set_accessed(victim->thread->pml4, victim->va, 0);
             list_push_back(&victim_list, e);
          }
-         else if(victim->frame->reference == 1){
+         else{
             return victim->frame;
          }
    }
@@ -194,7 +194,7 @@ vm_get_frame (void) {
       frame = vm_evict_frame();
       lock_release(&frame_lock);
       frame->page = NULL;
-      frame->reference = 0;
+      frame->reference--;
       list_push_back(&frame_list, &frame->elem);
    }
    ASSERT (frame != NULL);

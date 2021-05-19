@@ -77,6 +77,7 @@ file_backed_swap_out (struct page *page) {
     if(pml4_is_dirty(thread_current()->pml4, page->va)){
       	file_write_at(aux->file, page->va, aux->read_bytes, aux->ofs);
 	}
+	page->frame = NULL;
 	pml4_clear_page (thread_current()->pml4, page->va);
 //	list_remove(&page->victim);
 

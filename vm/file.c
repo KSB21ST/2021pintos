@@ -75,9 +75,9 @@ file_backed_swap_out (struct page *page) {
         
     if(pml4_is_dirty(thread_current()->pml4, page->va)){
 		// lock_acquire(&unmap_lock);
-		// file_seek (temp_aux->file, temp_aux->ofs);
-		// file_write(temp_aux->file, addr, temp_aux->read_bytes);
-      	file_write_at(aux->file, page->va, aux->read_bytes, aux->ofs);
+		file_seek (aux->file, aux->ofs);
+		file_write(aux->file, page->va, aux->read_bytes);
+      	// file_write_at(aux->file, page->va, aux->read_bytes, aux->ofs);
 		// lock_release(&unmap_lock);
 	}
 	page->frame = NULL;

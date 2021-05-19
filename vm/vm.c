@@ -197,7 +197,7 @@ vm_stack_growth (void *addr UNUSED) {
    void *real_addr = pg_round_down(addr);
    void *cur_addr = thread_current()->rsp;
    while (real_addr < cur_addr){
-      vm_alloc_page(VM_MARKER_0 | VM_ANON, real_addr, true);
+      vm_alloc_page(VM_ANON, real_addr, true);
       vm_claim_page(real_addr);
       real_addr += PGSIZE;
    }

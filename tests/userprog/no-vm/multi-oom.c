@@ -52,7 +52,6 @@ consume_some_resources (void)
 	 A low-memory condition in open() should not lead to the
 	 termination of the process.  */
   for (fd = 0; fd < fdmax; fd++) {
-      // printf("open  %d\n", fd);
 #ifdef EXTRA2
 	  if (fd != 0 && (random_ulong () & 1)) {
 		if (dup2(random_ulong () % fd, fd+fdmax) == -1)
@@ -63,7 +62,6 @@ consume_some_resources (void)
 	  }
 #else
 		if (open (test_name) == -1)
-    //  printf("open failed here %d\n", fd);
 		  break;
 #endif
   }
@@ -110,38 +108,28 @@ make_children (void) {
   char child_name[128];
   for (; ; random_init (i), i++) {
     if (i > EXPECTED_DEPTH_TO_PASS/2) {
-//      printf("\n%d > %d\n", i, EXPECTED_DEPTH_TO_PASS/2);
       snprintf (child_name, sizeof child_name, "%s_%d_%s", "child", i, "X");
-//      printf("before fork 1\n");
       pid = fork(child_name);
-//      printf("1st fork... pid: %d, i: %d\n", pid, i);
       if (pid > 0 && wait (pid) != -1) {
         fail ("crashed child should return -1.");
       } else if (pid == 0) {
-//        printf("child process is running 1\n");
         consume_some_resources_and_die();
         fail ("Unreachable");
       }
     }
-//    printf("\ni = %d\n", i);
+
     snprintf (child_name, sizeof child_name, "%s_%d_%s", "child", i, "O");
-//    printf("before fork 2\n");
     pid = fork(child_name);
-//    printf("\n2nd fork... pid: %d, i: %d\n", pid, i);
     if (pid < 0) {
-//      printf("pid is smaller than 0. so exit(%d)\n", i);
       exit (i);
     } else if (pid == 0) {
-//      printf("child process is running 2\n");
       consume_some_resources();
     } else {
-//      printf("parent process???\n");
       break;
     }
   }
-  //printf("\nbefore depth = wait(%d)\n", pid);
+
   int depth = wait (pid);
-//  printf("after depth(%d) = wait(%d)\n", depth, pid);
   if (depth < 0)
 	  fail ("Should return > 0.");
 

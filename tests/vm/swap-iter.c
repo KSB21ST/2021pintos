@@ -32,10 +32,8 @@ test_main (void)
 
     CHECK ((handle = open ("large.txt")) > 1, "open \"large.txt\"");
     CHECK ((map = mmap (actual, sizeof(large), 0, handle, 0)) != MAP_FAILED, "mmap \"large.txt\"");
-    // printf("actual : %s \n", actual);
-//    printf("before memcmp\n");
+
     /* Read in file map'd page */
-//    printf("hello\n");
     if (memcmp (actual, large, strlen (large)))
         fail ("read of mmap'd file reported bad data");
 
@@ -47,9 +45,8 @@ test_main (void)
         if ((i & 0x1ff) == 0)
             msg ("check consistency in page %zu", i);
     }
-    // printf("actual : %s \n", actual);
+
     /* Check file map'd page again */
-    // printf("memcmp value: %d\n", memcmp(actual, large, strlen(large)));
     if (memcmp (actual, large, strlen (large)))
         fail ("read of mmap'd file reported bad data");
 

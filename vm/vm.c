@@ -268,7 +268,7 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
          exit(-1);
       
       // in case of cow
-      if(not_present == false)
+      if(not_present == false && page->writable == true)
          return vm_handle_wp(page);
       
       bool res = vm_do_claim_page(page);
@@ -322,7 +322,18 @@ vm_do_claim_page (struct page *page) {
    if(frame_is_null){
       pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, page->writable);
    }else{ // child
-      pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, false);
+      if(VM_TYPE(page->operations->type) == VM_FILE){
+         pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, page->writable);
+      }else if(VM_TYPE(page->operations->type) == VM_ANON){
+         pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, false);
+      }
+      else{
+         if(VM_TYPE(page->uninit.type) == VM_FILE){
+            pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, page->writable);
+         }else{
+            pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, false);
+         }
+      }
    }
 
    return swap_in (page, page->frame->kva);

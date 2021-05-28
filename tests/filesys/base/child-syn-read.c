@@ -23,6 +23,7 @@ main (int argc, const char *argv[])
   size_t i;
 
   quiet = true;
+  
   CHECK (argc == 2, "argc must be 2, actually %d", argc);
   child_idx = atoi (argv[1]);
 

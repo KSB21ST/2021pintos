@@ -1,2 +1,25 @@
 FAIL
-Run didn't start up properly: no "Boot complete" message
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (grow-seq-lg) begin
+  (grow-seq-lg) create "testme"
+  (grow-seq-lg) open "testme"
+  (grow-seq-lg) writing "testme"
+  (grow-seq-lg) close "testme"
+  (grow-seq-lg) open "testme" for verification
+  (grow-seq-lg) verified contents of "testme"
+  (grow-seq-lg) close "testme"
+  (grow-seq-lg) end
+Differences in `diff -u' format:
+  (grow-seq-lg) begin
+  (grow-seq-lg) create "testme"
+  (grow-seq-lg) open "testme"
+  (grow-seq-lg) writing "testme"
+- (grow-seq-lg) close "testme"
+- (grow-seq-lg) open "testme" for verification
+- (grow-seq-lg) verified contents of "testme"
+- (grow-seq-lg) close "testme"
+- (grow-seq-lg) end
+
+(Process exit codes are excluded for matching purposes.)

@@ -54,11 +54,19 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 	if (pos < inode->data.length){
 		// return inode->data.start + pos / DISK_SECTOR_SIZE;
 		off_t pos_sector = pos/CLUSTER_SIZE;
+		// printf("in byte_to_sector pos_sector: %d \n", pos_sector);
 		cluster_t temp = inode->data.start;
+		// printf("in byte_to_sector data start: %d \n", temp);
 		for(off_t i=0;i<pos_sector;i++)
 		{
+			// printf("in byte_to_sector temp: %d \n", temp);
 			temp = fat_get(temp);
-			ASSERT(temp != 0);
+			if (temp == EOChain)
+			{
+				static char zeros[DISK_SECTOR_SIZE];
+				temp = fat_create_chain(inode->data.start);
+				disk_write (filesys_disk, cluster_to_sector(temp), zeros);
+			}
 		}
 		return (disk_sector_t)temp;
 	}
@@ -101,30 +109,34 @@ inode_create (disk_sector_t sector, off_t length) {
 		disk_inode->magic = INODE_MAGIC;
 		// if (free_map_allocate (sectors, &disk_inode->start)) {
 		//start 20180109
-		if(inode_header = fat_create_chain(0)){
+		if(inode_header = fat_create_chain(0)){ //free_map_allocate (sectors, &disk_inode->start) 부분, multiple secotrs allocate 해준다
 			disk_inode->start = inode_header;
-			for(disk_sector_t i=0;i<sector;i++)
+			// printf("sector in inode_create: %d \n", sector);
+			// printf("number of created sectors: %d \n", sectors);
+			// printf("inode_header in inode_create: %d \n", inode_header);
+			for(size_t i=0;i<sectors;i++)
 			{
+				static char zeros[DISK_SECTOR_SIZE];
 				inode_header = fat_create_chain(inode_header);
+				disk_write (filesys_disk, inode_header, zeros);
 				if(inode_header == 0){
 					free (disk_inode);
 					return false;
 				}
 			}
-			// disk_write (filesys_disk, sector, disk_inode);
-			disk_write (filesys_disk, inode_header, disk_inode);
-			if (sectors > 0) {
-				static char zeros[DISK_SECTOR_SIZE];
-				size_t i;
+			disk_write (filesys_disk, sector, disk_inode); //disk_inode 를 secotr 에 적어준다
+			// if (sectors > 0) {
+			// 	static char zeros[DISK_SECTOR_SIZE];
+			// 	size_t i;
 
-				disk_sector_t temp_sect = disk_inode->start;
-				for (i = 0; i < sectors; i++) {	
-					// disk_write (filesys_disk, disk_inode->start + i, zeros);
-					disk_write (filesys_disk, temp_sect, zeros);
-					temp_sect = (disk_sector_t)fat_get((cluster_t)temp_sect);
-					// disk_inode->length += CLUSTER_SIZE; //20180109 - is this right??
-				}
-			}
+			// 	disk_sector_t temp_sect = disk_inode->start;
+			// 	for (size_t j = 0; j < sectors; j++) {	
+			// 		// disk_write (filesys_disk, disk_inode->start + i, zeros);
+			// 		// printf("temp_sect: %#x \n", temp_sect);
+			// 		disk_write (filesys_disk, temp_sect, zeros);
+			// 		temp_sect = fat_get(temp_sect);
+			// 	}
+			// }
 			success = true; 
 		} 
 		free (disk_inode);
@@ -195,9 +207,11 @@ inode_close (struct inode *inode) {
 
 		/* Deallocate blocks if removed. */
 		if (inode->removed) { //TODO
-			free_map_release (inode->sector, 1);
-			free_map_release (inode->data.start,
-					bytes_to_sectors (inode->data.length)); 
+			// free_map_release (inode->sector, 1);
+			// free_map_release (inode->data.start,
+			// 		bytes_to_sectors (inode->data.length)); 
+			fat_remove_chain (inode->sector, 0);   // TODO
+			fat_remove_chain (inode->data.start, 0);  // TODO
 		}
 
 		free (inode); 
@@ -297,10 +311,13 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offset�
 			cluster_t clst = fat_get_end(inode->data.start);
 			for(int i=0;i<alloc_sector;i++)
 			{
+				static char zeros[CLUSTER_SIZE];
 				clst = fat_create_chain(clst);
+				disk_write (filesys_disk, clst, zeros);
 			}
 			inode->data.length += size;
-			chunk_size = size;
+			// chunk_size = size;
+			continue;
 		}
 
 		if (sector_ofs == 0 && chunk_size == DISK_SECTOR_SIZE) {
@@ -331,6 +348,8 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offset�
 		bytes_written += chunk_size;
 	}
 	free (bounce);
+
+	disk_write(filesys_disk, inode->sector, &inode->data); //20180109 proj2 pass test critical
 
 	return bytes_written;
 }

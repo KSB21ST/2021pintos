@@ -108,6 +108,7 @@ fsutil_put (char **argv) {
 	if (!filesys_create (file_name, size))
 		PANIC ("%s: create failed", file_name);
 	dst = filesys_open (file_name);
+	// printf("____in fsutil_put____________-file_name %s \n", file_name);
 	if (dst == NULL)
 		PANIC ("%s: open failed", file_name);
 

@@ -42,6 +42,10 @@ vm_init (void) {
    /* TODO: Your code goes here. */
    lock_init(&frame_lock);
    list_init(&victim_list);
+
+   // start edit for buffer cache
+   list_init(&cache_list);
+   // end edit for buffer cache
 }
 
 /* Get the type of the page. This function is useful if you want to know the
@@ -86,6 +90,12 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
       if(VM_TYPE(type) == VM_FILE){
          uninit_new(p, upage, init, type, aux, &file_backed_initializer);
       }
+      // start edit for proj4 buffer cache
+      if(VM_TYPE(type) == VM_PAGE_CACHE){
+         uninit_new(p, upage, init, type, aux, &page_cache_initializer);
+      }
+      // end edit for proj4 buffer cache
+
       p->writable = writable;
       p->thread = thread_current();
       /* TODO: Insert the page into the spt. */
@@ -322,13 +332,13 @@ vm_do_claim_page (struct page *page) {
    if(frame_is_null){
       pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, page->writable);
    }else{ // child
-      if(VM_TYPE(page->operations->type) == VM_FILE){
+      if(VM_TYPE(page->operations->type) == VM_FILE || VM_TYPE(page->operations->type) == VM_PAGE_CACHE){
          pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, page->writable);
       }else if(VM_TYPE(page->operations->type) == VM_ANON){
          pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, false);
       }
       else{
-         if(VM_TYPE(page->uninit.type) == VM_FILE){
+         if(VM_TYPE(page->uninit.type) == VM_FILE || VM_TYPE(page->operations->type) == VM_PAGE_CACHE){
             pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, page->writable);
          }else{
             pml4_set_page(thread_current()->pml4, page->va, page->frame->kva, false);
@@ -387,7 +397,7 @@ void
 hash_file_backup(struct hash_elem *e, void *aux)
 {
    struct page* page = hash_entry(e, struct page, h_elem);
-   if(page->operations->type == VM_FILE){
+   if(page->operations->type == VM_FILE || VM_TYPE(page->operations->type) == VM_PAGE_CACHE){
          munmap(page->va);
    }
 }

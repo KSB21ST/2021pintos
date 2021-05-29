@@ -229,5 +229,5 @@ fat_get (cluster_t clst) {
 disk_sector_t
 cluster_to_sector (cluster_t clst) {
 	/* TODO: Your code goes here. */
-	return (fat_fs->bs.fat_start + clst);
+	return (fat_fs->bs.fat_start + clst); // just clst???
 }

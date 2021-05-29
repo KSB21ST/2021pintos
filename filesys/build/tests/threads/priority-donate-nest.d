@@ -7,6 +7,7 @@ tests/threads/priority-donate-nest.o: \
  ../../include/threads/synch.h ../../include/lib/kernel/list.h \
  ../../include/threads/thread.h ../../include/threads/interrupt.h \
  ../../include/vm/vm.h ../../include/threads/palloc.h \
+ ../../include/devices/disk.h ../../include/lib/inttypes.h \
  ../../include/vm/uninit.h ../../include/vm/anon.h \
  ../../include/vm/file.h ../../include/filesys/file.h \
  ../../include/filesys/off_t.h ../../include/filesys/page_cache.h \

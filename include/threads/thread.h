@@ -3,6 +3,7 @@
 
 #define USERPROG
 #define VM
+#define EFILESYS
 
 #include <debug.h>
 #include <list.h>

@@ -3,6 +3,7 @@ threads/thread.o: ../../threads/thread.c ../../include/threads/thread.h \
  ../../include/lib/stdbool.h ../../include/lib/stddef.h \
  ../../include/lib/stdint.h ../../include/threads/interrupt.h \
  ../../include/vm/vm.h ../../include/threads/palloc.h \
+ ../../include/devices/disk.h ../../include/lib/inttypes.h \
  ../../include/vm/uninit.h ../../include/vm/anon.h \
  ../../include/vm/file.h ../../include/filesys/file.h \
  ../../include/filesys/off_t.h ../../include/filesys/page_cache.h \

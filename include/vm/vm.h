@@ -2,6 +2,7 @@
 #define VM_VM_H
 #include <stdbool.h>
 #include "threads/palloc.h"
+#include "devices/disk.h"
 
 enum vm_type {
 	/* page not initialized */
@@ -23,7 +24,7 @@ enum vm_type {
 	/* DO NOT EXCEED THIS VALUE. */
 	VM_MARKER_END = (1 << 31),
 };
-
+#define EFILESYS
 #include "vm/uninit.h"
 #include "vm/anon.h"
 #include "vm/file.h"
@@ -108,6 +109,18 @@ struct supplemental_page_table {
 };
 
 struct lock spt_lock;
+
+// start edit for buffer cache
+struct list cache_list;
+
+struct buffer_data{
+	struct inode *inode;
+	bool dirty;
+	disk_sector_t sector;
+	struct page *page;
+	struct list_elem cache_elem;
+};
+// end edit for buffer cache
 
 #include "threads/thread.h"
 void supplemental_page_table_init (struct supplemental_page_table *spt);

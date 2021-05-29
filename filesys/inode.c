@@ -102,15 +102,15 @@ inode_create (disk_sector_t sector, off_t length) {
 		// if (free_map_allocate (sectors, &disk_inode->start)) {
 		//start 20180109
 		if(inode_header = fat_create_chain(0)){
-			disk_inode->start = inode_header;
-			for(disk_sector_t i=0;i<sector;i++)
-			{
-				inode_header = fat_create_chain(inode_header);
-				if(inode_header == 0){
-					free (disk_inode);
-					return false;
-				}
-			}
+		// 	disk_inode->start = inode_header;
+		// 	for(disk_sector_t i=0;i<sector;i++)
+		// 	{
+		// 		inode_header = fat_create_chain(inode_header);
+		// 		if(inode_header == 0){
+		// 			free (disk_inode);
+		// 			return false;
+		// 		}
+		// 	}
 			// disk_write (filesys_disk, sector, disk_inode);
 			disk_write (filesys_disk, inode_header, disk_inode);
 			// disk_inode->length += CLUSTER_SIZE; //20180109 - is this right?? why not in original inode_create? -- there is!

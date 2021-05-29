@@ -139,7 +139,8 @@ void
 fat_boot_create (void) {
 	unsigned int fat_sectors =
 	    (disk_size (filesys_disk) - 1)
-	    / (DISK_SECTOR_SIZE / sizeof (cluster_t) * SECTORS_PER_CLUSTER + 1) + 1;
+	    / (DISK_SECTOR_SIZE / sizeof (cluster_t) * SECTORS_PER_CLUSTER + 1) + 1; //20180109 Q: what is fat_sectors?
+	// printf("fat sectors: %d \n", fat_sectors); //fat sectors: 157 
 	fat_fs->bs = (struct fat_boot){
 	    .magic = FAT_MAGIC,
 	    .sectors_per_cluster = SECTORS_PER_CLUSTER,
@@ -148,11 +149,14 @@ fat_boot_create (void) {
 	    .fat_sectors = fat_sectors,
 	    .root_dir_cluster = ROOT_DIR_CLUSTER,
 	};
+	// printf("total sectors: %d \n", fat_fs->bs.total_sectors); //total sectors: 20160 
 }
 
 void
 fat_fs_init (void) {
 	/* TODO: Your code goes here. */
+    fat_fs->fat_length = (&fat_fs->bs)->total_sectors / (&fat_fs->bs)->sectors_per_cluster;//20180109 every sectors in disk are changed into clusters
+    fat_fs->data_start = (&fat_fs->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL.
 }
 
 /*----------------------------------------------------------------------------*/
@@ -165,29 +169,96 @@ fat_fs_init (void) {
 cluster_t
 fat_create_chain (cluster_t clst) {
 	/* TODO: Your code goes here. */
+	// if (clst == 0) return 0;
+	cluster_t idx = 0;
+	for (cluster_t i=1; i< fat_fs->fat_length; i++) //20180109 unint overflow carefull!
+	{
+		if(fat_fs->fat[i] == 0){
+			idx = i;
+			break;
+		}
+	}
+	if(idx == 0)
+		return 0;
+	if(clst == 0){
+		fat_fs->fat[idx] = EOChain;
+		return idx;
+	}
+	ASSERT(fat_fs->fat[clst] == EOChain); //clst 가 chain 의 마지막 요소가 아니면 error를 내준다
+	fat_fs->fat[clst] = idx;
+	fat_fs->fat[idx] = EOChain;
+	return idx;
 }
 
 /* Remove the chain of clusters starting from CLST.
  * If PCLST is 0, assume CLST as the start of the chain. */
+/*
+pclst should be the direct previous cluster in the chain. 
+This means, after the execution of this function,
+pclst should be the last element of the updated chain. 
+If clst is the first element in the chain, pclst should be
+*/
 void
 fat_remove_chain (cluster_t clst, cluster_t pclst) {
 	/* TODO: Your code goes here. */
+	if (clst == 0)
+	{
+		fat_fs->fat[pclst] = 0;
+		return;
+	}
+	while(fat_fs->fat[clst] != EOChain)
+	{
+		cluster_t temp = fat_fs->fat[clst];
+		fat_fs->fat[clst] = 0;
+		clst = temp;
+	}
+	fat_fs->fat[clst] = 0;
+	fat_fs->fat[pclst] = EOChain;
 }
 
 /* Update a value in the FAT table. */
 void
 fat_put (cluster_t clst, cluster_t val) {
 	/* TODO: Your code goes here. */
+	ASSERT(clst != 0);
+	ASSERT(fat_fs->fat[val] == 0);
+	ASSERT(val == 0);
+	// cluster_t prev;
+	cluster_t next = fat_fs->fat[clst];
+	// for(cluster_t i = 1;i<fat_fs->fat_length;i++)
+	// {
+	// 	if(fat_fs->fat[i] == clst){
+	// 		prev = i;
+	// 		break;
+	// 	}
+	// }
+	fat_fs->fat[clst] = val;
+	fat_fs->fat[val] = next;
 }
 
 /* Fetch a value in the FAT table. */
 cluster_t
 fat_get (cluster_t clst) {
 	/* TODO: Your code goes here. */
+	return fat_fs->fat[clst];
 }
 
 /* Covert a cluster # to a sector number. */
 disk_sector_t
 cluster_to_sector (cluster_t clst) {
 	/* TODO: Your code goes here. */
+	ASSERT(clst >= 0);
+	return clst;
+}
+
+/*20180109 implemented - returns the end of the linked list*/
+cluster_t
+fat_get_end(cluster_t clst){
+	cluster_t next = clst;
+	for(cluster_t i = 0;i<fat_fs->fat_length;i++){
+		next = fat_fs->fat[next];
+		if(next == EOChain)
+			break;
+	}
+	return next;
 }

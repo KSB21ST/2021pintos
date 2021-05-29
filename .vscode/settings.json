@@ -26,6 +26,7 @@
         "pte.h": "c",
         "init.h": "c",
         "mmu.h": "c",
-        "debug.h": "c"
+        "debug.h": "c",
+        "fat.h": "c"
     }
 }

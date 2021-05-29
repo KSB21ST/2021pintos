@@ -168,6 +168,25 @@ syscall_handler (struct intr_frame *f) {
       check_addr(f->R.rdi);
       munmap(f->R.rdi);
       break;
+   //start of proj4
+   case SYS_CHDIR:  /* Map a file into memory. */
+      f->R.rax =  chdir(f->R.rdi); 
+      break;
+   case SYS_MKDIR:  /* Map a file into memory. */
+      f->R.rax =  mkdir(f->R.rdi); 
+      break;
+   case SYS_READDIR:  /* Map a file into memory. */
+      f->R.rax =  readdir(f->R.rdi, f->R.rsi); 
+      break;
+   case SYS_ISDIR:  /* Map a file into memory. */
+      f->R.rax =  isdir(f->R.rdi); 
+      break;
+   case SYS_INUMBER:  /* Map a file into memory. */
+      f->R.rax =  inumber(f->R.rdi); 
+      break;
+   case SYS_SYMLINK:  /* Map a file into memory. */
+      f->R.rax =  symlink(f->R.rdi, f->R.rsi); 
+      break;
    }
 }
 
@@ -504,6 +523,53 @@ munmap (void *addr)
    lock_acquire(&file_lock);
    do_munmap(addr);
    lock_release(&file_lock);
+}
+
+bool
+chdir (const char *dir) {
+	return true;
+}
+
+bool
+mkdir (const char *dir) {
+	return true;
+}
+
+bool
+// readdir (int fd, char name[READDIR_MAX_LEN + 1]) {
+readdir (int fd, char name){
+	return true;
+}
+
+bool
+isdir (int fd) {
+   struct thread* t = thread_current();
+	if(pml4_get_page (t->pml4, fd) == NULL) return;
+   struct file *_file;
+   struct file **file_table = t->fd_table;
+   _file = file_table[fd];
+   if(_file == -1 || _file == -2)
+      return;
+   struct inode *_inode = _file->inode;
+   return _inode->_isdir;
+}
+
+int
+inumber (int fd) {
+   struct thread* t = thread_current();
+	if(pml4_get_page (t->pml4, fd) == NULL) return;
+   struct file *_file;
+   struct file **file_table = t->fd_table;
+   _file = file_table[fd];
+   if(_file == -1 || _file == -2)
+      return;
+   struct inode *_inode = _file->inode;
+   return _inode->sector; //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
+}
+
+int
+symlink (const char* target, const char* linkpath) {
+	return 0;
 }
 
 

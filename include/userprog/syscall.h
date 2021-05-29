@@ -31,4 +31,12 @@ int dup2 (int oldfd, int newfd);
 void *mmap (void *addr, unsigned long int length, int writable, int fd, off_t offset);
 void munmap (void *addr);
 
+//for proj4
+bool chdir (const char *dir);
+bool mkdir (const char *);
+bool readdir (int, char);
+bool isdir (int fd);
+int inumber (int fd);
+int symlink (const char* target, const char* linkpath);
+
 #endif /* userprog/syscall.h */

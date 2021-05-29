@@ -33,6 +33,9 @@ dir_open (struct inode *inode) {
 	struct dir *dir = calloc (1, sizeof *dir);
 	if (inode != NULL && dir != NULL) {
 		dir->inode = inode;
+		//start 20180109 - for subdir
+		dir->inode->_isdir = false;
+		//end 20180109
 		dir->pos = 0;
 		return dir;
 	} else {

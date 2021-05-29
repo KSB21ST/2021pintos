@@ -1,0 +1,20 @@
+Kernel command line: -q run 'tar fs.tar /' get fs.tar
+0 ~ 9fc00 1
+100000 ~ ffe0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0xffe0000 (Usable: 260,992 kB)
+Calibrating timer...  186,572,800 loops/s.
+hd0:0: detected 345 sector (172 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 2,048 sector (1024 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../devices/disk.c:407 in select_sector(): assertion `sec_no < d->capacity' failed.
+Call stack: 0x80042144f2 0x80042106c0 0x800420fc69 0x800421d501 0x800421ca90 0x800421cb60 0x800421b2e3 0x8004218836 0x800421818e 0x8004217c40 0x800420766f.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Kernel PANIC recursion at ../../threads/synch.c:200 in lock_acquire().
+bad signature on scratch disk

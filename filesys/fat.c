@@ -153,6 +153,9 @@ fat_boot_create (void) {
 void
 fat_fs_init (void) {
 	/* TODO: Your code goes here. */
+	fat_fs->fat_length = fat_fs->bs.total_sectors / fat_fs->bs.sectors_per_cluster; // how many clusters in the filesystem
+	fat_fs->data_start = fat_fs->bs.fat_start; // which sector we can start to store file
+
 }
 
 /*----------------------------------------------------------------------------*/
@@ -165,6 +168,28 @@ fat_fs_init (void) {
 cluster_t
 fat_create_chain (cluster_t clst) {
 	/* TODO: Your code goes here. */
+	cluster_t new;
+	cluster_t res = 0;
+
+	for(unsigned int i = fat_fs->bs.fat_start; i < fat_fs->fat_length; i++){
+		if((fat_fs->fat)[i] == 0){
+			new = i;
+			res = new;
+		}
+	}
+
+	if(res == 0){
+		return res;
+	}
+
+	if(clst == 0){
+		(fat_fs->fat)[new] = EOChain;
+	}else{
+		(fat_fs->fat)[clst] = new;
+		(fat_fs->fat)[new] = EOChain;
+	}
+
+	return res;
 }
 
 /* Remove the chain of clusters starting from CLST.
@@ -172,22 +197,37 @@ fat_create_chain (cluster_t clst) {
 void
 fat_remove_chain (cluster_t clst, cluster_t pclst) {
 	/* TODO: Your code goes here. */
+	cluster_t i = clst;
+	cluster_t next;
+	while((fat_fs->fat)[i] != EOChain){
+		next = (fat_fs->fat)[i];
+		(fat_fs->fat)[i] = 0;
+		i = next;
+	}
+	(fat_fs->fat)[i] = 0;
+
+	if(pclst != 0){
+		(fat_fs->fat)[pclst] = EOChain;
+	}
 }
 
 /* Update a value in the FAT table. */
 void
 fat_put (cluster_t clst, cluster_t val) {
 	/* TODO: Your code goes here. */
+	(fat_fs->fat)[clst] = val;
 }
 
 /* Fetch a value in the FAT table. */
 cluster_t
 fat_get (cluster_t clst) {
 	/* TODO: Your code goes here. */
+	return (fat_fs->fat)[clst];
 }
 
 /* Covert a cluster # to a sector number. */
 disk_sector_t
 cluster_to_sector (cluster_t clst) {
 	/* TODO: Your code goes here. */
+	return (fat_fs->bs.fat_start + clst);
 }

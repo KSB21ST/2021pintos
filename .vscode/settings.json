@@ -27,6 +27,7 @@
         "init.h": "c",
         "mmu.h": "c",
         "debug.h": "c",
-        "fat.h": "c"
+        "fat.h": "c",
+        "directory.h": "c"
     }
 }

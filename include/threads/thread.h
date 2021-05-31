@@ -161,7 +161,10 @@ struct thread {
 	struct file *executable;
 	//end 20180109
 
-
+	//for proj4 - subdir
+	// struct dir *c_dir;
+	uint32_t t_sector;
+	//end
 
 // #endif
 #ifdef VM

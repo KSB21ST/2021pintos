@@ -1,14 +1,14 @@
 FAIL
 Kernel panic in run: PANIC at ../../filesys/fat.c:193 in fat_create_chain(): assertion `fat_fs->fat[clst] == EOChain' failed.
-Call stack: 0x80042144f2 0x800421c023 0x800421d41e 0x800421da90 0x800421c943 0x800421a93d 0x8004219f19 0x8004219af2 0x40027c 0x40108f 0x4010d8
+Call stack: 0x80042144f2 0x800421c2cb 0x800421dbf8 0x800421e23c 0x800421cbdd 0x800421a93d 0x8004219f19 0x8004219af2 0x40027c 0x40108f 0x4010d8
 Translation of call stack:
 0x00000080042144f2: debug_panic (lib/kernel/debug.c:32)
-0x000000800421c023: fat_create_chain (filesys/fat.c:194)
-0x000000800421d41e: byte_to_sector (filesys/inode.c:67)
-0x000000800421da90: inode_write_at (filesys/inode.c:295)
-0x000000800421c943: file_write (filesys/file.c:101)
-0x000000800421a93d: write (userprog/syscall.c:403)
-0x0000008004219f19: syscall_handler (userprog/syscall.c:133)
+0x000000800421c2cb: fat_create_chain (filesys/fat.c:194)
+0x000000800421dbf8: byte_to_sector (filesys/inode.c:67)
+0x000000800421e23c: inode_write_at (filesys/inode.c:295)
+0x000000800421cbdd: file_write (filesys/file.c:101)
+0x000000800421a93d: write (userprog/syscall.c:404)
+0x0000008004219f19: syscall_handler (userprog/syscall.c:134)
 0x0000008004219af2: no_sti (userprog/syscall-entry.o:?)
 0x000000000040027c: (unknown)
 0x000000000040108f: (unknown)

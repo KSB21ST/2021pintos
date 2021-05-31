@@ -19,7 +19,7 @@ Executing 'syn-remove':
 (syn-remove) remove "deleteme"
 (syn-remove) write "deleteme"
 Kernel PANIC at ../../filesys/fat.c:193 in fat_create_chain(): assertion `fat_fs->fat[clst] == EOChain' failed.
-Call stack: 0x80042144f2 0x800421c023 0x800421d41e 0x800421da90 0x800421c943 0x800421a93d 0x8004219f19 0x8004219af2 0x40027c 0x40108f 0x4010d8 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421152c
+Call stack: 0x80042144f2 0x800421c2cb 0x800421dbf8 0x800421e23c 0x800421cbdd 0x800421a93d 0x8004219f19 0x8004219af2 0x40027c 0x40108f 0x4010d8 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421152c
  cr2=00000000004032a0 error=               0
 rax 26df60ffffffff04 rbx 000000004747ff20 rcx 00000080040b8000 rdx 00000000000003d4
 rsp 000000800426dd00 rbp 000000800426dd10 rsi 000000000000c00f rdi 0000000000000000

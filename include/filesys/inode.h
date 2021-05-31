@@ -15,7 +15,12 @@ struct inode_disk {
 	disk_sector_t start;                /* First data sector. */
 	off_t length;                       /* File size in bytes. */
 	unsigned magic;                     /* Magic number. */
-	uint32_t unused[125];               /* Not used. */
+	//start 20180109 - for subdir
+	bool _isdir;
+	bool b_unused[3];
+	//eid 20180109
+	// uint32_t unused[125];               /* Not used. */
+	uint32_t unused[124];               /* Not used. */
 };
 
 
@@ -29,7 +34,7 @@ struct inode {
 	struct inode_disk data;             /* Inode content. */
 
 	//start 20180109 - for subdir
-	bool _isdir;
+	// bool _isdir;
 	//eid 20180109
 };
 
@@ -47,5 +52,9 @@ off_t inode_write_at (struct inode *, const void *, off_t size, off_t offset);
 void inode_deny_write (struct inode *);
 void inode_allow_write (struct inode *);
 off_t inode_length (const struct inode *);
+
+//start 20180109 - for isdir, subdir
+void write_isdir(disk_sector_t sector, bool isdir);
+//end 20180109
 
 #endif /* filesys/inode.h */

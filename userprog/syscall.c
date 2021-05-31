@@ -12,6 +12,7 @@
 #include "filesys/file.h" //없어도 될듯?
 #include "filesys/inode.h"
 #include "filesys/filesys.h"
+#include "filesys/directory.h"
 #include "vm/file.h"
 #include <hash.h>
 //end 20180109
@@ -530,9 +531,61 @@ chdir (const char *dir) {
 	return true;
 }
 
-bool
+bool //very similar with filesys_create
 mkdir (const char *dir) {
-	return true;
+   if(strlen(dir) == 0)
+      return false;
+   disk_sector_t inode_sector = 0;
+	inode_sector = fat_create_chain(0);
+   // char *fn_copy = malloc(sizeof(char) * 16);
+	// strlcpy (fn_copy, dir, sizeof(fn_copy));
+	// char *argv = malloc(sizeof(char) * 128);
+	// int argc = dir_path_parse(fn_copy, argv);
+   // char *token, *last, *extra;
+   lock_acquire(&file_lock);
+   // int token_count = 1;
+   // token = strtok_r(dir, "/", &last);
+   // extra = strtok_r(NULL, "/", &last);
+   // memcpy(&argv[token_count], token, sizeof(token));
+   // while (extra != NULL)
+   // {
+   //    // token = strtok_r(NULL, "/", &last);
+   //    token_count++;
+   //    if(token != NULL)
+   //       memcpy(&argv[token_count], token, sizeof(token));
+   //    token = extra;
+	// 	extra = strtok_r (NULL, "/", &last);
+   // }
+   char *file_name = malloc(sizeof(char) * 16);
+   // strlcpy (file_name, token, sizeof(file_name));
+   // //
+   // struct dir * t_dir = locate_dir(argv, token_count, dir);
+   struct dir * t_dir = parse_path(dir, file_name);
+   lock_release(&file_lock);
+
+   bool success = (t_dir != NULL
+			// && free_map_allocate (1, &inode_sector)
+			&& inode_sector
+			&& dir_create (inode_sector, 16)
+			&& dir_add (t_dir, file_name, inode_sector));
+	// write_isdir(inode_sector, false);
+	if (!success && inode_sector != 0)
+		// free_map_release (inode_sector, 1);
+		// fat_remove_chain(inode_sector, 0);
+		fat_put(inode_sector, 0);
+   // free(fn_copy);
+   free(file_name);
+	// free(argv);
+
+   struct dir *new_dir = dir_open(inode_open(inode_sector));
+   if(success == true && new_dir != NULL){
+		dir_add(new_dir, ".", inode_sector);
+		dir_add(new_dir, "..", new_dir->inode->sector);
+   }
+
+   dir_close (new_dir);
+	dir_close (t_dir);
+	return success;
 }
 
 bool
@@ -550,8 +603,10 @@ isdir (int fd) {
    _file = file_table[fd];
    if(_file == -1 || _file == -2)
       return;
-   struct inode *_inode = _file->inode;
-   return _inode->_isdir;
+   struct inode *_inode = inode_open(_file->inode);
+   bool isdir = _inode->data._isdir;
+   inode_close(_inode);
+   return isdir;
 }
 
 int
@@ -564,7 +619,7 @@ inumber (int fd) {
    if(_file == -1 || _file == -2)
       return;
    struct inode *_inode = _file->inode;
-   return _inode->sector; //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
+   return inode_get_inumber(_inode); //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
 }
 
 int

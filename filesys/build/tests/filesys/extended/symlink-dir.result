@@ -1,2 +1,2 @@
 FAIL
-run: open "file": FAILED
+run: create "a/link_b/file": FAILED

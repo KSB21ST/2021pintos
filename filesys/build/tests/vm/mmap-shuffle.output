@@ -31,10 +31,10 @@ Executing 'mmap-shuffle':
 (mmap-shuffle) end
 mmap-shuffle: exit(0)
 Execution of 'mmap-shuffle' complete.
-Timer: 240 ticks
-Thread: 47 idle ticks, 43 kernel ticks, 151 user ticks
+Timer: 244 ticks
+Thread: 50 idle ticks, 45 kernel ticks, 150 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 482 reads, 1211 writes
+hd0:1: 522 reads, 1218 writes
 hd1:0: 114 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1530 characters output

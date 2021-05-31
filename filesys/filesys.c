@@ -8,6 +8,10 @@
 #include "filesys/directory.h"
 #include "devices/disk.h"
 
+//20180109 start
+#include "threads/thread.h"
+struct dir *parse_path(char * path_name, char *file_name);
+
 /* The disk that contains the file system. */
 struct disk *filesys_disk;
 
@@ -61,22 +65,29 @@ bool
 filesys_create (const char *name, off_t initial_size) {
 	// printf("in filesys_create name: %s \n", name);
 	disk_sector_t inode_sector = 0;
-	//start 20180109
 	inode_sector = fat_create_chain(0);
-	// printf("in filesys_create sector: %d \n", inode_sector);
-	//TODO-subdir
-	//end 20180109
-	struct dir *dir = dir_open_root ();
+	// struct dir *dir = dir_open_root ();
+	// disk_sector_t t_sector= parse_n_locate(name);
+	// ASSERT(_inode->data._isdir == true);
+	// struct dir *dir = dir_open(inode_open(t_sector));
+	struct dir *dir = parse_n_locate(name);
+	// char *file_name = malloc(sizeof(char) * 16);
+	// struct dir * dir = parse_path(dir, file_name);
+	// char tmp_name[14 +1];
+	// struct dir *dir = parse_path(name, tmp_name);
+
 	bool success = (dir != NULL
 			// && free_map_allocate (1, &inode_sector)
 			&& inode_sector
 			&& inode_create (inode_sector, initial_size)
 			&& dir_add (dir, name, inode_sector));
+	write_isdir(inode_sector, false);
 	if (!success && inode_sector != 0)
 		// free_map_release (inode_sector, 1);
 		// fat_remove_chain(inode_sector, 0);
 		fat_put(inode_sector, 0);
 	dir_close (dir);
+	// free(file_name);
 
 	return success;
 }
@@ -89,13 +100,30 @@ filesys_create (const char *name, off_t initial_size) {
 struct file *
 filesys_open (const char *name) {
 	// printf("name: %s\n", name);
+	// char *temp = 'args-none';
+	// memcpy(name, temp, sizeof(temp));
 	//TODO-for subdir
-	struct dir *dir = dir_open_root ();
+	// struct dir *dir = dir_open_root (); //TODO - path 이름 다르게 하기
 	struct inode *inode = NULL;
+
+	//start 20180109
+	// disk_sector_t t_sector = parse_n_locate(name);
+	// printf("t_sector: %d\n", t_sector);
+	// ASSERT(_inode->data._isdir == true);
+	// struct dir *dir = NULL;
+	// if(t_sector == NULL)
+		// dir = dir_open(inode_open(t_sector));
+	struct dir *dir = parse_n_locate(name);
+	// char *file_name = malloc(sizeof(char) * 16);
+	// struct dir * dir = parse_path(dir, file_name);
+	// else
+		// dir = dir_open (inode_reopen (t_sector));
+	//end 20180109
 
 	if (dir != NULL)
 		dir_lookup (dir, name, &inode);
 	dir_close (dir);
+	// free(file_name);
 
 	return file_open (inode);
 }
@@ -106,9 +134,20 @@ filesys_open (const char *name) {
  * or if an internal memory allocation fails. */
 bool
 filesys_remove (const char *name) {
-	struct dir *dir = dir_open_root ();
+	// struct dir *dir = dir_open_root ();
+	
+	//start 20180109
+	// disk_sector_t t_sector= parse_n_locate(name);
+	// ASSERT(_inode->data._isdir == true);
+	// struct dir *dir = dir_open(inode_open(t_sector));
+	struct dir *dir = parse_n_locate(name);
+	// char *file_name = malloc(sizeof(char) * 16);
+	// struct dir * dir = parse_path(dir, file_name);
+	//end 20180109
+
 	bool success = dir != NULL && dir_remove (dir, name);
 	dir_close (dir);
+	// free(file_name);
 
 	return success;
 }
@@ -123,6 +162,16 @@ do_format (void) {
 	fat_create ();
 	if (!dir_create (ROOT_DIR_SECTOR, 16))
 		PANIC ("root directory creation failed");
+	// // thread_current()->c_dir = dir_open_root();
+	// struct dir *t_dir = thread_current()->c_dir;
+	// dir_add (t_dir, ".", ROOT_DIR_SECTOR);
+	// dir_add (t_dir, "..", ROOT_DIR_SECTOR);
+	// dir_close(t_dir);
+	struct dir *t_dir = dir_open_root();
+	thread_current()->t_sector = ROOT_DIR_SECTOR;
+	dir_add (t_dir, ".", ROOT_DIR_SECTOR);
+	dir_add (t_dir, "..", ROOT_DIR_SECTOR);
+	dir_close(t_dir);
 
 	fat_close ();
 #else
@@ -137,3 +186,84 @@ do_format (void) {
 
 //TODO: PARSING DIRECTORY PATHS
 //TODO: CREATE DIRECTORY
+
+// struct dir *parse_path(char * path_name, char *file_name){
+// 	//printf("HI\n");
+// 	struct dir *dir = NULL;
+// 	char path[14+1];
+// 	if(path_name ==NULL){
+// 		//printf("HI\n");
+// 		return NULL;
+// 	}
+// 	if(file_name ==NULL){
+// 		//printf("HI\n");
+// 		return NULL;
+// 	}
+// 	if(strlen(path_name)==0){
+// 		//printf("HI\n");
+// 		return NULL;
+// 	}
+// 	//printf("HI\n");
+// 	//절대경로
+	
+// 	strlcpy(path, path_name, 14);
+// 	//printf("path:%s", path);
+// 	if(path[0] =='/')
+// 		dir = dir_open_root();
+	
+// 	//상대경로
+// 	else{
+// 		if(thread_current()->c_dir ==NULL){
+// 			dir = dir_open_root();
+// 		}
+// 		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
+// 		dir = dir_open(thread_current()->c_dir);
+// 		//printf("add:%llx", dir);
+		
+// 	}
+
+// 	struct inode * tmp = dir->inode;
+// 	//printf("sec:%d\n",tmp==NULL);
+// 	if(tmp->data._isdir==false){
+// 		//printf("HI\n");
+// 		return NULL;
+// 	}
+//   	char *token, *next_token, *save_ptr;
+//   	token = strtok_r (path, "/", &save_ptr);
+// 	next_token = strtok_r (NULL, "/", &save_ptr);
+// 	//printf("chekc: %s\n", next_token);
+// 	//printf("Here\n");
+// 	if(token==NULL){
+// 		//printf("HI\n");
+// 		strlcpy(file_name,".",NAME_MAX);
+// 		return dir;
+// 	}
+// 	while(token!=NULL && next_token != NULL){
+// 		struct inode * tempo =NULL;
+// 		//NO DIR
+// 		//printf("??\n");
+	
+// 		//printf("sibal\n");
+// 		if(dir_lookup(dir,token,&tempo)==false){
+// 			//printf("HI\n");
+// 			dir_close(dir);
+// 			return NULL;
+// 		}
+// 		if(tempo->data._isdir==false){
+// 			//printf("??");
+// 			dir_close(dir);
+// 			return NULL;
+// 		}
+// 		//DONE
+// 		dir_close(dir);
+// 		//NEXT PART
+// 		dir = dir_open (tempo);
+// 		//printf("H:%d\n",dir==NULL);
+// 		token = next_token;
+// 		next_token = strtok_r (NULL, "/", &save_ptr);
+// 	}
+// 	//printf("check:%s\n", token);
+// 	strlcpy (file_name, token, NAME_MAX);
+// 	//printf("Please%d", inode_get_inumber(dir_get_inode(dir)));
+// 	return dir;
+// }

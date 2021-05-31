@@ -196,7 +196,7 @@ thread_print_stats (void) {
    Priority scheduling is the goal of Problem 1-3. */
 tid_t
 thread_create (const char *name, int priority,
-		thread_func *function, void *aux) {
+	thread_func *function, void *aux) {
 	struct thread *t;
 	tid_t tid;
 
@@ -531,6 +531,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 	//end 20180109
 
 	t->executable = NULL;
+	// t->c_dir = NULL;
 
 
 	//edit-for mlfqs

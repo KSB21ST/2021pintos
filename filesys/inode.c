@@ -65,7 +65,7 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 			{
 				static char zeros[DISK_SECTOR_SIZE];
 				temp = fat_create_chain(inode->data.start);
-				disk_write (filesys_disk, cluster_to_sector(temp), zeros);
+				disk_write (filesys_disk, temp, zeros);
 			}
 		}
 		return (disk_sector_t)temp;
@@ -210,7 +210,7 @@ inode_close (struct inode *inode) {
 			// free_map_release (inode->sector, 1);
 			// free_map_release (inode->data.start,
 			// 		bytes_to_sectors (inode->data.length)); 
-			fat_remove_chain (inode->sector, 0);   // TODO
+			// fat_remove_chain (inode->sector, 0);   // TODO
 			fat_remove_chain (inode->data.start, 0);  // TODO
 		}
 
@@ -378,3 +378,14 @@ off_t
 inode_length (const struct inode *inode) {
 	return inode->data.length;
 }
+
+//start 20180109 - for subdir
+void
+write_isdir(disk_sector_t sector, bool isdir)
+{
+	struct inode *inode = inode_open(sector);
+	inode->data._isdir = isdir;
+	disk_write(filesys_disk, inode->sector, &inode->data);
+	inode_close(inode);
+}
+//end 20180109

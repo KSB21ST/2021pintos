@@ -6,4 +6,12 @@ filesys/directory.o: ../../filesys/directory.c \
  ../../include/lib/stdarg.h ../../include/lib/kernel/stdio.h \
  ../../include/lib/string.h ../../include/lib/kernel/list.h \
  ../../include/filesys/filesys.h ../../include/filesys/off_t.h \
- ../../include/filesys/inode.h ../../include/threads/malloc.h
+ ../../include/filesys/inode.h ../../include/threads/malloc.h \
+ ../../include/threads/palloc.h ../../include/threads/vaddr.h \
+ ../../include/threads/loader.h ../../include/threads/thread.h \
+ ../../include/threads/interrupt.h ../../include/vm/vm.h \
+ ../../include/vm/uninit.h ../../include/vm/anon.h \
+ ../../include/vm/file.h ../../include/filesys/file.h \
+ ../../include/filesys/page_cache.h ../../include/lib/kernel/hash.h \
+ ../../include/lib/kernel/list.h ../../include/lib/stdlib.h \
+ ../../include/threads/synch.h

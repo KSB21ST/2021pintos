@@ -6,24 +6,30 @@
 #include "filesys/inode.h"
 #include "threads/malloc.h"
 
-/* A directory. */
-struct dir {
-	struct inode *inode;                /* Backing store. */
-	off_t pos;                          /* Current position. */
-};
+#include "threads/palloc.h"
+#include "threads/vaddr.h"
+#include "threads/thread.h"
 
-/* A single directory entry. */
-struct dir_entry {
-	disk_sector_t inode_sector;         /* Sector number of header. */
-	char name[NAME_MAX + 1];            /* Null terminated file name. */
-	bool in_use;                        /* In use or free? */
-};
+// /* A directory. */
+// struct dir {
+// 	struct inode *inode;                /* Backing store. */
+// 	off_t pos;                          /* Current position. */
+// };
+
+// /* A single directory entry. */
+// struct dir_entry {
+// 	disk_sector_t inode_sector;         /* Sector number of header. */
+// 	char name[NAME_MAX + 1];            /* Null terminated file name. */
+// 	bool in_use;                        /* In use or free? */
+// };
 
 /* Creates a directory with space for ENTRY_CNT entries in the
  * given SECTOR.  Returns true if successful, false on failure. */
 bool
 dir_create (disk_sector_t sector, size_t entry_cnt) {
-	return inode_create (sector, entry_cnt * sizeof (struct dir_entry));
+	bool success = inode_create (sector, entry_cnt * sizeof (struct dir_entry));
+	write_isdir(sector, true);
+	return success;
 }
 
 /* Opens and returns the directory for the given INODE, of which
@@ -34,7 +40,7 @@ dir_open (struct inode *inode) {
 	if (inode != NULL && dir != NULL) {
 		dir->inode = inode;
 		//start 20180109 - for subdir
-		dir->inode->_isdir = false;
+		// dir->inode->_isdir = true;
 		//end 20180109
 		dir->pos = 0;
 		return dir;
@@ -218,4 +224,141 @@ dir_readdir (struct dir *dir, char name[NAME_MAX + 1]) {
 		}
 	}
 	return false;
+}
+
+int
+dir_path_parse(const char *path_name, char **argv)
+{
+   char *token, *last;
+   int token_count = 0;
+   token = strtok_r(path_name, "/", &last);
+   argv[token_count] = token;
+   while (token != NULL)
+   {
+      token = strtok_r(NULL, "/", &last);
+      token_count++;
+      argv[token_count] = token;
+   }
+   return token_count;
+}
+
+struct dir *
+locate_dir(char **argv, int number, char *real_name)
+{
+	struct dir *t_dir = NULL;
+	struct inode *t_inode = NULL;
+	disk_sector_t ans = 0;
+	bool absolute_path = false;
+	if (real_name[0] == '/'){ //absolute path, 첫번쨰 경로가 0이면
+		//open root directory
+		t_dir = dir_open_root();
+		absolute_path = true;
+	}
+	else{ //relative path
+		// dir_lookup(t_dir, argv[0], &t_inode);
+		// t_dir = dir_open(t_inode);
+		if(thread_current()->t_sector ==NULL){
+			t_dir = dir_open_root();
+		}
+		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
+		else{
+			t_dir = dir_open(inode_open(thread_current()->t_sector));
+		}
+	}
+	for(int i=0;i<number-1;i++)
+	{
+		//absolute path 면 argv[0] 가 "0" 이다 -- TODO
+		if(!dir_lookup(t_dir, argv[i], &t_inode)){ //dir이 존재하지 않으면
+			if(i == 0){
+				t_inode = t_dir->inode;
+				ans = t_inode->sector;
+				// dir_close(t_dir);
+				return t_dir;
+			}
+			dir_close(t_dir);
+			return NULL;
+			// break;
+		}
+		if(!t_inode->data._isdir){ //t_inode 가 file inode 면
+			break;
+		}
+		dir_close(t_dir);
+		t_dir = dir_open(t_inode);
+		if (t_dir == NULL)
+			return NULL;
+	}
+	t_inode = t_dir->inode;
+	ans = t_inode->sector;
+	// dir_close(t_dir);
+	return t_dir;
+}
+
+struct dir *
+parse_n_locate(const char *path_name)
+{
+	char *fn_copy = palloc_get_page(0);
+	strlcpy (fn_copy, path_name, PGSIZE);
+	char *argv = palloc_get_page(PAL_ZERO);
+	int argc = dir_path_parse(fn_copy, argv);
+	struct dir * t_sector = locate_dir(argv, argc, path_name);
+	palloc_free_page(fn_copy);
+	palloc_free_page(argv);
+	return t_sector;
+}
+
+struct dir*
+parse_path(char *path_name, char *last_name)
+{
+	struct dir *t_dir = NULL;
+	struct inode *t_inode = NULL;
+	disk_sector_t ans = 0;
+	bool absolute_path = false;
+	if (path_name[0] == '/'){ //absolute path, 첫번쨰 경로가 0이면
+		//open root directory
+		t_dir = dir_open_root();
+		absolute_path = true;
+	}
+	else{ //relative path
+		if(thread_current()->t_sector ==NULL){
+			t_dir = dir_open_root();
+		}
+		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
+		else{
+			t_dir = dir_open(inode_open(thread_current()->t_sector));
+		}
+	}
+	char *token, *last, *extra;
+	token = strtok_r(path_name, "/", &last);
+   	extra = strtok_r(NULL, "/", &last);
+	int i = 0;
+	while (extra != NULL)
+	{
+		//absolute path 면 argv[0] 가 "0" 이다 -- TODO
+		if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
+			if(i == 0){
+				t_inode = t_dir->inode;
+				ans = t_inode->sector;
+				// dir_close(t_dir);
+				return t_dir;
+			}
+			dir_close(t_dir);
+			return NULL;
+			// break;
+		}
+		if(!t_inode->data._isdir){ //t_inode 가 file inode 면
+			break;
+		}
+		dir_close(t_dir);
+		t_dir = dir_open(t_inode);
+		if (t_dir == NULL)
+			return NULL;
+		token = extra;
+		extra = strtok_r (NULL, "/", &last);
+		i++;
+	}
+	strlcpy (last_name, token, sizeof(last_name));
+	t_inode = t_dir->inode;
+	ans = t_inode->sector;
+	// dir_close(t_dir);
+	return t_dir;
 }

@@ -61,12 +61,12 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 		{
 			// printf("in byte_to_sector temp: %d \n", temp);
 			temp = fat_get(temp);
-			if (temp == EOChain)
-			{
-				static char zeros[DISK_SECTOR_SIZE];
-				temp = fat_create_chain(inode->data.start);
-				disk_write (filesys_disk, temp, zeros);
-			}
+			// if (temp == EOChain)
+			// {
+			// 	static char zeros[DISK_SECTOR_SIZE];
+			// 	temp = fat_create_chain(inode->data.start);
+			// 	disk_write (filesys_disk, temp, zeros);
+			// }
 		}
 		return (disk_sector_t)temp;
 	}
@@ -206,12 +206,10 @@ inode_close (struct inode *inode) {
 		list_remove (&inode->elem);
 
 		/* Deallocate blocks if removed. */
-		if (inode->removed) { //TODO
-			// free_map_release (inode->sector, 1);
-			// free_map_release (inode->data.start,
-			// 		bytes_to_sectors (inode->data.length)); 
-			// fat_remove_chain (inode->sector, 0);   // TODO
-			fat_remove_chain (inode->data.start, 0);  // TODO
+		if (inode->removed) { 
+			fat_remove_chain (inode->data.start, 0);
+			static char zeros[DISK_SECTOR_SIZE];
+			disk_write (filesys_disk, inode->sector, zeros); 
 		}
 
 		free (inode); 
@@ -234,6 +232,9 @@ inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset) {
 	uint8_t *buffer = buffer_;
 	off_t bytes_read = 0;
 	uint8_t *bounce = NULL;
+
+	if(inode == NULL)
+		return NULL;
 	
 	while (size > 0) {
 		/* Disk sector to read, starting byte offset within sector. */

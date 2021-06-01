@@ -197,6 +197,10 @@ dir_remove (struct dir *dir, const char *name) {
 
 	/* Erase directory entry. */
 	e.in_use = false;
+	//start 20180109
+	// static char zeros[NAME_MAX + 1];
+	// memcpy(e.name, zeros, sizeof(char)*(NAME_MAX + 1));
+	//end 20180109
 	if (inode_write_at (dir->inode, &e, sizeof e, ofs) != sizeof e)
 		goto done;
 
@@ -218,6 +222,12 @@ dir_readdir (struct dir *dir, char name[NAME_MAX + 1]) {
 
 	while (inode_read_at (dir->inode, &e, sizeof e, dir->pos) == sizeof e) {
 		dir->pos += sizeof e;
+		//start 20180109
+		if(!strcmp(e.name, ".") || !strcmp(e.name, ".."))
+			continue;
+		if((e.name == ".") || (e.name == ".."))
+			continue;
+		//end 20180109
 		if (e.in_use) {
 			strlcpy (name, e.name, NAME_MAX + 1);
 			return true;
@@ -320,7 +330,8 @@ parse_path(char *path_name, char *last_name)
 	}
 	else{ //relative path
 		if(thread_current()->t_sector ==NULL){
-			t_dir = dir_open_root();
+			// t_dir = dir_open_root();
+			return NULL;
 		}
 		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
 		else{

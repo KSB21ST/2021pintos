@@ -1,14 +1,1 @@
-FAIL
-Kernel panic in run: PANIC at ../../lib/string.c:306 in strlcpy(): assertion `src != NULL' failed.
-Call stack: 0x80042144f2 0x8004213ecb 0x800421dead 0x800421bb41 0x800421a45f 0x8004219db9 0x8004219af2 0x40011d 0x400e7d 0x400ec6
-Translation of call stack:
-0x00000080042144f2: debug_panic (lib/kernel/debug.c:32)
-0x0000008004213ecb: strlcpy (lib/string.c:308)
-0x000000800421dead: parse_path (filesys/directory.c:360)
-0x000000800421bb41: filesys_remove (filesys/filesys.c:160)
-0x000000800421a45f: remove (userprog/syscall.c:294)
-0x0000008004219db9: syscall_handler (userprog/syscall.c:113)
-0x0000008004219af2: no_sti (userprog/syscall-entry.o:?)
-0x000000000040011d: (unknown)
-0x0000000000400e7d: (unknown)
-0x0000000000400ec6: (unknown)
+PASS

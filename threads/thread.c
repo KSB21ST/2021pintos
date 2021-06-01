@@ -531,7 +531,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 	//end 20180109
 
 	t->executable = NULL;
-	// t->c_dir = NULL;
+	t->t_sector = 1;
 
 
 	//edit-for mlfqs

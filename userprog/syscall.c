@@ -263,6 +263,8 @@ create (const char *file, unsigned initial_size)
    if (file == NULL) exit(-1);
    if(strlen(file) == 0)
       exit(-1);
+   // if(!thread_current()->t_sector)
+   //    return false;
    lock_acquire(&file_lock);
    bool result = (filesys_create (file, initial_size));
    lock_release(&file_lock);
@@ -301,6 +303,10 @@ open (const char *file)
 {
    if(file==NULL) exit(-1);
    if(strlen(file) == 0)
+      return -1;
+   if(!strcmp(file, ".") && !thread_current()->t_sector)
+      return -1;
+   if(!strcmp(file, "..") && !thread_current()->t_sector)
       return -1;
 
    struct file* opened_file;
@@ -534,22 +540,34 @@ munmap (void *addr)
 
 bool
 chdir (const char *dir) {
+   uint32_t temp_s = thread_current()->t_sector;
    if(dir == NULL) exit(-1);
-   
-   // char **argv;
-   // argv = palloc_get_page(0);
-   // struct dir *parent_dir = directory_parse(dir, argv);
-   char *file_name = malloc(sizeof(char) * 16);
+   struct dir *last_dir;
+
+   if(!strcmp(dir, "/")){
+      last_dir = dir_open_root();
+      thread_current()->t_sector = last_dir->inode->sector;
+   }
+   else{
+
+   char *file_name = palloc_get_page(0);
 	char *name_copy = palloc_get_page(0);
-	strlcpy(name_copy, dir, sizeof(dir)+4);
+	strlcpy(name_copy, dir, PGSIZE);
 	struct dir * parent_dir = parse_path(name_copy, file_name);
 
+   if(!parent_dir){
+      palloc_free_page(file_name);
+	   palloc_free_page(name_copy);
+      return false;
+   }
+
    struct inode *inode = NULL;
+   
 
    if(!dir_lookup(parent_dir, file_name, &inode)){
       // printf("something's wrong!\n");
       palloc_free_page(name_copy);
-      free(file_name);
+      palloc_free_page(file_name);
       dir_close(parent_dir);
       return false;
    }
@@ -558,16 +576,19 @@ chdir (const char *dir) {
    if(!inode->data._isdir){
       // printf("it is not a directory!\n");
       palloc_free_page(name_copy);
-      free(file_name);
+      palloc_free_page(file_name);
       dir_close(parent_dir);
       return false;
    }
-   struct dir *last_dir = dir_open(inode);
+
+   last_dir = dir_open(inode);
    thread_current()->t_sector = last_dir->inode->sector;
-   
+   temp_s = thread_current()->t_sector;
    palloc_free_page(name_copy);
-   free(file_name);
-   dir_close(parent_dir);
+   palloc_free_page(file_name);
+
+   }
+   // dir_close(parent_dir);
    return true;
 }
 
@@ -577,50 +598,33 @@ mkdir (const char *dir) {
       return false;
    disk_sector_t inode_sector = 0;
 	inode_sector = fat_create_chain(0);
-   // char *fn_copy = malloc(sizeof(char) * 16);
-	// strlcpy (fn_copy, dir, sizeof(fn_copy));
-	// char *argv = malloc(sizeof(char) * 128);
-	// int argc = dir_path_parse(fn_copy, argv);
-   // char *token, *last, *extra;
    lock_acquire(&file_lock);
-   // int token_count = 1;
-   // token = strtok_r(dir, "/", &last);
-   // extra = strtok_r(NULL, "/", &last);
-   // memcpy(&argv[token_count], token, sizeof(token));
-   // while (extra != NULL)
-   // {
-   //    // token = strtok_r(NULL, "/", &last);
-   //    token_count++;
-   //    if(token != NULL)
-   //       memcpy(&argv[token_count], token, sizeof(token));
-   //    token = extra;
-	// 	extra = strtok_r (NULL, "/", &last);
-   // }
-   char *file_name = malloc(sizeof(char) * 16);
-   // strlcpy (file_name, token, sizeof(file_name));
-   // //
-   // struct dir * t_dir = locate_dir(argv, token_count, dir);
+   char *file_name = palloc_get_page(0);
    struct dir * t_dir = parse_path(dir, file_name);
+   if(!t_dir){
+      palloc_free_page(file_name);
+      fat_put(inode_sector, 0);
+      return false;
+   }
    lock_release(&file_lock);
 
    bool success = (t_dir != NULL
-			// && free_map_allocate (1, &inode_sector)
 			&& inode_sector
 			&& dir_create (inode_sector, 16)
 			&& dir_add (t_dir, file_name, inode_sector));
-	// write_isdir(inode_sector, false);
 	if (!success && inode_sector != 0)
-		// free_map_release (inode_sector, 1);
-		// fat_remove_chain(inode_sector, 0);
 		fat_put(inode_sector, 0);
-   // free(fn_copy);
-   free(file_name);
-	// free(argv);
-
+   palloc_free_page(file_name);
+   struct inode * t_i = NULL;
+   bool i_1, i_2;
    struct dir *new_dir = dir_open(inode_open(inode_sector));
    if(success == true && new_dir != NULL){
 		dir_add(new_dir, ".", inode_sector);
-		dir_add(new_dir, "..", new_dir->inode->sector);
+      // i_1 = dir_lookup (new_dir, ".", &t_i);
+		dir_add(new_dir, "..", t_dir->inode->sector);
+      uint32_t temp_1 = thread_current()->t_sector;
+      // i_2 = dir_lookup (new_dir, "..", &t_i);
+      // uint32_t temp_2 = t_i->sector;
    }
 
    dir_close (new_dir);
@@ -628,10 +632,15 @@ mkdir (const char *dir) {
 	return success;
 }
 
-bool
 // readdir (int fd, char name[READDIR_MAX_LEN + 1]) {
-readdir (int fd, char name){
-	return true;
+bool
+readdir (int fd, char name[14 + 1]) {
+   struct thread* t = thread_current();
+	if(pml4_get_page (t->pml4, fd) == NULL) return;
+   struct file *_file;
+   struct file **file_table = t->fd_table;
+   _file = file_table[fd];
+   return dir_readdir(_file, name);
 }
 
 bool
@@ -652,14 +661,14 @@ isdir (int fd) {
 int
 inumber (int fd) {
    struct thread* t = thread_current();
-	if(pml4_get_page (t->pml4, fd) == NULL) return;
+	// if(pml4_get_page (t->pml4, fd) == NULL) return;
    struct file *_file;
    struct file **file_table = t->fd_table;
    _file = file_table[fd];
    if(_file == -1 || _file == -2)
       return;
    struct inode *_inode = _file->inode;
-   return inode_get_inumber(_inode); //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
+   return _inode->sector; //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
 }
 
 int

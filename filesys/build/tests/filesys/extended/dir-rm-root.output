@@ -4,8 +4,8 @@ Kernel command line: -q -f put dir-rm-root put tar run dir-rm-root
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  143,974,400 loops/s.
-hd0:0: detected 353 sector (176 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+Calibrating timer...  130,867,200 loops/s.
+hd0:0: detected 361 sector (180 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 223 sector (111 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
@@ -16,13 +16,17 @@ Putting 'tar' into the file system...
 Executing 'dir-rm-root':
 (dir-rm-root) begin
 (dir-rm-root) remove "/" (must fail)
-Kernel PANIC at ../../lib/string.c:306 in strlcpy(): assertion `src != NULL' failed.
-Call stack: 0x80042144f2 0x8004213ecb 0x800421dead 0x800421bb41 0x800421a45f 0x8004219db9 0x8004219af2 0x40011d 0x400e7d 0x400ec6 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421152c
- cr2=00000000004022ba error=               0
-rax 24df60ffffffff04 rbx 000000004747ff38 rcx 00000080040b8000 rdx 00000000000003d4
-rsp 000000800424dd50 rbp 000000800424dd60 rsi 000000000000b30f rdi 0000000000000000
-rip 000000800421152c r8 000000800424dc68  r9 00000080042179d0 r10 0000000000000000
-r11 0000000000000212 r12 0000008004219bc9 r13 0000000000008004 r14 214d050000008004
-r15 24dee00000008004 rflags 00000002
-es: 001b ds: 001b cs: 0008 ss: 0010
-Kernel PANIC recursion at ../../userprog/exception.c:100 in kill().
+(dir-rm-root) create "/a"
+(dir-rm-root) end
+dir-rm-root: exit(0)
+Execution of 'dir-rm-root' complete.
+Timer: 93 ticks
+Thread: 48 idle ticks, 41 kernel ticks, 4 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 148 reads, 754 writes
+hd1:0: 223 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1073 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

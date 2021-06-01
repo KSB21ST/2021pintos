@@ -78,6 +78,11 @@ filesys_create (const char *name, off_t initial_size) {
 	struct dir * dir = parse_path(name_copy, file_name);
 	// char tmp_name[14 +1];
 	// struct dir *dir = parse_path(name, tmp_name);
+	if(!dir){
+		palloc_free_page(file_name);
+		palloc_free_page(name_copy);
+		return false;
+	}
 
 	bool i_1 = inode_sector;
 	bool i_2 = inode_create (inode_sector, initial_size);
@@ -114,6 +119,16 @@ filesys_open (const char *name) {
 	// struct dir *dir = dir_open_root (); //TODO - path 이름 다르게 하기
 	struct inode *inode = NULL;
 
+	if(!strcmp(name, "/")){
+		struct dir *dir = dir_open_root();
+		return file_open(dir->inode);
+	}
+
+	if(!strcmp(name, ".")){
+		struct dir *dir = dir_open(inode_open(thread_current()->t_sector));
+		return file_open(dir->inode);
+	}
+
 	//start 20180109
 	// disk_sector_t t_sector = parse_n_locate(name);
 	// printf("t_sector: %d\n", t_sector);
@@ -131,6 +146,11 @@ filesys_open (const char *name) {
 	// else
 		// dir = dir_open (inode_reopen (t_sector));
 	//end 20180109
+	if(!dir){
+		palloc_free_page(file_name);
+		palloc_free_page(name_copy);
+		return false;
+	}
 
 	if (dir != NULL)
 		dir_lookup (dir, file_name, &inode);
@@ -148,24 +168,51 @@ filesys_open (const char *name) {
 bool
 filesys_remove (const char *name) {
 	// struct dir *dir = dir_open_root ();
+	uint32_t temp_s = thread_current()->t_sector;
+	uint32_t temp_r, temp_p;
 	
 	//start 20180109
-	// disk_sector_t t_sector= parse_n_locate(name);
-	// ASSERT(_inode->data._isdir == true);
-	// struct dir *dir = dir_open(inode_open(t_sector));
-	// struct dir *dir = parse_n_locate(name);
-	char *file_name = malloc(sizeof(char) * 16);
+	if(!strcmp(name, "/")){
+		struct dir *dir = dir_open_root();
+		bool success = dir != NULL && dir_remove (dir, ".");
+		dir_close (dir);
+		return success;
+	}
+	if(!strcmp(name, "..") && thread_current()->t_sector){
+		return false;
+	}
+	char *file_name = palloc_get_page(0);
 	char *name_copy = palloc_get_page(0);
 	strlcpy(name_copy, name, PGSIZE);
 	struct dir * dir = parse_path(name_copy, file_name);
-	// char *file_name = malloc(sizeof(char) * 16);
-	// struct dir * dir = parse_path(dir, file_name);
-	//end 20180109
 
-	bool success = dir != NULL && dir_remove (dir, name);
+	if(!dir){
+		palloc_free_page(file_name);
+		palloc_free_page(name_copy);
+		return false;
+	}
+
+	struct inode *r_inode;
+	dir_lookup(dir, file_name, &r_inode);
+	struct dir *r_dir = dir_open(r_inode);
+	temp_r = r_dir->inode->sector;
+	char t_name[NAME_MAX + 1];
+	if(dir_readdir(r_dir, t_name)){
+		palloc_free_page(file_name);
+		palloc_free_page(name_copy);
+		dir_close(r_inode);
+		dir_close (dir);
+		return false;
+	}
+	if(thread_current()->t_sector == r_dir->inode->sector)
+		thread_current()->t_sector = 0;
+	dir_remove(r_dir, ".");
+	// dir_remove(r_dir, "..");
+
+	bool success = dir != NULL && dir_remove (dir, file_name);
 	dir_close (dir);
 	// free(file_name);
-	free(file_name);
+	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
 
 	return success;

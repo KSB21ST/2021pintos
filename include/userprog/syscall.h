@@ -34,7 +34,7 @@ void munmap (void *addr);
 //for proj4
 bool chdir (const char *dir);
 bool mkdir (const char *);
-bool readdir (int, char);
+bool readdir (int, char *);
 bool isdir (int fd);
 int inumber (int fd);
 int symlink (const char* target, const char* linkpath);

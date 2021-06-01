@@ -197,7 +197,7 @@ filesys_remove (const char *name) {
 	struct dir *r_dir = dir_open(r_inode);
 	temp_r = r_dir->inode->sector;
 	char t_name[NAME_MAX + 1];
-	if(dir_readdir(r_dir, t_name)){
+	if(dir_readdir(r_dir, t_name) && r_inode->data._isdir){
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
 		dir_close(r_inode);

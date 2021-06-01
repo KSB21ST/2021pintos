@@ -20,8 +20,8 @@ Executing 'grow-dir-lg':
 (grow-dir-lg) write 512 bytes at offset 0 in "/x/file0" failed: FAILED
 grow-dir-lg: exit(1)
 Execution of 'grow-dir-lg' complete.
-Timer: 74 ticks
-Thread: 31 idle ticks, 38 kernel ticks, 6 user ticks
+Timer: 82 ticks
+Thread: 37 idle ticks, 39 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 218 reads, 766 writes
 hd1:0: 224 reads, 0 writes

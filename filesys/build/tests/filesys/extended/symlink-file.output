@@ -24,8 +24,8 @@ Executing 'symlink-file':
 (symlink-file) open "link_a": FAILED
 symlink-file: exit(1)
 Execution of 'symlink-file' complete.
-Timer: 76 ticks
-Thread: 30 idle ticks, 40 kernel ticks, 6 user ticks
+Timer: 89 ticks
+Thread: 31 idle ticks, 50 kernel ticks, 8 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 163 reads, 776 writes
 hd1:0: 229 reads, 0 writes

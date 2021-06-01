@@ -22,8 +22,8 @@ Executing 'grow-two-files':
 (grow-two-files) write "a" and "b" alternately
 grow-two-files: exit(-1)
 Execution of 'grow-two-files' complete.
-Timer: 88 ticks
-Thread: 40 idle ticks, 44 kernel ticks, 5 user ticks
+Timer: 73 ticks
+Thread: 30 idle ticks, 38 kernel ticks, 5 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 167 reads, 770 writes
 hd1:0: 227 reads, 0 writes

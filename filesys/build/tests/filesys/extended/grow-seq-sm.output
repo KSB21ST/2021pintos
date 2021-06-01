@@ -20,8 +20,8 @@ Executing 'grow-seq-sm':
 (grow-seq-sm) writing "testme"
 grow-seq-sm: exit(-1)
 Execution of 'grow-seq-sm' complete.
-Timer: 78 ticks
-Thread: 39 idle ticks, 36 kernel ticks, 3 user ticks
+Timer: 74 ticks
+Thread: 31 idle ticks, 39 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 150 reads, 753 writes
 hd1:0: 223 reads, 0 writes

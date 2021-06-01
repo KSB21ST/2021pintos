@@ -17,8 +17,8 @@ Executing 'mmap-bad-fd2':
 (mmap-bad-fd2) try to mmap stdin
 mmap-bad-fd2: exit(-1)
 Execution of 'mmap-bad-fd2' complete.
-Timer: 85 ticks
-Thread: 43 idle ticks, 40 kernel ticks, 2 user ticks
+Timer: 82 ticks
+Thread: 40 idle ticks, 38 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 252 reads, 636 writes
 hd1:0: 103 reads, 0 writes

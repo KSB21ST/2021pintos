@@ -1,2 +1,15 @@
 FAIL
-run: open "/": FAILED
+Kernel panic in run: PANIC at ../../lib/string.c:306 in strlcpy(): assertion `src != NULL' failed.
+Call stack: 0x80042144f2 0x8004213ecb 0x800421dead 0x800421ba5b 0x800421a4f0 0x8004219dfb 0x8004219af2 0x400129 0x4001f6 0x4015ae 0x4015f7
+Translation of call stack:
+0x00000080042144f2: debug_panic (lib/kernel/debug.c:32)
+0x0000008004213ecb: strlcpy (lib/string.c:308)
+0x000000800421dead: parse_path (filesys/directory.c:360)
+0x000000800421ba5b: filesys_open (filesys/filesys.c:128)
+0x000000800421a4f0: open (userprog/syscall.c:313)
+0x0000008004219dfb: syscall_handler (userprog/syscall.c:119)
+0x0000008004219af2: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400129: (unknown)
+0x00000000004001f6: (unknown)
+0x00000000004015ae: (unknown)
+0x00000000004015f7: (unknown)

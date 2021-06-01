@@ -4,7 +4,7 @@ Kernel command line: -q -f put syn-remove run syn-remove
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  129,433,600 loops/s.
 hd0:0: detected 353 sector (176 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 109 sector (54 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -19,7 +19,7 @@ Executing 'syn-remove':
 (syn-remove) remove "deleteme"
 (syn-remove) write "deleteme"
 Kernel PANIC at ../../filesys/fat.c:193 in fat_create_chain(): assertion `fat_fs->fat[clst] == EOChain' failed.
-Call stack: 0x80042144f2 0x800421c2cb 0x800421dbf8 0x800421e23c 0x800421cbdd 0x800421a93d 0x8004219f19 0x8004219af2 0x40027c 0x40108f 0x4010d8 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421152c
+Call stack: 0x80042144f2 0x800421c65f 0x800421df96 0x800421e5da 0x800421cf71 0x800421a98a 0x8004219f19 0x8004219af2 0x40027c 0x40108f 0x4010d8 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421152c
  cr2=00000000004032a0 error=               0
 rax 26df60ffffffff04 rbx 000000004747ff20 rcx 00000080040b8000 rdx 00000000000003d4
 rsp 000000800426dd00 rbp 000000800426dd10 rsi 000000000000c00f rdi 0000000000000000

@@ -10,6 +10,7 @@
 
 //20180109 start
 #include "threads/thread.h"
+#include "threads/vaddr.h"
 struct dir *parse_path(char * path_name, char *file_name);
 
 /* The disk that contains the file system. */
@@ -70,24 +71,31 @@ filesys_create (const char *name, off_t initial_size) {
 	// disk_sector_t t_sector= parse_n_locate(name);
 	// ASSERT(_inode->data._isdir == true);
 	// struct dir *dir = dir_open(inode_open(t_sector));
-	struct dir *dir = parse_n_locate(name);
-	// char *file_name = malloc(sizeof(char) * 16);
-	// struct dir * dir = parse_path(dir, file_name);
+	// struct dir *dir = parse_n_locate(name);
+	char *file_name = palloc_get_page(0);
+	char *name_copy = palloc_get_page(0);
+	strlcpy(name_copy, name, PGSIZE);
+	struct dir * dir = parse_path(name_copy, file_name);
 	// char tmp_name[14 +1];
 	// struct dir *dir = parse_path(name, tmp_name);
 
+	bool i_1 = inode_sector;
+	bool i_2 = inode_create (inode_sector, initial_size);
+	bool i_3 = dir_add (dir, file_name, inode_sector);
+
 	bool success = (dir != NULL
 			// && free_map_allocate (1, &inode_sector)
-			&& inode_sector
-			&& inode_create (inode_sector, initial_size)
-			&& dir_add (dir, name, inode_sector));
-	write_isdir(inode_sector, false);
+			&& i_1 //inode_sector
+			&& i_2 //inode_create (inode_sector, initial_size)
+			&& i_3); //dir_add (dir, name, inode_sector));
+	write_isdir(inode_sector, dir->inode->data._isdir);
 	if (!success && inode_sector != 0)
 		// free_map_release (inode_sector, 1);
 		// fat_remove_chain(inode_sector, 0);
 		fat_put(inode_sector, 0);
 	dir_close (dir);
-	// free(file_name);
+	palloc_free_page(file_name);
+	palloc_free_page(name_copy);
 
 	return success;
 }
@@ -113,7 +121,11 @@ filesys_open (const char *name) {
 	// struct dir *dir = NULL;
 	// if(t_sector == NULL)
 		// dir = dir_open(inode_open(t_sector));
-	struct dir *dir = parse_n_locate(name);
+	// struct dir *dir = parse_n_locate(name);
+	char *file_name = palloc_get_page(0);
+	char *name_copy = palloc_get_page(0);
+	strlcpy(name_copy, name, PGSIZE);
+	struct dir * dir = parse_path(name_copy, file_name);
 	// char *file_name = malloc(sizeof(char) * 16);
 	// struct dir * dir = parse_path(dir, file_name);
 	// else
@@ -121,9 +133,10 @@ filesys_open (const char *name) {
 	//end 20180109
 
 	if (dir != NULL)
-		dir_lookup (dir, name, &inode);
+		dir_lookup (dir, file_name, &inode);
 	dir_close (dir);
-	// free(file_name);
+	palloc_free_page(file_name);
+	palloc_free_page(name_copy);
 
 	return file_open (inode);
 }
@@ -140,7 +153,11 @@ filesys_remove (const char *name) {
 	// disk_sector_t t_sector= parse_n_locate(name);
 	// ASSERT(_inode->data._isdir == true);
 	// struct dir *dir = dir_open(inode_open(t_sector));
-	struct dir *dir = parse_n_locate(name);
+	// struct dir *dir = parse_n_locate(name);
+	char *file_name = malloc(sizeof(char) * 16);
+	char *name_copy = palloc_get_page(0);
+	strlcpy(name_copy, name, PGSIZE);
+	struct dir * dir = parse_path(name_copy, file_name);
 	// char *file_name = malloc(sizeof(char) * 16);
 	// struct dir * dir = parse_path(dir, file_name);
 	//end 20180109
@@ -148,6 +165,8 @@ filesys_remove (const char *name) {
 	bool success = dir != NULL && dir_remove (dir, name);
 	dir_close (dir);
 	// free(file_name);
+	free(file_name);
+	palloc_free_page(name_copy);
 
 	return success;
 }

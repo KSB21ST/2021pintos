@@ -94,14 +94,14 @@ FAIL tests/filesys/base/syn-remove
 pass tests/filesys/base/syn-write
 pass tests/filesys/extended/dir-empty-name
 pass tests/filesys/extended/dir-mk-tree
-FAIL tests/filesys/extended/dir-mkdir
+pass tests/filesys/extended/dir-mkdir
 FAIL tests/filesys/extended/dir-open
 pass tests/filesys/extended/dir-over-file
 FAIL tests/filesys/extended/dir-rm-cwd
 pass tests/filesys/extended/dir-rm-parent
-pass tests/filesys/extended/dir-rm-root
+FAIL tests/filesys/extended/dir-rm-root
 FAIL tests/filesys/extended/dir-rm-tree
-FAIL tests/filesys/extended/dir-rmdir
+pass tests/filesys/extended/dir-rmdir
 pass tests/filesys/extended/dir-under-file
 FAIL tests/filesys/extended/dir-vine
 pass tests/filesys/extended/grow-create

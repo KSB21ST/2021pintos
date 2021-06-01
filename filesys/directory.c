@@ -338,7 +338,7 @@ parse_path(char *path_name, char *last_name)
 			if(i == 0){
 				t_inode = t_dir->inode;
 				ans = t_inode->sector;
-				// dir_close(t_dir);
+				strlcpy (last_name, token, PGSIZE);
 				return t_dir;
 			}
 			dir_close(t_dir);
@@ -356,9 +356,6 @@ parse_path(char *path_name, char *last_name)
 		extra = strtok_r (NULL, "/", &last);
 		i++;
 	}
-	strlcpy (last_name, token, sizeof(last_name));
-	t_inode = t_dir->inode;
-	ans = t_inode->sector;
-	// dir_close(t_dir);
+	strlcpy (last_name, token, PGSIZE);
 	return t_dir;
 }

@@ -4,7 +4,7 @@ Kernel command line: -q -f put dir-rm-cwd put tar run dir-rm-cwd
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  117,760,000 loops/s.
+Calibrating timer...  104,857,600 loops/s.
 hd0:0: detected 353 sector (176 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 231 sector (115 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -16,16 +16,13 @@ Putting 'tar' into the file system...
 Executing 'dir-rm-cwd':
 (dir-rm-cwd) begin
 (dir-rm-cwd) open "/"
-(dir-rm-cwd) open "/": FAILED
-dir-rm-cwd: exit(1)
-Execution of 'dir-rm-cwd' complete.
-Timer: 83 ticks
-Thread: 43 idle ticks, 37 kernel ticks, 3 user ticks
-hd0:0: 0 reads, 0 writes
-hd0:1: 146 reads, 772 writes
-hd1:0: 231 reads, 0 writes
-hd1:1: 0 reads, 0 writes
-Console: 1037 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Kernel PANIC at ../../lib/string.c:306 in strlcpy(): assertion `src != NULL' failed.
+Call stack: 0x80042144f2 0x8004213ecb 0x800421dead 0x800421ba5b 0x800421a4f0 0x8004219dfb 0x8004219af2 0x400129 0x4001f6 0x4015ae 0x4015f7 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421152c
+ cr2=00000000004037bf error=               0
+rax 24df60ffffffff04 rbx 000000004747fec8 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 000000800424dd40 rbp 000000800424dd50 rsi 000000000000bc0f rdi 0000000000000000
+rip 000000800421152c r8 000000800424dc58  r9 00000080042179d0 r10 0000000000000000
+r11 0000000000000212 r12 0000008004219bc9 r13 0000000000008004 r14 214d050000008004
+r15 24dee00000008004 rflags 00000002
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:100 in kill().

@@ -1,2 +1,13 @@
 FAIL
-run: create "a/link_b/file": FAILED
+Kernel panic in run: PANIC at ../../filesys/directory.c:141 in dir_add(): assertion `dir != NULL' failed.
+Call stack: 0x80042144f2 0x800421d654 0x800421b929 0x800421a36b 0x8004219d7b 0x8004219af2 0x400375 0x40117b 0x4011c4
+Translation of call stack:
+0x00000080042144f2: debug_panic (lib/kernel/debug.c:32)
+0x000000800421d654: dir_add (filesys/directory.c:142)
+0x000000800421b929: filesys_create (filesys/filesys.c:84)
+0x000000800421a36b: create (userprog/syscall.c:267)
+0x0000008004219d7b: syscall_handler (userprog/syscall.c:108)
+0x0000008004219af2: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400375: (unknown)
+0x000000000040117b: (unknown)
+0x00000000004011c4: (unknown)

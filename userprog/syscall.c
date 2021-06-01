@@ -261,6 +261,8 @@ bool
 create (const char *file, unsigned initial_size)
 {
    if (file == NULL) exit(-1);
+   if(strlen(file) == 0)
+      exit(-1);
    lock_acquire(&file_lock);
    bool result = (filesys_create (file, initial_size));
    lock_release(&file_lock);
@@ -277,6 +279,8 @@ bool
 remove (const char *file)
 {
    if(file==NULL||*file==NULL) exit(-1);
+   if(strlen(file) == 0)
+      exit(-1);
    #ifdef VM
    // struct page *page = spt_find_page(&thread_current()->spt, file);
    // mmap(page->va);
@@ -296,6 +300,8 @@ int
 open (const char *file)
 {
    if(file==NULL) exit(-1);
+   if(strlen(file) == 0)
+      return -1;
 
    struct file* opened_file;
    struct thread *cur =thread_current();
@@ -528,7 +534,41 @@ munmap (void *addr)
 
 bool
 chdir (const char *dir) {
-	return true;
+   if(dir == NULL) exit(-1);
+   
+   // char **argv;
+   // argv = palloc_get_page(0);
+   // struct dir *parent_dir = directory_parse(dir, argv);
+   char *file_name = malloc(sizeof(char) * 16);
+	char *name_copy = palloc_get_page(0);
+	strlcpy(name_copy, dir, sizeof(dir)+4);
+	struct dir * parent_dir = parse_path(name_copy, file_name);
+
+   struct inode *inode = NULL;
+
+   if(!dir_lookup(parent_dir, file_name, &inode)){
+      // printf("something's wrong!\n");
+      palloc_free_page(name_copy);
+      free(file_name);
+      dir_close(parent_dir);
+      return false;
+   }
+   dir_close(parent_dir);
+
+   if(!inode->data._isdir){
+      // printf("it is not a directory!\n");
+      palloc_free_page(name_copy);
+      free(file_name);
+      dir_close(parent_dir);
+      return false;
+   }
+   struct dir *last_dir = dir_open(inode);
+   thread_current()->t_sector = last_dir->inode->sector;
+   
+   palloc_free_page(name_copy);
+   free(file_name);
+   dir_close(parent_dir);
+   return true;
 }
 
 bool //very similar with filesys_create

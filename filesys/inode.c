@@ -61,12 +61,7 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 		{
 			// printf("in byte_to_sector temp: %d \n", temp);
 			temp = fat_get(temp);
-			if (temp == EOChain)
-			{
-				static char zeros[DISK_SECTOR_SIZE];
-				temp = fat_create_chain(inode->data.start);
-				disk_write (filesys_disk, cluster_to_sector(temp), zeros);
-			}
+			
 		}
 		return (disk_sector_t)temp;
 	}
@@ -90,7 +85,7 @@ inode_init (void) {
  * Returns true if successful.
  * Returns false if memory or disk allocation fails. */
 bool
-inode_create (disk_sector_t sector, off_t length) {
+inode_create (disk_sector_t sector, off_t length, bool isdir) {
 	struct inode_disk *disk_inode = NULL;
 	bool success = false;
 
@@ -107,6 +102,7 @@ inode_create (disk_sector_t sector, off_t length) {
 		size_t sectors = bytes_to_sectors (length);
 		disk_inode->length = length;
 		disk_inode->magic = INODE_MAGIC;
+		disk_inode->_isdir = isdir;
 		// if (free_map_allocate (sectors, &disk_inode->start)) {
 		//start 20180109
 		if(inode_header = fat_create_chain(0)){ //free_map_allocate (sectors, &disk_inode->start) 부분, multiple secotrs allocate 해준다
@@ -125,22 +121,12 @@ inode_create (disk_sector_t sector, off_t length) {
 				}
 			}
 			disk_write (filesys_disk, sector, disk_inode); //disk_inode 를 secotr 에 적어준다
-			// if (sectors > 0) {
-			// 	static char zeros[DISK_SECTOR_SIZE];
-			// 	size_t i;
 
-			// 	disk_sector_t temp_sect = disk_inode->start;
-			// 	for (size_t j = 0; j < sectors; j++) {	
-			// 		// disk_write (filesys_disk, disk_inode->start + i, zeros);
-			// 		// printf("temp_sect: %#x \n", temp_sect);
-			// 		disk_write (filesys_disk, temp_sect, zeros);
-			// 		temp_sect = fat_get(temp_sect);
-			// 	}
-			// }
 			success = true; 
 		} 
 		free (disk_inode);
 	}
+	// printf("inode_create result: %d\n", success);
 	return success;
 }
 
@@ -210,8 +196,11 @@ inode_close (struct inode *inode) {
 			// free_map_release (inode->sector, 1);
 			// free_map_release (inode->data.start,
 			// 		bytes_to_sectors (inode->data.length)); 
-			fat_remove_chain (inode->sector, 0);   // TODO
+
 			fat_remove_chain (inode->data.start, 0);  // TODO
+			static char zeros[DISK_SECTOR_SIZE];
+			disk_write(filesys_disk, inode->sector, zeros);
+
 		}
 
 		free (inode); 

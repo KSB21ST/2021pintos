@@ -12,5 +12,6 @@ userprog/exception.o: ../../userprog/exception.c \
  ../../include/filesys/off_t.h ../../include/filesys/page_cache.h \
  ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
  ../../include/lib/stdlib.h ../../include/threads/synch.h \
+ ../../include/filesys/directory.h ../../include/devices/disk.h \
  ../../include/intrinsic.h ../../include/threads/mmu.h \
  ../../include/threads/pte.h ../../include/threads/vaddr.h

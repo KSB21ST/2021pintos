@@ -7,7 +7,7 @@ Pintos booting with:
 Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 353 sector (176 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 224 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 225 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
 Formatting file system...done.
 Boot complete.
@@ -38,11 +38,11 @@ Executing 'grow-root-sm':
 (grow-root-sm) end
 grow-root-sm: exit(0)
 Execution of 'grow-root-sm' complete.
-Timer: 180 ticks
-Thread: 52 idle ticks, 44 kernel ticks, 84 user ticks
+Timer: 164 ticks
+Thread: 53 idle ticks, 31 kernel ticks, 80 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 1198 reads, 884 writes
-hd1:0: 224 reads, 0 writes
+hd0:1: 1647 reads, 868 writes
+hd1:0: 225 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1931 characters output
 Keyboard: 0 keys pressed

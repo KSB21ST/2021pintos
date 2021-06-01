@@ -176,6 +176,7 @@ cluster_t
 fat_create_chain (cluster_t clst) {
 	/* TODO: Your code goes here. */
 	// if (clst == 0) return 0;
+	
 	cluster_t idx = 0;
 	for (cluster_t i=fat_fs->data_start; i< fat_fs->fat_length; i++) //20180109 unint overflow carefull!
 	{
@@ -188,11 +189,14 @@ fat_create_chain (cluster_t clst) {
 		return 0;
 	if(clst == 0){
 		fat_fs->fat[idx] = EOChain;
-		return idx;
+	}else{
+		ASSERT(fat_fs->fat[clst] == EOChain);
+		fat_fs->fat[clst] = idx;
+		fat_fs->fat[idx] = EOChain;
 	}
-	ASSERT(fat_fs->fat[clst] == EOChain); //clst 가 chain 의 마지막 요소가 아니면 error를 내준다
-	fat_fs->fat[clst] = idx;
-	fat_fs->fat[idx] = EOChain;
+	// ASSERT(fat_fs->fat[clst] == EOChain); //clst 가 chain 의 마지막 요소가 아니면 error를 내준다
+	// fat_fs->fat[clst] = idx;
+	// fat_fs->fat[idx] = EOChain;
 	return idx;
 }
 
@@ -257,9 +261,9 @@ cluster_t
 fat_get_end(cluster_t clst){
 	cluster_t next = clst;
 	for(cluster_t i = 0;i<fat_fs->fat_length;i++){
-		next = fat_fs->fat[next];
 		if(next == EOChain)
 			break;
+		next = fat_fs->fat[next];
 	}
 	return next;
 }

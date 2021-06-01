@@ -45,12 +45,12 @@ do_mkdir (const char *format, ...)
 {
   char dir[128];
   va_list args;
-
   va_start (args, format);
   vsnprintf (dir, sizeof dir, format, args);
   va_end (args);
-
+  // printf("\nbefore mkdir\n");
   CHECK (mkdir (dir), "mkdir \"%s\"", dir);
+  // printf("after mkdir\n");
 }
 
 static void
@@ -58,10 +58,10 @@ do_touch (const char *format, ...)
 {
   char file[128];
   va_list args;
-
   va_start (args, format);
   vsnprintf (file, sizeof file, format, args);
   va_end (args);
-
+  // printf("before create\n");
   CHECK (create (file, 0), "create \"%s\"", file);
+  // printf("after create\n");
 }

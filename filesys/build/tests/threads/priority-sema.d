@@ -11,5 +11,6 @@ tests/threads/priority-sema.o: ../../tests/threads/priority-sema.c \
  ../../include/vm/file.h ../../include/filesys/file.h \
  ../../include/filesys/off_t.h ../../include/filesys/page_cache.h \
  ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
- ../../include/lib/stdlib.h ../../include/devices/timer.h \
- ../../include/lib/round.h
+ ../../include/lib/stdlib.h ../../include/filesys/directory.h \
+ ../../include/devices/disk.h ../../include/lib/inttypes.h \
+ ../../include/devices/timer.h ../../include/lib/round.h

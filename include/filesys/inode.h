@@ -15,7 +15,10 @@ struct inode_disk {
 	disk_sector_t start;                /* First data sector. */
 	off_t length;                       /* File size in bytes. */
 	unsigned magic;                     /* Magic number. */
-	uint32_t unused[125];               /* Not used. */
+	// uint32_t unused[125];               /* Not used. */
+	bool _isdir;	//edit for subdirectory
+	bool b_nunused[3];
+	uint32_t unused[124];
 };
 
 
@@ -29,14 +32,14 @@ struct inode {
 	struct inode_disk data;             /* Inode content. */
 
 	//start 20180109 - for subdir
-	bool _isdir;
+	// bool _isdir;
 	//eid 20180109
 };
 
 struct bitmap;
 
 void inode_init (void);
-bool inode_create (disk_sector_t, off_t);
+bool inode_create (disk_sector_t, off_t, bool);
 struct inode *inode_open (disk_sector_t);
 struct inode *inode_reopen (struct inode *);
 disk_sector_t inode_get_inumber (const struct inode *);

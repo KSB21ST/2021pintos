@@ -73,7 +73,7 @@ process_create_initd (const char *file_name) {
 
    /* Create a new thread to execute FILE_NAME. */
    tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
-
+   // thread_current()->cur_dir = dir_open_root(); // edit for subdir
    // process_wait(tid); //wait for the created process to load execute completely
    sema_down(&thread_current()->fork_sema);
    if (tid == TID_ERROR)

@@ -27,6 +27,9 @@
         "init.h": "c",
         "mmu.h": "c",
         "debug.h": "c",
-        "fat.h": "c"
+        "fat.h": "c",
+        "intr-stubs.h": "c",
+        "directory.h": "c",
+        "free-map.h": "c"
     }
 }

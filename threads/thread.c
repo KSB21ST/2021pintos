@@ -14,6 +14,7 @@
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
+#include "filesys/directory.h"
 
 //edit
 #include <stdlib.h>
@@ -124,6 +125,8 @@ thread_init (void) {
 
 	running_thread()->nice = 0;
    	running_thread()->recent_cpu = 0;
+	// running_thread()->cur_dir = dir_open_root();
+	
 
 
 	/* Set up a thread structure for the running thread. */
@@ -506,6 +509,8 @@ init_thread (struct thread *t, const char *name, int priority) {
 	// t->child_exit_status = NULL;
 	t->process_exit = false;
 	t->open_cnt = 0;
+
+	t->cur_sector = 1;
 	// t->success_load = false;
 	// sema_init(&t->child_sema, 0);    
 	// sema_init(&t->exit_sema, 0); 

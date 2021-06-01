@@ -18,6 +18,7 @@
 //start 20180109
 #include "threads/synch.h"
 //end 20180109
+#include "filesys/directory.h"
 
 
 /* States in a thread's life cycle. */
@@ -127,7 +128,6 @@ struct thread {
 	uint64_t *pml4;                     /* Page map level 4 */
 
 
-
 // #ifdef USERPROG
 	//start 20180109
 	//for process
@@ -143,8 +143,9 @@ struct thread {
 	//struct file *fd_table;
 	//fd_table = (struct file*) malloc(sizeof(struct file) * 128);
 	//struct file *fd_table[128];
-	struct file **fd_table;
-	
+	// struct file **fd_table;
+	void **fd_table;
+
 	// struct lock file_t_lock;
 	struct condition exit_cond;
 	struct lock exit_lock;
@@ -173,6 +174,9 @@ struct thread {
 	/* Owned by thread.c. */
 	struct intr_frame tf;               /* Information for switching */
 	unsigned magic;                     /* Detects stack overflow. */
+
+	/* for subdirectory of project 4 */
+	disk_sector_t *cur_sector;
 };
 
 /* If false (default), use round-robin scheduler.

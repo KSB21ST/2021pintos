@@ -10,4 +10,6 @@ tests/threads/priority-change.o: ../../tests/threads/priority-change.c \
  ../../include/vm/file.h ../../include/filesys/file.h \
  ../../include/filesys/off_t.h ../../include/filesys/page_cache.h \
  ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
- ../../include/lib/stdlib.h ../../include/threads/synch.h
+ ../../include/lib/stdlib.h ../../include/threads/synch.h \
+ ../../include/filesys/directory.h ../../include/devices/disk.h \
+ ../../include/lib/inttypes.h

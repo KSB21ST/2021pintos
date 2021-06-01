@@ -15,7 +15,9 @@
 #include "vm/file.h"
 #include <hash.h>
 //end 20180109
-
+#include "filesys/directory.h"
+#include "filesys/fat.h"
+#include <string.h>
 
 // register uint64_t *num asm ("rax") = (uint64_t *) num_;
 //    register uint64_t *a1 asm ("rdi") = (uint64_t *) a1_;
@@ -203,35 +205,6 @@ exit (int status)
    printf("%s: exit(%d)\n", t->name, status);
    t->exit_status = status;
    thread_exit();
-   /*
-  	struct thread *cur = thread_current();
-	char real_file_name[128];
-	int idx = 0, i;
-	while((cur->name)[idx] != ' ' && (cur->name)[idx] != '\0'){
-		real_file_name[idx] = (cur->name)[idx];
-		idx++;
-	}
-	real_file_name[idx] = '\0';
-	printf("%s: exit(%d)\n", real_file_name, status);
-	cur->exit_status = status;
-
-	for (i = 2; i < 128; i++){
-		if(cur->fd_table[i] != 0){
-			close(i);
-		}
-	}
-	struct thread *temp_thread = NULL;
-	struct list_elem *temp_elem = NULL;
-
-	for(temp_elem = list_begin(&thread_current()->child_list);
-			temp_elem != list_end(&thread_current()->child_list);
-			temp_elem = list_next(temp_elem)){
-				temp_thread = list_entry(temp_elem, struct thread, child_elem);
-
-				process_wait(temp_thread->tid);
-	}
-	thread_exit();
-   */
 } 
 
 int
@@ -245,6 +218,8 @@ fork (const char *thread_name, struct intr_frame *f)
 int 
 exec (const char *file)
 {
+   if(strlen(file) == 0) exit(-1);
+
    if(file == NULL || *file == NULL) exit(-1);
    tid_t tid = process_exec(file);
    return tid;
@@ -259,11 +234,13 @@ wait (int pid){
 bool
 create (const char *file, unsigned initial_size)
 {
-   if (file == NULL) exit(-1);
+   if (file == NULL) return false;
+   if(strlen(file) == 0) return false;
    lock_acquire(&file_lock);
+   // printf("file name: %s\n", file);
    bool result = (filesys_create (file, initial_size));
    lock_release(&file_lock);
-    return result;
+   return result;
 }
 
 void 
@@ -275,14 +252,11 @@ hash_file_claim(struct hash_elem *e, void *aux)
 bool 
 remove (const char *file)
 {
-   if(file==NULL||*file==NULL) exit(-1);
+   if(file==NULL) return false;
+   if(strlen(file) == 0) return false;
+
    #ifdef VM
-   // struct page *page = spt_find_page(&thread_current()->spt, file);
-   // mmap(page->va);
    struct hash *h;
-   // h = &(&thread_current()->spt)->spt_table;
-   // h->aux = malloc(sizeof(struct file *));
-   // h->aux = filesys_open(file);
    hash_apply(&(&thread_current()->spt)->spt_table, hash_file_claim);
    #endif
    lock_acquire(&file_lock);
@@ -294,17 +268,19 @@ remove (const char *file)
 int 
 open (const char *file)
 {
-   if(file==NULL) exit(-1);
+   // printf("opening file name: %s\n", file);
+   if(file==NULL) return -1;
+   if(strlen(file) == 0) return -1;
 
-   struct file* opened_file;
    struct thread *cur =thread_current();
+   struct file* opened_file;
    #ifndef VM
    if(cur->open_cnt > 10)
       return-1;
    #endif
    lock_acquire(&file_lock);
    opened_file = filesys_open (file);
-   if(opened_file==NULL){
+   if(opened_file == NULL){
       lock_release(&file_lock);
       return -1;
    }
@@ -322,7 +298,6 @@ open (const char *file)
       }
    }
    lock_release(&file_lock);
-   // remove(opened_file);
    return;
 }
 
@@ -398,9 +373,13 @@ write (int fd, const void *buffer, unsigned length)
    }else if(temp == -1){
       cnt = NULL;
    }else{
-      if(temp == NULL)
+      if(temp->inode->data._isdir){
+         cnt = -1;
+      }else{
+         if(temp == NULL)
          cnt = NULL;
-      cnt = file_write(cur->fd_table[fd], buffer, length);
+         cnt = file_write(cur->fd_table[fd], buffer, length);
+      }
    }
    lock_release(&file_lock);
    return cnt;
@@ -527,51 +506,151 @@ munmap (void *addr)
 
 bool
 chdir (const char *dir) {
-	return true;
+   if(dir == NULL) return false;
+   if(strlen(dir) == 0) return false;
+   
+   char **argv;
+   argv = palloc_get_page(PAL_ZERO);
+
+   char *dir_copy = palloc_get_page(PAL_ZERO);
+	strlcpy (dir_copy, dir, PGSIZE);
+   struct dir *parent_dir = directory_parse(dir_copy, argv);
+
+   struct inode *inode = NULL;
+
+   if(!dir_lookup(parent_dir, argv[0], &inode)){
+      // printf("something's wrong!\n");
+      palloc_free_page(argv);
+      palloc_free_page(dir_copy);
+      return false;
+   }
+   dir_close(parent_dir);
+
+   if(!inode->data._isdir){
+      // printf("it is not a directory!\n");
+      palloc_free_page(argv);
+      palloc_free_page(dir_copy);
+      return false;
+   }
+   struct dir *last_dir = dir_open(inode);
+   // printf("=-----------reached hrere??\n");
+   thread_current()->cur_sector = dir_get_inode(last_dir)->sector;
+   
+   palloc_free_page(argv);
+   palloc_free_page(dir_copy);
+   return true;
 }
 
 bool
 mkdir (const char *dir) {
-	return true;
+   // printf("directory name: %s\n", dir);
+   if(dir == NULL) return false;
+   if(strlen(dir) == 0) return false;
+
+   cluster_t clst = fat_create_chain(0);
+   disk_sector_t sector = cluster_to_sector(clst);
+   if(!dir_create(sector, 16)){
+      printf("dir_create is failed!\n");
+      return false;
+   }
+
+   char **argv;
+   argv = palloc_get_page(PAL_ZERO);
+   char *dir_copy = palloc_get_page(PAL_ZERO);
+	strlcpy (dir_copy, dir, PGSIZE);
+
+   struct dir *parent_dir = directory_parse(dir_copy, argv);
+   if(parent_dir == NULL){
+      // printf("parent is not exist\n");
+      palloc_free_page(argv);
+      palloc_free_page(dir_copy);
+      return false;
+   }
+
+   struct inode *inode = NULL;
+   // printf("after get parent dir: %d\n", parent_dir->inode->sector);
+   if(dir_add(parent_dir, argv[0], sector)){
+      // printf("after adding\n");
+      if(!dir_lookup(parent_dir, argv[0], &inode)){
+         // printf("something's wrong!\n");
+         dir_close(parent_dir);
+         palloc_free_page(argv);
+         palloc_free_page(dir_copy);
+         return false;
+      }
+
+      if(!inode->data._isdir){
+         // printf("it is not a directory!\n");
+         dir_close(parent_dir);
+         palloc_free_page(argv);
+         palloc_free_page(dir_copy);
+         return false;
+      }
+
+      struct dir *last_dir = dir_open(inode);
+      dir_add(last_dir, "..", parent_dir->inode->sector);
+      dir_add(last_dir, ".", last_dir->inode->sector);
+      dir_close(last_dir);
+   }
+   dir_close(parent_dir);
+
+   palloc_free_page(argv);
+   palloc_free_page(dir_copy);
+   return true;
 }
 
 bool
-// readdir (int fd, char name[READDIR_MAX_LEN + 1]) {
-readdir (int fd, char name){
+readdir (int fd, char *name){
+   struct thread *cur = thread_current();
+   struct dir *dir = cur->fd_table[fd];
+
+   if(!isdir(fd)){ // not a directory
+      // printf("it is not a directory\n");
+      return false;
+   }
+   
+   if(!dir_readdir(dir, name)){ // no entry
+      return false;
+   }
+
 	return true;
 }
 
 bool
 isdir (int fd) {
-   struct thread* t = thread_current();
-	if(pml4_get_page (t->pml4, fd) == NULL) return;
-   struct file *_file;
-   struct file **file_table = t->fd_table;
-   _file = file_table[fd];
-   if(_file == -1 || _file == -2)
-      return;
-   struct inode *_inode = _file->inode;
-   return _inode->_isdir;
+   struct thread *cur = thread_current();
+   struct file *file = cur->fd_table[fd];
+   if(file == -1 || file == -2){
+      exit(-1);
+   }
+
+   return file->inode->data._isdir;
 }
 
 int
 inumber (int fd) {
-   struct thread* t = thread_current();
-	if(pml4_get_page (t->pml4, fd) == NULL) return;
-   struct file *_file;
-   struct file **file_table = t->fd_table;
-   _file = file_table[fd];
-   if(_file == -1 || _file == -2)
-      return;
-   struct inode *_inode = _file->inode;
-   return _inode->sector; //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
+   // struct thread* t = thread_current();
+	// if(pml4_get_page (t->pml4, fd) == NULL) return;
+   // struct file *_file;
+   // struct file **file_table = t->fd_table;
+   // _file = file_table[fd];
+   // if(_file == -1 || _file == -2)
+   //    return;
+   // struct inode *_inode = _file->inode;
+   // return _inode->sector; //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
+   struct thread *cur = thread_current();
+   struct file *file = cur->fd_table[fd];
+   if(file == -1 || file == -2){
+      exit(-1);
+   }
+
+   return inode_get_inumber(file->inode);
 }
 
 int
 symlink (const char* target, const char* linkpath) {
 	return 0;
 }
-
 
 
 void 
@@ -593,4 +672,96 @@ check_buffer(void *buffer, unsigned size)
       // if(writable && !p->writable)
       //    exit(-1);
    }
+}
+
+struct dir *
+directory_parse(char *file_name, char **argv)
+{  
+   // lock_acquire(&file_lock);
+   if(file_name == NULL) return NULL;
+   // printf("file_name: %s\n", file_name);
+
+   char *fn_copy = palloc_get_page(PAL_ZERO);
+   strlcpy(fn_copy, file_name, PGSIZE);
+
+   char *token, *last;
+   int cnt = 0;
+   token = strtok_r(file_name, "/", &last);
+   argv[cnt] = token;
+   // printf("argv: %s\n", argv[cnt]);
+   while(token != NULL){
+      token = strtok_r(NULL, "/", &last);
+      cnt++;
+      argv[cnt] = token;
+   }
+   // printf("cnt: %d\n", cnt);
+   struct dir *opened_dir;
+   struct inode *opened_inode = NULL;
+   int idx = 0;
+/*
+   if(argv[idx] == NULL){ // absolute path
+      if(cnt == 0){
+         // return NULL;
+         // memcpy(argv[0], ".", sizeof("."));
+         argv[0] = ".";
+         return dir_open_root();
+      }
+      printf("absolute path from root\n");
+      idx = 1;
+      opened_dir = dir_open_root();
+      // dir_close(opened_dir);
+   }else{
+      if(argv[idx])
+      // printf("\nargv[idx] is not null\n");
+      if(thread_current()->cur_sector == NULL){
+         thread_current()->cur_sector = ROOT_DIR_SECTOR;
+      }
+      opened_dir = dir_open(inode_open(thread_current()->cur_sector));
+   }
+*/
+   if(cnt == 0){ // root
+      argv[0] = ".";
+      palloc_free_page(fn_copy);
+      if(thread_current()->cur_sector == NULL){
+         return NULL;
+      }
+
+      return dir_open_root();
+   }else if(cnt == 1 && strlen(argv[idx]) == strlen(fn_copy)){ // relative path
+      // printf("relative path // argv: %s\n", argv[idx]);
+      if(thread_current()->cur_sector == NULL){
+         return NULL;
+      }
+      opened_dir = dir_open(inode_open(thread_current()->cur_sector));
+
+   }else{ // absolute path
+      opened_dir = dir_open_root();
+   }
+
+   palloc_free_page(fn_copy);
+
+   for(idx; idx < cnt-1; idx++){
+      // printf("halo~~\n");
+      opened_inode = NULL;
+      if(!dir_lookup(opened_dir, argv[idx], &opened_inode)){
+         // printf("no such dir: %s\n", argv[idx]);
+         // lock_release(&file_lock);
+         return NULL;
+      }
+      dir_close(opened_dir);
+// printf("or here??\n");
+      if(!opened_inode->data._isdir){
+         printf("it is not a directory!\n");
+         // lock_release(&file_lock);
+         return NULL;
+      }
+      opened_dir = dir_open(opened_inode);
+   }
+   // printf("idx: %d\n", idx);
+   // printf("argv[0]: %s, argv[idx]: %s\n", argv[0], argv[idx]);
+
+   memcpy(argv[0], argv[idx], sizeof(argv[idx]));
+   // printf("argv[0]: %s (after copy)\n", argv[0]);
+   // lock_release(&file_lock);
+   return opened_dir;
 }

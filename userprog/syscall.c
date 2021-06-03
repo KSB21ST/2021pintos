@@ -643,10 +643,47 @@ inumber (int fd) {
    return _inode->sector; //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
 }
 
+//very similar with mkdir
 int
 symlink (const char* target, const char* linkpath) {
-   
-	return 0;
+   if(!mkdir(linkpath)){
+      return -1;
+   }
+   printf("mkdir, name: %s in syscall symlink\n", linkpath);
+   int fd = open(linkpath);
+   // struct dir *link_dir = thread_current()->fd_table[fd];
+   disk_sector_t sector = (disk_sector_t)inumber(fd);
+   struct inode *symlink = inode_open(sector);
+   symlink->data._issym = true;
+   disk_write(filesys_disk, symlink->sector, &symlink->data);
+   char *file_name = palloc_get_page(0);
+   char *name_copy = palloc_get_page(0);
+   strlcpy(name_copy, target, PGSIZE);
+   struct dir * parent_dir = parse_path(name_copy, file_name);
+
+   // printf("filename: %s \n", file_name);
+
+   if(!parent_dir){
+      palloc_free_page(file_name);
+      palloc_free_page(name_copy);
+      return -1;
+   }
+
+   struct inode *inode = NULL;
+   if(!dir_lookup(parent_dir, file_name, &inode)){
+      palloc_free_page(name_copy);
+      palloc_free_page(file_name);
+      dir_close(parent_dir);
+      return -1;
+   }
+   symlink->data.start = inode->sector;
+   disk_write(filesys_disk,symlink->sector, &symlink->data);
+   dir_close(parent_dir);
+   inode_close(symlink);
+   palloc_free_page(name_copy);
+   palloc_free_page(file_name);
+   return 0;
+
 }
 
 

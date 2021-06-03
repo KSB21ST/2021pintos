@@ -228,16 +228,11 @@ do_format (void) {
 	fat_create ();
 	if (!dir_create (ROOT_DIR_SECTOR, 16))
 		PANIC ("root directory creation failed");
-	// // thread_current()->c_dir = dir_open_root();
-	// struct dir *t_dir = thread_current()->c_dir;
+	// struct dir *t_dir = dir_open_root();
+	// thread_current()->t_sector = ROOT_DIR_SECTOR;
 	// dir_add (t_dir, ".", ROOT_DIR_SECTOR);
 	// dir_add (t_dir, "..", ROOT_DIR_SECTOR);
 	// dir_close(t_dir);
-	struct dir *t_dir = dir_open_root();
-	thread_current()->t_sector = ROOT_DIR_SECTOR;
-	dir_add (t_dir, ".", ROOT_DIR_SECTOR);
-	dir_add (t_dir, "..", ROOT_DIR_SECTOR);
-	dir_close(t_dir);
 
 	fat_close ();
 #else
@@ -250,86 +245,12 @@ do_format (void) {
 	printf ("done.\n");
 }
 
-//TODO: PARSING DIRECTORY PATHS
-//TODO: CREATE DIRECTORY
-
-// struct dir *parse_path(char * path_name, char *file_name){
-// 	//printf("HI\n");
-// 	struct dir *dir = NULL;
-// 	char path[14+1];
-// 	if(path_name ==NULL){
-// 		//printf("HI\n");
-// 		return NULL;
-// 	}
-// 	if(file_name ==NULL){
-// 		//printf("HI\n");
-// 		return NULL;
-// 	}
-// 	if(strlen(path_name)==0){
-// 		//printf("HI\n");
-// 		return NULL;
-// 	}
-// 	//printf("HI\n");
-// 	//절대경로
-	
-// 	strlcpy(path, path_name, 14);
-// 	//printf("path:%s", path);
-// 	if(path[0] =='/')
-// 		dir = dir_open_root();
-	
-// 	//상대경로
-// 	else{
-// 		if(thread_current()->c_dir ==NULL){
-// 			dir = dir_open_root();
-// 		}
-// 		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
-// 		dir = dir_open(thread_current()->c_dir);
-// 		//printf("add:%llx", dir);
-		
-// 	}
-
-// 	struct inode * tmp = dir->inode;
-// 	//printf("sec:%d\n",tmp==NULL);
-// 	if(tmp->data._isdir==false){
-// 		//printf("HI\n");
-// 		return NULL;
-// 	}
-//   	char *token, *next_token, *save_ptr;
-//   	token = strtok_r (path, "/", &save_ptr);
-// 	next_token = strtok_r (NULL, "/", &save_ptr);
-// 	//printf("chekc: %s\n", next_token);
-// 	//printf("Here\n");
-// 	if(token==NULL){
-// 		//printf("HI\n");
-// 		strlcpy(file_name,".",NAME_MAX);
-// 		return dir;
-// 	}
-// 	while(token!=NULL && next_token != NULL){
-// 		struct inode * tempo =NULL;
-// 		//NO DIR
-// 		//printf("??\n");
-	
-// 		//printf("sibal\n");
-// 		if(dir_lookup(dir,token,&tempo)==false){
-// 			//printf("HI\n");
-// 			dir_close(dir);
-// 			return NULL;
-// 		}
-// 		if(tempo->data._isdir==false){
-// 			//printf("??");
-// 			dir_close(dir);
-// 			return NULL;
-// 		}
-// 		//DONE
-// 		dir_close(dir);
-// 		//NEXT PART
-// 		dir = dir_open (tempo);
-// 		//printf("H:%d\n",dir==NULL);
-// 		token = next_token;
-// 		next_token = strtok_r (NULL, "/", &save_ptr);
-// 	}
-// 	//printf("check:%s\n", token);
-// 	strlcpy (file_name, token, NAME_MAX);
-// 	//printf("Please%d", inode_get_inumber(dir_get_inode(dir)));
-// 	return dir;
-// }
+void
+create_directory_root(){
+	struct dir *t_dir = dir_open_root();
+	t_dir->inode->data._isdir = true;
+	thread_current()->t_sector = ROOT_DIR_SECTOR;
+	dir_add (t_dir, ".", ROOT_DIR_SECTOR);
+	dir_add (t_dir, "..", ROOT_DIR_SECTOR);
+	dir_close(t_dir);
+}

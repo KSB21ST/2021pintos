@@ -97,6 +97,7 @@ lookup (const struct dir *dir, const char *name,
 	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
 			ofs += sizeof e)
 		if (e.in_use && !strcmp (name, e.name)) {
+			// printf("sector: %d, name: %s, e.name: %s \n", dir->inode->sector, name, e.name);
 			if (ep != NULL)
 				*ep = e;
 			if (ofsp != NULL)
@@ -336,7 +337,7 @@ parse_path(char *path_name, char *last_name)
 		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
 		else{
 			t_dir = dir_open(inode_open(thread_current()->t_sector));
-		}
+		} 
 	}
 	char *token, *last, *extra;
 	token = strtok_r(path_name, "/", &last);
@@ -347,8 +348,6 @@ parse_path(char *path_name, char *last_name)
 		//absolute path 면 argv[0] 가 "0" 이다 -- TODO
 		if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
 			if(i == 0){
-				t_inode = t_dir->inode;
-				ans = t_inode->sector;
 				strlcpy (last_name, token, PGSIZE);
 				return t_dir;
 			}

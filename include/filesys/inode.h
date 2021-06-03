@@ -17,7 +17,8 @@ struct inode_disk {
 	unsigned magic;                     /* Magic number. */
 	//start 20180109 - for subdir
 	bool _isdir;
-	bool b_unused[3];
+	bool _issym;
+	bool b_unused[2];
 	//eid 20180109
 	// uint32_t unused[125];               /* Not used. */
 	uint32_t unused[124];               /* Not used. */
@@ -32,6 +33,7 @@ struct inode {
 	bool removed;                       /* True if deleted, false otherwise. */
 	int deny_write_cnt;                 /* 0: writes ok, >0: deny writes. */
 	struct inode_disk data;             /* Inode content. */
+	bool _issym;
 
 	//start 20180109 - for subdir
 	// bool _isdir;

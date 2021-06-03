@@ -23,7 +23,7 @@ write_some_bytes (const char *file_name, int fd, const char *buf, size_t *ofs)
       size_t ret_val;
       if (block_size > FILE_SIZE - *ofs)
         block_size = FILE_SIZE - *ofs;
-
+      // printf("fd: %d in test case\n", fd);
       ret_val = write (fd, buf + *ofs, block_size);
       if (ret_val != block_size)
         fail ("write %zu bytes at offset %zu in \"%s\" returned %zu",
@@ -57,6 +57,7 @@ test_main (void)
   msg ("write \"link_a\" and \"link_b\" alternately");
   while (ofs_a < FILE_SIZE || ofs_b < FILE_SIZE)
     {
+      // printf("fd_a: %d, buf_a: %d, ofs_a: %s \n", fd_a, buf_a, ofs_a);
       write_some_bytes ("a", fd_a, buf_a, &ofs_a);
       write_some_bytes ("b", fd_b, buf_b, &ofs_b);
     }

@@ -99,9 +99,11 @@ file_read_at (struct file *file, void *buffer, off_t size, off_t file_ofs) {
 off_t
 file_write (struct file *file, const void *buffer, off_t size) {
 	//start 20180109 -for dir-open test
-	if(file->inode->data._isdir){
+	if(!file->inode->data._issym && file->inode->data._isdir){
+		printf("not symlink and dir \n");
 		return -1;
 	}
+	// printf("write at: %d in file_write\n", file->inode->data.start);
 	//eend 20180109
 	off_t bytes_written = inode_write_at (file->inode, buffer, size, file->pos);
 	file->pos += bytes_written;

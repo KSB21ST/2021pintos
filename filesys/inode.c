@@ -107,6 +107,7 @@ inode_create (disk_sector_t sector, off_t length) {
 		size_t sectors = bytes_to_sectors (length);
 		disk_inode->length = length;
 		disk_inode->magic = INODE_MAGIC;
+		disk_inode->_issym = false;
 		// if (free_map_allocate (sectors, &disk_inode->start)) {
 		//start 20180109
 		if(inode_header = fat_create_chain(0)){ //free_map_allocate (sectors, &disk_inode->start) 부분, multiple secotrs allocate 해준다
@@ -389,4 +390,3 @@ write_isdir(disk_sector_t sector, bool isdir)
 	disk_write(filesys_disk, inode->sector, &inode->data);
 	inode_close(inode);
 }
-//end 20180109

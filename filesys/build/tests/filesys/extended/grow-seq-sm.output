@@ -25,13 +25,13 @@ Executing 'grow-seq-sm':
 (grow-seq-sm) end
 grow-seq-sm: exit(0)
 Execution of 'grow-seq-sm' complete.
-Timer: 87 ticks
-Thread: 31 idle ticks, 37 kernel ticks, 19 user ticks
+Timer: 107 ticks
+Thread: 42 idle ticks, 41 kernel ticks, 25 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 176 reads, 788 writes
 hd1:0: 223 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1247 characters output
+Console: 1248 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

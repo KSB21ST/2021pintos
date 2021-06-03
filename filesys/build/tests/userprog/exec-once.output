@@ -19,8 +19,8 @@ Executing 'exec-once':
 (child-simple) run
 exec-once: exit(81)
 Execution of 'exec-once' complete.
-Timer: 75 ticks
-Thread: 30 idle ticks, 41 kernel ticks, 4 user ticks
+Timer: 93 ticks
+Thread: 43 idle ticks, 47 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 314 reads, 938 writes
 hd1:0: 203 reads, 0 writes

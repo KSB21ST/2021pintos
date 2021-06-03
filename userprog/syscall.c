@@ -204,35 +204,6 @@ exit (int status)
    printf("%s: exit(%d)\n", t->name, status);
    t->exit_status = status;
    thread_exit();
-   /*
-  	struct thread *cur = thread_current();
-	char real_file_name[128];
-	int idx = 0, i;
-	while((cur->name)[idx] != ' ' && (cur->name)[idx] != '\0'){
-		real_file_name[idx] = (cur->name)[idx];
-		idx++;
-	}
-	real_file_name[idx] = '\0';
-	printf("%s: exit(%d)\n", real_file_name, status);
-	cur->exit_status = status;
-
-	for (i = 2; i < 128; i++){
-		if(cur->fd_table[i] != 0){
-			close(i);
-		}
-	}
-	struct thread *temp_thread = NULL;
-	struct list_elem *temp_elem = NULL;
-
-	for(temp_elem = list_begin(&thread_current()->child_list);
-			temp_elem != list_end(&thread_current()->child_list);
-			temp_elem = list_next(temp_elem)){
-				temp_thread = list_entry(temp_elem, struct thread, child_elem);
-
-				process_wait(temp_thread->tid);
-	}
-	thread_exit();
-   */
 } 
 
 int
@@ -406,13 +377,14 @@ write (int fd, const void *buffer, unsigned length)
    lock_acquire(&file_lock);
    struct file *temp = cur->fd_table[fd];
    if(temp == -2){
-         putbuf(buffer, length);
-         cnt = length;
+      putbuf(buffer, length);
+      cnt = length;
    }else if(temp == -1){
-      cnt = NULL;
+      cnt = -1;
    }else{
-      if(temp == NULL)
-         cnt = NULL;
+      if(temp == NULL){
+         cnt = -1;
+      }
       cnt = file_write(cur->fd_table[fd], buffer, length);
    }
    lock_release(&file_lock);
@@ -452,7 +424,7 @@ tell (int fd) {
 
 void 
 close (int fd) {
-   if(pml4_get_page (thread_current ()->pml4, fd) == NULL) return;
+   // if(pml4_get_page (thread_current ()->pml4, fd) == NULL) return;
    struct file *_file;
    struct file *inside_file;
    struct thread* t = thread_current();
@@ -634,9 +606,9 @@ mkdir (const char *dir) {
 
 // readdir (int fd, char name[READDIR_MAX_LEN + 1]) {
 bool
-readdir (int fd, char name[14 + 1]) {
+readdir (int fd, char *name) {
    struct thread* t = thread_current();
-	if(pml4_get_page (t->pml4, fd) == NULL) return;
+	// if(pml4_get_page (t->pml4, fd) == NULL) return;
    struct file *_file;
    struct file **file_table = t->fd_table;
    _file = file_table[fd];
@@ -646,7 +618,7 @@ readdir (int fd, char name[14 + 1]) {
 bool
 isdir (int fd) {
    struct thread* t = thread_current();
-	if(pml4_get_page (t->pml4, fd) == NULL) return;
+	// if(pml4_get_page (t->pml4, fd) == NULL) return;
    struct file *_file;
    struct file **file_table = t->fd_table;
    _file = file_table[fd];

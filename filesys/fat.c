@@ -255,11 +255,14 @@ cluster_to_sector (cluster_t clst) {
 /*20180109 implemented - returns the end of the linked list*/
 cluster_t
 fat_get_end(cluster_t clst){
-	cluster_t next = clst;
-	for(cluster_t i = 0;i<fat_fs->fat_length;i++){
-		next = fat_fs->fat[next];
-		if(next == EOChain)
-			break;
+	if(clst == 0){
+		return 0;
 	}
-	return next;
+	cluster_t next = clst;
+	cluster_t i = 0;
+	while(next != EOChain){
+		i = next;
+		next = fat_fs->fat[i];
+	}
+	return i;
 }

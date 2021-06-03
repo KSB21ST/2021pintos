@@ -111,7 +111,7 @@ pass tests/filesys/extended/grow-root-lg
 pass tests/filesys/extended/grow-root-sm
 pass tests/filesys/extended/grow-seq-lg
 pass tests/filesys/extended/grow-seq-sm
-FAIL tests/filesys/extended/grow-sparse
+pass tests/filesys/extended/grow-sparse
 pass tests/filesys/extended/grow-tell
 pass tests/filesys/extended/grow-two-files
 FAIL tests/filesys/extended/syn-rw

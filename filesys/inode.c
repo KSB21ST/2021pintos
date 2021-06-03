@@ -316,7 +316,8 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offsetì
 				clst = fat_create_chain(clst);
 				disk_write (filesys_disk, clst, zeros);
 			}
-			inode->data.length += size;
+			// inode->data.length += size;
+			inode->data.length = offset+size;
 			// chunk_size = size;
 			continue;
 		}
@@ -349,7 +350,6 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offsetì
 		bytes_written += chunk_size;
 	}
 	free (bounce);
-
 	disk_write(filesys_disk, inode->sector, &inode->data); //20180109 proj2 pass test critical
 
 	return bytes_written;

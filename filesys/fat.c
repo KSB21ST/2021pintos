@@ -219,7 +219,10 @@ fat_remove_chain (cluster_t clst, cluster_t pclst) {
 		clst = temp;
 	}
 	fat_fs->fat[clst] = 0;
-	fat_fs->fat[pclst] = EOChain;
+	if(pclst == 0)
+		fat_fs->fat[pclst] = 0;
+	else
+		fat_fs->fat[pclst] = EOChain;
 }
 
 /* Update a value in the FAT table. */

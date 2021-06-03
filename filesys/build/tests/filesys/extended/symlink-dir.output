@@ -22,13 +22,13 @@ Executing 'symlink-dir':
 (symlink-dir) create "a/link_b/file": FAILED
 symlink-dir: exit(1)
 Execution of 'symlink-dir' complete.
-Timer: 93 ticks
-Thread: 37 idle ticks, 49 kernel ticks, 7 user ticks
+Timer: 95 ticks
+Thread: 42 idle ticks, 41 kernel ticks, 12 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 270 reads, 776 writes
 hd1:0: 226 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1165 characters output
+Console: 1166 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

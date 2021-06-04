@@ -1,4 +1,4 @@
-Kernel command line: -q -f put dir-open put tar run dir-open
+Kernel command line: -q -f put dir-vine put tar run dir-vine
 0 ~ 9fc00 1
 100000 ~ 13e0000 1
 Pintos booting with: 
@@ -7,28 +7,26 @@ Pintos booting with:
 Calibrating timer...  104,755,200 loops/s.
 hd0:0: detected 361 sector (180 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 223 sector (111 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 230 sector (115 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
 Formatting file system...done.
 Boot complete.
-Putting 'dir-open' into the file system...
+Putting 'dir-vine' into the file system...
 Putting 'tar' into the file system...
-Executing 'dir-open':
-(dir-open) begin
-(dir-open) mkdir "xyzzy"
-(dir-open) open "xyzzy"
-(dir-open) write "xyzzy"
-(dir-open) write "xyzzy" (must return -1, actually -1)
-(dir-open) end
-dir-open: exit(0)
-Execution of 'dir-open' complete.
-Timer: 92 ticks
-Thread: 45 idle ticks, 41 kernel ticks, 6 user ticks
+Executing 'dir-vine':
+(dir-vine) begin
+(dir-vine) creating many levels of files and directories...
+(dir-vine) removing all but top 10 levels of files and directories...
+(dir-vine) end
+dir-vine: exit(0)
+Execution of 'dir-vine' complete.
+Timer: 4494 ticks
+Thread: 877 idle ticks, 38 kernel ticks, 3580 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 248 reads, 754 writes
-hd1:0: 223 reads, 0 writes
+hd0:1: 94001 reads, 14621 writes
+hd1:0: 230 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1115 characters output
+Console: 1126 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

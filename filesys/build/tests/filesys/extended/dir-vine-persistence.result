@@ -1,2 +1,7 @@
 FAIL
-File system extraction run didn't start up properly: no "Pintos booting" message
+Kernel panic in file system extraction run: PANIC at ../../filesys/filesys.c:40 in filesys_init(): root directory creation failed
+Call stack: 0x8004214511 0x800421bd79 0x8004206151
+Translation of call stack:
+0x0000008004214511: debug_panic (lib/kernel/debug.c:32)
+0x000000800421bd79: filesys_init (filesys/filesys.c:50)
+0x0000008004206151: main (threads/init.c:116)

@@ -654,15 +654,21 @@ inumber (int fd) {
 
 static bool //very similar with filesys_create
 sym_mkdir (const char *dir) {
+   // printf("dir: %s\n", dir);
    if(strlen(dir) == 0)
       return false;
    disk_sector_t inode_sector = 0;
 	inode_sector = fat_create_chain(0);
+   
    lock_acquire(&file_lock);
    char *file_name = palloc_get_page(0);
-   struct dir * t_dir = parse_path(dir, file_name);
+   char *name_copy = palloc_get_page(0);
+   strlcpy(name_copy, dir, PGSIZE);
+   struct dir *t_dir = parse_path(name_copy, file_name);
+   // printf("t_dir->inode: %d, inode_sector: %d\n", t_dir->inode->sector, inode_sector);
    if(!t_dir){
       palloc_free_page(file_name);
+      palloc_free_page(name_copy);
       fat_remove_chain(inode_sector, 0);
       return false;
    }
@@ -683,6 +689,7 @@ sym_mkdir (const char *dir) {
 		fat_remove_chain(inode_sector, 0);
    }
    palloc_free_page(file_name);
+   palloc_free_page(name_copy);
 	dir_close (t_dir);
 	return success;
 }
@@ -693,9 +700,24 @@ symlink (const char* target, const char* linkpath) {
    if(!sym_mkdir(linkpath)){
       return -1;
    }
-   int fd = open(linkpath);
-   disk_sector_t sector = (disk_sector_t)inumber(fd);
-   struct inode *symlink = inode_open(sector);
+   // printf("after make symlink\n");
+   // int fd = open(linkpath);
+   // disk_sector_t sector = (disk_sector_t)inumber(fd);
+   // printf("sector: %d\n", sector);
+   // struct inode *symlink = inode_open(sector);
+   char *file_name = palloc_get_page(0);
+	char *name_copy = palloc_get_page(0);
+	strlcpy(name_copy, linkpath, PGSIZE);
+   // printf("linkpath: %s\n", linkpath);
+	struct dir * parent_dir = parse_path(name_copy, file_name);
+
+   struct inode *symlink;
+
+   dir_lookup(parent_dir, file_name, &symlink);
+   if(symlink == NULL){
+      // printf("something's wrong!!!\n");
+   }
+   // printf("parent: %d, symlink: %d\n", parent_dir->inode->sector, symlink->sector);
    // printf("linkpath: %s, sector: %d in symlink\n", linkpath, symlink->sector);
 
    symlink->data._issym = true;
@@ -704,7 +726,11 @@ symlink (const char* target, const char* linkpath) {
 	strlcpy(symlink->data.link_path, target, strlen(target) + 1);
 
    disk_write(filesys_disk, symlink->sector, &symlink->data);
-   inode_close(symlink);
+   dir_close(parent_dir);
+   // inode_close(symlink);
+
+   palloc_free_page(name_copy);
+   palloc_free_page(file_name);
    return 0;
 
 }

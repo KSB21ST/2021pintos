@@ -1,15 +1,1 @@
-FAIL
-Kernel panic in run: PANIC at ../../threads/malloc.c:253 in block_to_arena(): assertion `a->desc == NULL || (pg_ofs (b) - sizeof *a) % a->desc->block_size == 0' failed.
-Call stack: 0x8004214511 0x800420c9ed 0x800420c73f 0x800421d716 0x800421ad27 0x80042184ad 0x8004207204 0x800421a26b 0x8004219c86 0x8004219b11 0x400f98
-Translation of call stack:
-0x0000008004214511: debug_panic (lib/kernel/debug.c:32)
-0x000000800420c9ed: block_to_arena (threads/malloc.c:254)
-0x000000800420c73f: free (threads/malloc.c:205)
-0x000000800421d716: file_close (filesys/file.c:62)
-0x000000800421ad27: close (userprog/syscall.c:463)
-0x00000080042184ad: process_exit (userprog/process.c:447)
-0x0000008004207204: thread_exit (threads/thread.c:331)
-0x000000800421a26b: fork (userprog/syscall.c:212)
-0x0000008004219c86: syscall_handler (userprog/syscall.c:90)
-0x0000008004219b11: no_sti (userprog/syscall-entry.o:?)
-0x0000000000400f98: (unknown)
+PASS

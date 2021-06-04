@@ -67,7 +67,6 @@ filesys_done (void) {
  * or if internal memory allocation fails. */
 bool
 filesys_create (const char *name, off_t initial_size) {
-	// printf("in filesys_create name: %s \n", name);
 	disk_sector_t inode_sector = 0;
 	inode_sector = fat_create_chain(0);
 	// struct dir *dir = dir_open_root ();
@@ -81,6 +80,7 @@ filesys_create (const char *name, off_t initial_size) {
 	struct dir * dir = parse_path(name_copy, file_name);
 	// char tmp_name[14 +1];
 	// struct dir *dir = parse_path(name, tmp_name);
+	// printf("dir sector: %d, name: %s\n", inode_sector, file_name);
 	if(!dir){
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);

@@ -320,7 +320,7 @@ parse_n_locate(const char *path_name)
 
 struct dir*
 parse_path(char *path_name, char *last_name)
-{
+{	
 	struct dir *t_dir = NULL;
 	struct inode *t_inode = NULL;
 	disk_sector_t ans = 0;
@@ -346,6 +346,7 @@ parse_path(char *path_name, char *last_name)
 	int i = 0;
 	while (extra != NULL)
 	{
+		// printf("\ntoken: %s, extra: %s\n", token, extra);
 		//absolute path 면 argv[0] 가 "0" 이다 -- TODO
 		if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
 			if(i == 0){
@@ -359,13 +360,19 @@ parse_path(char *path_name, char *last_name)
 		if(!t_inode->data._isdir && !t_inode->data._issym){ //t_inode 가 file inode 면
 			break;
 		}
-		if(t_inode->data._issym){ //t_node가 symlink 이면
-			return parse_path(t_inode->data.link_path, last_name);
+		if(!t_inode->data._isdir && t_inode->data._issym){ //t_node가 symlink 이면
+			// return parse_path(t_inode->data.link_path, last_name);
+			dir_close(t_dir);
+			t_dir = dir_open(parse_path(t_inode->data.link_path, last_name)->inode);
+			if(!dir_lookup(t_dir, last_name, &t_inode)){
+				// printf("something's wrong!!\n");
+			}
 		}
 		dir_close(t_dir);
 		t_dir = dir_open(t_inode);
-		if (t_dir == NULL)
+		if (t_dir == NULL){
 			return NULL;
+		}
 		token = extra;
 		extra = strtok_r (NULL, "/", &last);
 		i++;

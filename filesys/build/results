@@ -117,7 +117,7 @@ pass tests/filesys/extended/grow-two-files
 FAIL tests/filesys/extended/syn-rw
 FAIL tests/filesys/extended/symlink-file
 FAIL tests/filesys/extended/symlink-dir
-FAIL tests/filesys/extended/symlink-link
+pass tests/filesys/extended/symlink-link
 pass tests/vm/pt-grow-stack
 pass tests/vm/pt-grow-bad
 pass tests/vm/pt-big-stk-obj

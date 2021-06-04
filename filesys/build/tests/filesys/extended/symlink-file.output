@@ -4,10 +4,10 @@ Kernel command line: -q -f put symlink-file put tar run symlink-file
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  150,732,800 loops/s.
 hd0:0: detected 361 sector (180 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 229 sector (114 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 230 sector (115 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
 Formatting file system...done.
 Boot complete.
@@ -18,16 +18,27 @@ Executing 'symlink-file':
 (symlink-file) create "a"
 (symlink-file) create "b"
 (symlink-file) create symlink "link_a"
-(symlink-file) create symlink "link_a": FAILED
+(symlink-file) create symlink "link_b"
+(symlink-file) create symlink "link_c"
+(symlink-file) open "link_a"
+(symlink-file) open "link_b"
+(symlink-file) open "link_c"
+(symlink-file) write "link_a" and "link_b" alternately
+(symlink-file) close "link_a"
+(symlink-file) close "link_b"
+(symlink-file) close "link_c"
+finished remove in test
+(symlink-file) open "a" for verification
+(symlink-file) open "a" for verification: FAILED
 symlink-file: exit(1)
 Execution of 'symlink-file' complete.
-Timer: 85 ticks
-Thread: 31 idle ticks, 45 kernel ticks, 9 user ticks
+Timer: 532 ticks
+Thread: 139 idle ticks, 43 kernel ticks, 351 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 225 reads, 786 writes
-hd1:0: 229 reads, 0 writes
+hd0:1: 6092 reads, 1792 writes
+hd1:0: 230 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1137 characters output
+Console: 1520 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

@@ -34,6 +34,7 @@ void check_addr(const void* sp);
 void check_buffer(void *buffer, unsigned size);
 int ans = -1;
 static struct lock file_lock;
+static bool sym_mkdir (const char *dir);
 //end 20180109
 
 /* System call.
@@ -301,6 +302,9 @@ open (const char *file)
    for(int i =2;i<128;i++){
       if(cur->fd_table[i]==0){
          cur->fd_table[i]=opened_file;
+         // struct file *t_f = cur->fd_table[i];
+         // printf("sector: %d in syscall open\n", t_f->inode->sector);
+         // printf("fd: %d name: %s in syscall open\n", i, file);
          lock_release(&file_lock);
          return i;
       }
@@ -385,6 +389,9 @@ write (int fd, const void *buffer, unsigned length)
       if(temp == NULL){
          cnt = -1;
       }
+      // printf("fd: %d in syscall write\n", fd);
+      // struct file *t_f = cur->fd_table[fd];
+      // printf("sector: %d in syscall write\n", t_f->inode->sector);
       cnt = file_write(cur->fd_table[fd], buffer, length);
    }
    lock_release(&file_lock);
@@ -643,49 +650,55 @@ inumber (int fd) {
    return _inode->sector; //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
 }
 
+static bool //very similar with filesys_create
+sym_mkdir (const char *dir) {
+   if(strlen(dir) == 0)
+      return false;
+   disk_sector_t inode_sector = 0;
+	inode_sector = fat_create_chain(0);
+   lock_acquire(&file_lock);
+   char *file_name = palloc_get_page(0);
+   struct dir * t_dir = parse_path(dir, file_name);
+   if(!t_dir){
+      palloc_free_page(file_name);
+      fat_put(inode_sector, 0);
+      return false;
+   }
+   lock_release(&file_lock);
+
+   bool success = (t_dir != NULL
+			&& inode_sector
+			&& dir_create (inode_sector, 0)
+			&& dir_add (t_dir, file_name, inode_sector));
+
+	if (!success && inode_sector != 0)
+		fat_put(inode_sector, 0);
+   palloc_free_page(file_name);
+	dir_close (t_dir);
+	return success;
+}
+
 //very similar with mkdir
 int
 symlink (const char* target, const char* linkpath) {
-   if(!mkdir(linkpath)){
+   if(!sym_mkdir(linkpath)){
       return -1;
    }
-   printf("mkdir, name: %s in syscall symlink\n", linkpath);
    int fd = open(linkpath);
-   // struct dir *link_dir = thread_current()->fd_table[fd];
    disk_sector_t sector = (disk_sector_t)inumber(fd);
    struct inode *symlink = inode_open(sector);
+   // printf("linkpaty: %s, sector: %d \n", linkpath, symlink->sector);
+
    symlink->data._issym = true;
+   symlink->data._isdir = false;
+   ASSERT (strlen(target) < 100);
+	strlcpy(symlink->data.link_path, target, strlen(target) + 1);
+
    disk_write(filesys_disk, symlink->sector, &symlink->data);
-   char *file_name = palloc_get_page(0);
-   char *name_copy = palloc_get_page(0);
-   strlcpy(name_copy, target, PGSIZE);
-   struct dir * parent_dir = parse_path(name_copy, file_name);
-
-   // printf("filename: %s \n", file_name);
-
-   if(!parent_dir){
-      palloc_free_page(file_name);
-      palloc_free_page(name_copy);
-      return -1;
-   }
-
-   struct inode *inode = NULL;
-   if(!dir_lookup(parent_dir, file_name, &inode)){
-      palloc_free_page(name_copy);
-      palloc_free_page(file_name);
-      dir_close(parent_dir);
-      return -1;
-   }
-   symlink->data.start = inode->sector;
-   disk_write(filesys_disk,symlink->sector, &symlink->data);
-   dir_close(parent_dir);
    inode_close(symlink);
-   palloc_free_page(name_copy);
-   palloc_free_page(file_name);
    return 0;
 
 }
-
 
 
 void 

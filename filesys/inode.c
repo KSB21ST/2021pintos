@@ -9,6 +9,7 @@
 
 //start 20180109
 #include "filesys/fat.h"
+#include "filesys/directory.h"
 //end 20180109
 
 /* Identifies an inode. */
@@ -105,16 +106,13 @@ inode_create (disk_sector_t sector, off_t length) {
 	disk_inode = calloc (1, sizeof *disk_inode);
 	if (disk_inode != NULL) {
 		size_t sectors = bytes_to_sectors (length);
+		// printf("in inode_create sectors: %d length: %d \n", sectors, length);
 		disk_inode->length = length;
 		disk_inode->magic = INODE_MAGIC;
 		disk_inode->_issym = false;
-		// if (free_map_allocate (sectors, &disk_inode->start)) {
 		//start 20180109
 		if(inode_header = fat_create_chain(0)){ //free_map_allocate (sectors, &disk_inode->start) 부분, multiple secotrs allocate 해준다
 			disk_inode->start = inode_header;
-			// printf("sector in inode_create: %d \n", sector);
-			// printf("number of created sectors: %d \n", sectors);
-			// printf("inode_header in inode_create: %d \n", inode_header);
 			for(size_t i=0;i<sectors;i++)
 			{
 				static char zeros[DISK_SECTOR_SIZE];
@@ -126,18 +124,6 @@ inode_create (disk_sector_t sector, off_t length) {
 				}
 			}
 			disk_write (filesys_disk, sector, disk_inode); //disk_inode 를 secotr 에 적어준다
-			// if (sectors > 0) {
-			// 	static char zeros[DISK_SECTOR_SIZE];
-			// 	size_t i;
-
-			// 	disk_sector_t temp_sect = disk_inode->start;
-			// 	for (size_t j = 0; j < sectors; j++) {	
-			// 		// disk_write (filesys_disk, disk_inode->start + i, zeros);
-			// 		// printf("temp_sect: %#x \n", temp_sect);
-			// 		disk_write (filesys_disk, temp_sect, zeros);
-			// 		temp_sect = fat_get(temp_sect);
-			// 	}
-			// }
 			success = true; 
 		} 
 		free (disk_inode);
@@ -209,10 +195,13 @@ inode_close (struct inode *inode) {
 		/* Deallocate blocks if removed. */
 		if (inode->removed) { 
 			fat_remove_chain (inode->data.start, 0);
-			static char zeros[DISK_SECTOR_SIZE];
-			disk_write (filesys_disk, inode->sector, zeros); 
+			// static char zeros[DISK_SECTOR_SIZE];
+			// disk_write (filesys_disk, inode->sector, zeros); 
+			// disk_write (filesys_disk, inode->sector, &inode->data); 
 		}
-
+		// else{
+		// disk_write (filesys_disk, inode->sector, &inode->data); //이거 해주면 swap iter 안됨
+		// }
 		free (inode); 
 	}
 }
@@ -289,6 +278,8 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offset�
 	off_t bytes_written = 0;
 	uint8_t *bounce = NULL;
 
+	// struct dir_entry *e = buffer_;
+	// printf(" %s in inode_write \n", e->name);
 	if (inode->deny_write_cnt){
 		return 0;
 	}
@@ -349,9 +340,10 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offset�
 		size -= chunk_size;
 		offset += chunk_size;
 		bytes_written += chunk_size;
+		// disk_write(filesys_disk, inode->sector, &inode->data); //20180109 proj2 pass test critical
 	}
+	disk_write(filesys_disk, inode->sector, &inode->data);
 	free (bounce);
-	disk_write(filesys_disk, inode->sector, &inode->data); //20180109 proj2 pass test critical
 
 	return bytes_written;
 }

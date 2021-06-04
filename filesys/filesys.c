@@ -96,8 +96,8 @@ filesys_create (const char *name, off_t initial_size) {
 	write_isdir(inode_sector, false);
 	if (!success && inode_sector != 0)
 		// free_map_release (inode_sector, 1);
-		// fat_remove_chain(inode_sector, 0);
-		fat_put(inode_sector, 0);
+		fat_remove_chain(inode_sector, 0);
+		// fat_put(inode_sector, 0);
 	dir_close (dir);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
@@ -112,11 +112,6 @@ filesys_create (const char *name, off_t initial_size) {
  * or if an internal memory allocation fails. */
 struct file *
 filesys_open (const char *name) {
-	// printf("name: %s\n", name);
-	// char *temp = 'args-none';
-	// memcpy(name, temp, sizeof(temp));
-	//TODO-for subdir
-	// struct dir *dir = dir_open_root (); //TODO - path 이름 다르게 하기
 	struct inode *inode = NULL;
 
 	if(!strcmp(name, "/")){
@@ -129,23 +124,12 @@ filesys_open (const char *name) {
 		return file_open(dir->inode);
 	}
 
-	//start 20180109
-	// disk_sector_t t_sector = parse_n_locate(name);
-	// printf("t_sector: %d\n", t_sector);
-	// ASSERT(_inode->data._isdir == true);
-	// struct dir *dir = NULL;
-	// if(t_sector == NULL)
-		// dir = dir_open(inode_open(t_sector));
-	// struct dir *dir = parse_n_locate(name);
 	char *file_name = palloc_get_page(0);
 	char *name_copy = palloc_get_page(0);
 	strlcpy(name_copy, name, PGSIZE);
 	struct dir * dir = parse_path(name_copy, file_name);
-	// char *file_name = malloc(sizeof(char) * 16);
-	// struct dir * dir = parse_path(dir, file_name);
-	// else
-		// dir = dir_open (inode_reopen (t_sector));
-	//end 20180109
+	// printf("name: %s, file_name: %s, dir sector: %d in filesys_open\n", name_copy, file_name, dir->inode->sector);
+
 	if(!dir){
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
@@ -155,6 +139,20 @@ filesys_open (const char *name) {
 	if (dir != NULL)
 		dir_lookup (dir, file_name, &inode);
 	dir_close (dir);
+	if (inode == NULL){
+		palloc_free_page(file_name);
+		palloc_free_page(name_copy);
+		return false;
+	}
+		
+	if(inode->data._issym){
+		// printf("file_name: %s link sector: %d in filesys_open\n", file_name, inode->sector);
+		struct file *ans = filesys_open (inode->data.link_path);
+		palloc_free_page(file_name);
+		palloc_free_page(name_copy);
+		inode_close(inode);
+		return ans;
+	}
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
 
@@ -172,11 +170,12 @@ filesys_remove (const char *name) {
 	uint32_t temp_r, temp_p;
 	
 	//start 20180109
-	if(!strcmp(name, "/")){
-		struct dir *dir = dir_open_root();
-		bool success = dir != NULL && dir_remove (dir, ".");
-		dir_close (dir);
-		return success;
+	if(!strcmp(name, "/")){ //warining --  direcotry root 는 무조건 못 지우게 만듦
+		// struct dir *dir = dir_open_root();
+		// bool success = dir != NULL && dir_remove (dir, ".");
+		// dir_close (dir);
+		// return success;
+		return false;
 	}
 	if(!strcmp(name, "..") && thread_current()->t_sector){
 		return false;
@@ -193,11 +192,28 @@ filesys_remove (const char *name) {
 	}
 
 	struct inode *r_inode;
-	dir_lookup(dir, file_name, &r_inode);
+	if(dir_lookup(dir, file_name, &r_inode)){
+	// printf("file name: %s r_inode: %d in filesys_remove\n", file_name, r_inode->sector);
+		if(r_inode->data._issym){
+			bool sym_remove = dir_remove(dir, file_name);
+			palloc_free_page(file_name);
+			palloc_free_page(name_copy);
+			// dir_close(r_inode);
+			return sym_remove;
+		}
+	}
+	else{
+		palloc_free_page(file_name);
+		palloc_free_page(name_copy);
+		return true;
+	}
+
+
 	struct dir *r_dir = dir_open(r_inode);
 	temp_r = r_dir->inode->sector;
 	char t_name[NAME_MAX + 1];
-	if(dir_readdir(r_dir, t_name) && r_inode->data._isdir){
+
+	if(r_inode->data._isdir && dir_readdir(r_dir, t_name)){
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
 		dir_close(r_inode);
@@ -208,7 +224,6 @@ filesys_remove (const char *name) {
 		thread_current()->t_sector = 0;
 	dir_remove(r_dir, ".");
 	// dir_remove(r_dir, "..");
-
 	bool success = dir != NULL && dir_remove (dir, file_name);
 	dir_close (dir);
 	// free(file_name);

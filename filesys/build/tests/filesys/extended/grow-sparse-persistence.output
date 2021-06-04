@@ -14,7 +14,7 @@ Executing 'tar fs.tar /':
 load: tar: open failed
 Kernel PANIC at ../../userprog/process.c:96 in initd(): Fail to launch initd
 
-Call stack: 0x8004214500 0x8004217c87 0x800420766f.
+Call stack: 0x8004214511 0x8004217c98 0x8004207680.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.

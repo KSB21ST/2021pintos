@@ -16,12 +16,15 @@ struct inode_disk {
 	off_t length;                       /* File size in bytes. */
 	unsigned magic;                     /* Magic number. */
 	//start 20180109 - for subdir
-	bool _isdir;
+	bool _isdir; 
 	bool _issym;
-	bool b_unused[2];
+	bool b_unused[2]; /*total 4byte*/
+
+	char link_path[100];  /*for symlink, 100byte*/
 	//eid 20180109
-	// uint32_t unused[125];               /* Not used. */
-	uint32_t unused[124];               /* Not used. */
+	// uint32_t unused[125];               /* Not used. */ total 500byte
+	// uint32_t unused[124];               /* Not used. */ // uint32_t: 4byte, bool, char: 1byte
+	uint32_t unused[99];  /*99*4 = 396*/
 };
 
 

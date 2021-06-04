@@ -75,6 +75,7 @@ test_main (void)
   while (i-- > 10) 
     {
       char file_name[16], dir_name[16];
+      // printf("remove i: %d \n", i);
 
       snprintf (file_name, sizeof file_name, "file%d", i);
       snprintf (dir_name, sizeof dir_name, "dir%d", i);

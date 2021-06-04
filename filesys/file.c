@@ -100,7 +100,7 @@ off_t
 file_write (struct file *file, const void *buffer, off_t size) {
 	//start 20180109 -for dir-open test
 	if(!file->inode->data._issym && file->inode->data._isdir){
-		printf("not symlink and dir \n");
+		// printf("not symlink and dir \n");
 		return -1;
 	}
 	// printf("write at: %d in file_write\n", file->inode->data.start);

@@ -231,9 +231,9 @@ wait (int pid){
 bool
 create (const char *file, unsigned initial_size)
 {
-   if (file == NULL) exit(-1);
+   if (file == NULL || *file == NULL) exit(-1);
    if(strlen(file) == 0)
-      exit(-1);
+      return false;
    // if(!thread_current()->t_sector)
    //    return false;
    lock_acquire(&file_lock);
@@ -248,12 +248,14 @@ hash_file_claim(struct hash_elem *e, void *aux)
    struct page* page = hash_entry(e, struct page, h_elem);
    vm_claim_page(page->va);
 }
+
 bool 
 remove (const char *file)
 {
-   if(file==NULL||*file==NULL) exit(-1);
-   if(strlen(file) == 0)
-      exit(-1);
+   if(file==NULL) return false;
+   if(strlen(file) == 0){
+      return false;
+   }
    #ifdef VM
    // struct page *page = spt_find_page(&thread_current()->spt, file);
    // mmap(page->va);
@@ -272,7 +274,7 @@ remove (const char *file)
 int 
 open (const char *file)
 {
-   if(file==NULL) exit(-1);
+   if(file==NULL) return -1;
    if(strlen(file) == 0)
       return -1;
    if(!strcmp(file, ".") && !thread_current()->t_sector)
@@ -315,11 +317,11 @@ filesize (int fd)
 {
    struct thread *cur =thread_current();
    if(cur->fd_table[fd] == -1 || cur->fd_table[fd] == -2)
-      return;
+      return -1;
    lock_acquire(&file_lock);
    if(cur->fd_table[fd] == 0){
       lock_release(&file_lock);
-      exit(-1);
+      return -1;
    }else{
       int ret = file_length(cur->fd_table[fd]);
       lock_release(&file_lock);
@@ -355,7 +357,9 @@ read (int fd, void *buffer, unsigned length)
    }else{
       if(temp == NULL)
          cnt = -1;
-      cnt = file_read(cur->fd_table[fd], buffer, length);
+      else{
+         cnt = file_read(temp, buffer, length);
+      }
       // printf("after file_read\n");
    }
    lock_release(&file_lock);
@@ -464,7 +468,7 @@ int
 dup2 (int oldfd, int newfd)
 {
    if(!is_user_vaddr(oldfd)){
-      return -1;;
+      return -1;
    }
    struct thread *t = thread_current();
    struct file *old_file = t->fd_table[oldfd];
@@ -513,7 +517,7 @@ munmap (void *addr)
 bool
 chdir (const char *dir) {
    uint32_t temp_s = thread_current()->t_sector;
-   if(dir == NULL) exit(-1);
+   if(dir == NULL) return false;
    struct dir *last_dir;
 
    if(!strcmp(dir, "/")){
@@ -623,7 +627,7 @@ isdir (int fd) {
    struct file **file_table = t->fd_table;
    _file = file_table[fd];
    if(_file == -1 || _file == -2)
-      return;
+      return false;
    struct inode *_inode = inode_open(_file->inode);
    bool isdir = _inode->data._isdir;
    inode_close(_inode);
@@ -638,7 +642,7 @@ inumber (int fd) {
    struct file **file_table = t->fd_table;
    _file = file_table[fd];
    if(_file == -1 || _file == -2)
-      return;
+      return -1;
    struct inode *_inode = _file->inode;
    return _inode->sector; //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
 }
@@ -646,19 +650,22 @@ inumber (int fd) {
 //very similar with mkdir
 int
 symlink (const char* target, const char* linkpath) {
+   // printf("mkdir, name: %s in syscall symlink\n", linkpath);
+   
    if(!mkdir(linkpath)){
       return -1;
    }
-   printf("mkdir, name: %s in syscall symlink\n", linkpath);
    int fd = open(linkpath);
    // struct dir *link_dir = thread_current()->fd_table[fd];
    disk_sector_t sector = (disk_sector_t)inumber(fd);
    struct inode *symlink = inode_open(sector);
    symlink->data._issym = true;
+   // printf("in syscall disk_write\n");
    disk_write(filesys_disk, symlink->sector, &symlink->data);
    char *file_name = palloc_get_page(0);
    char *name_copy = palloc_get_page(0);
    strlcpy(name_copy, target, PGSIZE);
+   // printf("target: %s\n", target);
    struct dir * parent_dir = parse_path(name_copy, file_name);
 
    // printf("filename: %s \n", file_name);

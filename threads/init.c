@@ -111,7 +111,7 @@ main (void) {
 	disk_init ();
 	filesys_init (format_filesys);
 #endif
-
+	
 #ifdef VM
 	vm_init ();
 #endif
@@ -245,6 +245,7 @@ run_task (char **argv) {
 	const char *task = argv[1];
 
 	printf ("Executing '%s':\n", task);
+
 #ifdef USERPROG
 	if (thread_tests){
 		run_test (task);

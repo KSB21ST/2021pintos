@@ -162,7 +162,7 @@ void
 fat_fs_init (void) {
 	/* TODO: Your code goes here. */
     fat_fs->fat_length = (&fat_fs->bs)->total_sectors / (&fat_fs->bs)->sectors_per_cluster;//20180109 every sectors in disk are changed into clusters
-    fat_fs->data_start = (&fat_fs->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
+    fat_fs->data_start = (&fat_fs->bs)->fat_start + 1;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
 }
 
 /*----------------------------------------------------------------------------*/

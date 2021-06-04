@@ -93,7 +93,7 @@ lookup (const struct dir *dir, const char *name,
 
 	ASSERT (dir != NULL);
 	ASSERT (name != NULL);
-
+	// printf("\n[look up]dir sector: %d\n", dir->inode->sector);
 	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
 			ofs += sizeof e)
 		if (e.in_use && !strcmp (name, e.name)) {
@@ -141,6 +141,10 @@ dir_add (struct dir *dir, const char *name, disk_sector_t inode_sector) {
 
 	ASSERT (dir != NULL);
 	ASSERT (name != NULL);
+	if(inode_sector == 0){
+		printf("name: %s\n", name);
+		return false;
+	}
 
 	/* Check NAME for validity. */
 	if (*name == '\0' || strlen (name) > NAME_MAX)
@@ -218,12 +222,12 @@ done:
  * NAME.  Returns true if successful, false if the directory
  * contains no more entries. */
 bool
-dir_readdir (struct dir *dir, char name[NAME_MAX + 1]) {
+dir_readdir (struct dir *dir, char *name) {
 	struct dir_entry e;
 
 	while (inode_read_at (dir->inode, &e, sizeof e, dir->pos) == sizeof e) {
 		dir->pos += sizeof e;
-		//start 20180109
+		//start 20180109		
 		if(!strcmp(e.name, ".") || !strcmp(e.name, ".."))
 			continue;
 		if((e.name == ".") || (e.name == ".."))
@@ -319,7 +323,8 @@ parse_n_locate(const char *path_name)
 
 struct dir*
 parse_path(char *path_name, char *last_name)
-{
+{	
+	// printf("path_name: %s\n", path_name);
 	struct dir *t_dir = NULL;
 	struct inode *t_inode = NULL;
 	disk_sector_t ans = 0;
@@ -347,6 +352,7 @@ parse_path(char *path_name, char *last_name)
 	{
 		//absolute path 면 argv[0] 가 "0" 이다 -- TODO
 		if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
+			// printf("\"%s\" is not exist in dir_sector: %d\n", token, t_dir->inode->sector);
 			if(i == 0){
 				strlcpy (last_name, token, PGSIZE);
 				return t_dir;

@@ -17,10 +17,10 @@ Executing 'mmap-bad-fd3':
 (mmap-bad-fd3) try to mmap stdout
 mmap-bad-fd3: exit(-1)
 Execution of 'mmap-bad-fd3' complete.
-Timer: 80 ticks
-Thread: 43 idle ticks, 36 kernel ticks, 2 user ticks
+Timer: 89 ticks
+Thread: 42 idle ticks, 44 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 252 reads, 636 writes
+hd0:1: 273 reads, 636 writes
 hd1:0: 103 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 988 characters output

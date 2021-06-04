@@ -35,6 +35,8 @@ filesys_init (bool format) {
 		do_format ();
 
 	fat_open ();
+	if (!dir_create (ROOT_DIR_SECTOR, 16))
+		PANIC ("root directory creation failed");
 #else
 	/* Original FS */
 	free_map_init ();
@@ -93,11 +95,16 @@ filesys_create (const char *name, off_t initial_size) {
 			&& i_1 //inode_sector
 			&& i_2 //inode_create (inode_sector, initial_size)
 			&& i_3); //dir_add (dir, name, inode_sector));
+	
 	write_isdir(inode_sector, false);
-	if (!success && inode_sector != 0)
+	if (!success && inode_sector != 0){
 		// free_map_release (inode_sector, 1);
 		// fat_remove_chain(inode_sector, 0);
-		fat_put(inode_sector, 0);
+		dir_remove(dir, file_name);
+		fat_remove_chain(inode_sector, 0);
+		// fat_put(inode_sector, 0);
+	}
+
 	dir_close (dir);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
@@ -154,6 +161,7 @@ filesys_open (const char *name) {
 
 	if (dir != NULL)
 		dir_lookup (dir, file_name, &inode);
+
 	dir_close (dir);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
@@ -176,11 +184,13 @@ filesys_remove (const char *name) {
 		struct dir *dir = dir_open_root();
 		bool success = dir != NULL && dir_remove (dir, ".");
 		dir_close (dir);
-		return success;
+		// return success;
+		return false;
 	}
 	if(!strcmp(name, "..") && thread_current()->t_sector){
 		return false;
 	}
+
 	char *file_name = palloc_get_page(0);
 	char *name_copy = palloc_get_page(0);
 	strlcpy(name_copy, name, PGSIZE);
@@ -194,13 +204,14 @@ filesys_remove (const char *name) {
 
 	struct inode *r_inode;
 	dir_lookup(dir, file_name, &r_inode);
+
 	struct dir *r_dir = dir_open(r_inode);
 	temp_r = r_dir->inode->sector;
 	char t_name[NAME_MAX + 1];
 	if(dir_readdir(r_dir, t_name) && r_inode->data._isdir){
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
-		dir_close(r_inode);
+		dir_close(r_dir);
 		dir_close (dir);
 		return false;
 	}
@@ -211,7 +222,7 @@ filesys_remove (const char *name) {
 
 	bool success = dir != NULL && dir_remove (dir, file_name);
 	dir_close (dir);
-	// free(file_name);
+	// dir_close(r_dir);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
 
@@ -226,14 +237,13 @@ do_format (void) {
 #ifdef EFILESYS
 	/* Create FAT and save it to the disk. */
 	fat_create ();
-	if (!dir_create (ROOT_DIR_SECTOR, 16))
-		PANIC ("root directory creation failed");
+	// if (!dir_create (ROOT_DIR_SECTOR, 16))
+	// 	PANIC ("root directory creation failed");
 	// struct dir *t_dir = dir_open_root();
 	// thread_current()->t_sector = ROOT_DIR_SECTOR;
 	// dir_add (t_dir, ".", ROOT_DIR_SECTOR);
 	// dir_add (t_dir, "..", ROOT_DIR_SECTOR);
 	// dir_close(t_dir);
-
 	fat_close ();
 #else
 	free_map_create ();
@@ -250,7 +260,18 @@ create_directory_root(){
 	struct dir *t_dir = dir_open_root();
 	t_dir->inode->data._isdir = true;
 	thread_current()->t_sector = ROOT_DIR_SECTOR;
+	// printf("root data start: %d\n", t_dir->inode->data.start);
 	dir_add (t_dir, ".", ROOT_DIR_SECTOR);
 	dir_add (t_dir, "..", ROOT_DIR_SECTOR);
 	dir_close(t_dir);
 }
+
+/*
+void
+set_root(){
+	struct dir *t_dir = dir_open_root();
+	t_dir->inode->data.start = 1;
+	t_dir->inode->data._isdir = true;
+	disk_write(filesys_disk, ROOT_DIR_SECTOR, &t_dir->inode->data);
+	dir_close(t_dir);
+}*/

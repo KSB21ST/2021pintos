@@ -25,13 +25,13 @@ child-inherit: exit(-1)
 (mmap-inherit) end
 mmap-inherit: exit(0)
 Execution of 'mmap-inherit' complete.
-Timer: 89 ticks
-Thread: 35 idle ticks, 46 kernel ticks, 8 user ticks
+Timer: 118 ticks
+Thread: 55 idle ticks, 50 kernel ticks, 13 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 412 reads, 972 writes
 hd1:0: 215 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1308 characters output
+Console: 1310 characters output
 Keyboard: 0 keys pressed
 Exception: 1 page faults
 Powering off...

@@ -603,6 +603,7 @@ mkdir (const char *dir) {
    palloc_free_page(file_name);
    struct inode * t_i = NULL;
    struct dir *new_dir = dir_open(inode_open(inode_sector));
+   new_dir->inode->data._isdir = true;
    if(success == true && new_dir != NULL){
 		dir_add(new_dir, ".", inode_sector);
 		dir_add(new_dir, "..", t_dir->inode->sector);
@@ -660,9 +661,12 @@ sym_mkdir (const char *dir) {
 	inode_sector = fat_create_chain(0);
    lock_acquire(&file_lock);
    char *file_name = palloc_get_page(0);
-   struct dir * t_dir = parse_path(dir, file_name);
+   char *name_copy = palloc_get_page(0);
+   strlcpy(name_copy, dir, PGSIZE);
+   struct dir * t_dir = parse_path(name_copy, file_name);
    if(!t_dir){
       palloc_free_page(file_name);
+      palloc_free_page(name_copy);
       fat_remove_chain(inode_sector, 0);
       return false;
    }
@@ -683,6 +687,7 @@ sym_mkdir (const char *dir) {
 		fat_remove_chain(inode_sector, 0);
    }
    palloc_free_page(file_name);
+   palloc_free_page(name_copy);
 	dir_close (t_dir);
 	return success;
 }
@@ -693,10 +698,18 @@ symlink (const char* target, const char* linkpath) {
    if(!sym_mkdir(linkpath)){
       return -1;
    }
-   int fd = open(linkpath);
-   disk_sector_t sector = (disk_sector_t)inumber(fd);
-   struct inode *symlink = inode_open(sector);
+   // int fd = open(linkpath);
+   // disk_sector_t sector = (disk_sector_t)inumber(fd);
+   // struct inode *symlink = inode_open(sector);
    // printf("linkpath: %s, sector: %d in symlink\n", linkpath, symlink->sector);
+   char *file_name = palloc_get_page(0);
+   char *name_copy = palloc_get_page(0);
+   strlcpy(name_copy, linkpath, PGSIZE);
+   struct dir * parent_dir = parse_path(name_copy, file_name);
+
+   struct inode *symlink;
+   dir_lookup(parent_dir, file_name, &symlink);
+
 
    symlink->data._issym = true;
    symlink->data._isdir = false;
@@ -704,7 +717,10 @@ symlink (const char* target, const char* linkpath) {
 	strlcpy(symlink->data.link_path, target, strlen(target) + 1);
 
    disk_write(filesys_disk, symlink->sector, &symlink->data);
-   inode_close(symlink);
+   // inode_close(symlink);
+   dir_close(parent_dir);
+   palloc_free_page(file_name);
+   palloc_free_page(name_copy);
    return 0;
 
 }

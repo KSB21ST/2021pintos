@@ -321,6 +321,7 @@ parse_n_locate(const char *path_name)
 struct dir*
 parse_path(char *path_name, char *last_name)
 {
+	// printf("inside parse path: %s \n", path_name);
 	struct dir *t_dir = NULL;
 	struct inode *t_inode = NULL;
 	disk_sector_t ans = 0;
@@ -343,6 +344,7 @@ parse_path(char *path_name, char *last_name)
 	char *token, *last, *extra;
 	token = strtok_r(path_name, "/", &last);
    	extra = strtok_r(NULL, "/", &last);
+	// printf("token: %s extra: %s \n", token, extra);
 	int i = 0;
 	while (extra != NULL)
 	{
@@ -359,8 +361,21 @@ parse_path(char *path_name, char *last_name)
 		if(!t_inode->data._isdir && !t_inode->data._issym){ //t_inode 가 file inode 면
 			break;
 		}
-		if(t_inode->data._issym){ //t_node가 symlink 이면
-			return parse_path(t_inode->data.link_path, last_name);
+		if(!t_inode->data._isdir && t_inode->data._issym){ //t_node가 symlink 이면
+			// printf("token %s is symlink \n", token);
+			// extra = strtok_r (NULL, "/", &last);
+			// char *temp = "/";
+			// char temp2[100];
+			// strlcpy(&temp2, &(t_inode->data.link_path), strlen(&(t_inode->data.link_path))+1);
+			// // printf("temp2: %s \n", temp2);
+			// strlcat(&temp2, temp, strlen(temp2)+2);
+			// strlcat(&temp2, extra, strlen(extra)+strlen(temp2)+2);
+			// // printf("temp2: %s \n", temp2);
+			// // printf("parse path symlink: %s token: %s extra: %s \n", temp2, token, extra);
+			// return parse_path(temp2, last_name);
+			dir_close(t_dir);
+			t_dir = dir_open(parse_path(t_inode->data.link_path, last_name)->inode);
+			dir_lookup(t_dir, last_name, &t_inode);
 		}
 		dir_close(t_dir);
 		t_dir = dir_open(t_inode);
@@ -369,6 +384,7 @@ parse_path(char *path_name, char *last_name)
 		token = extra;
 		extra = strtok_r (NULL, "/", &last);
 		i++;
+		// printf("i: %d, token: %s extra: %s \n", i, token, extra);
 	}
 	strlcpy (last_name, token, PGSIZE);
 	return t_dir;

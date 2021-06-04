@@ -198,7 +198,7 @@ inode_close (struct inode *inode) {
 
 		/* Deallocate blocks if removed. */
 		if (inode->removed) { 
-			fat_remove_chain (inode->sector, 0);
+			fat_put (inode->sector, 0);
 			fat_remove_chain (inode->data.start, 0);
 			// static char zeros[DISK_SECTOR_SIZE];
 			// disk_write (filesys_disk, inode->sector, zeros); 

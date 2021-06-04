@@ -24,10 +24,10 @@ Executing 'sm-seq-block':
 (sm-seq-block) end
 sm-seq-block: exit(0)
 Execution of 'sm-seq-block' complete.
-Timer: 113 ticks
-Thread: 41 idle ticks, 44 kernel ticks, 28 user ticks
+Timer: 112 ticks
+Thread: 51 idle ticks, 41 kernel ticks, 20 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 284 reads, 702 writes
+hd0:1: 343 reads, 697 writes
 hd1:0: 107 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1217 characters output

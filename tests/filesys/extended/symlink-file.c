@@ -83,8 +83,8 @@ test_main (void)
         fail ("failed to remove symlink: %s", fname);
   }
 
-  printf("finished remove in test\n");
-  open("a");
+  // printf("finished remove in test\n");
+  // open("a");
 
   check_file ("a", buf_a, FILE_SIZE);
   check_file ("b", buf_b, FILE_SIZE);

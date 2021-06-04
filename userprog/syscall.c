@@ -587,23 +587,25 @@ mkdir (const char *dir) {
    }
    lock_release(&file_lock);
 
+   bool i_1, i_2;
+   i_1 = dir_create (inode_sector, 16);
+   if(i_1)
+      i_2 = dir_add (t_dir, file_name, inode_sector);
+
    bool success = (t_dir != NULL
 			&& inode_sector
-			&& dir_create (inode_sector, 16)
-			&& dir_add (t_dir, file_name, inode_sector));
-	if (!success && inode_sector != 0)
-		fat_put(inode_sector, 0);
+			&& i_1
+			&& i_2);
+	if (!success && inode_sector != 0){
+      // dir_remove(t_dir, file_name);
+		fat_remove_chain(inode_sector, 0);
+   }
    palloc_free_page(file_name);
    struct inode * t_i = NULL;
-   bool i_1, i_2;
    struct dir *new_dir = dir_open(inode_open(inode_sector));
    if(success == true && new_dir != NULL){
 		dir_add(new_dir, ".", inode_sector);
-      // i_1 = dir_lookup (new_dir, ".", &t_i);
 		dir_add(new_dir, "..", t_dir->inode->sector);
-      uint32_t temp_1 = thread_current()->t_sector;
-      // i_2 = dir_lookup (new_dir, "..", &t_i);
-      // uint32_t temp_2 = t_i->sector;
    }
 
    dir_close (new_dir);
@@ -661,18 +663,25 @@ sym_mkdir (const char *dir) {
    struct dir * t_dir = parse_path(dir, file_name);
    if(!t_dir){
       palloc_free_page(file_name);
-      fat_put(inode_sector, 0);
+      fat_remove_chain(inode_sector, 0);
       return false;
    }
    lock_release(&file_lock);
 
+   bool i_1, i_2;
+   i_1 = dir_create (inode_sector, 0);
+   if(i_1)
+      i_2 = dir_add (t_dir, file_name, inode_sector);
+
    bool success = (t_dir != NULL
 			&& inode_sector
-			&& dir_create (inode_sector, 0)
-			&& dir_add (t_dir, file_name, inode_sector));
+			&& i_1
+			&& i_2);
 
-	if (!success && inode_sector != 0)
-		fat_put(inode_sector, 0);
+	if (!success && inode_sector != 0){
+		// dir_remove(t_dir, file_name);
+		fat_remove_chain(inode_sector, 0);
+   }
    palloc_free_page(file_name);
 	dir_close (t_dir);
 	return success;
@@ -687,7 +696,7 @@ symlink (const char* target, const char* linkpath) {
    int fd = open(linkpath);
    disk_sector_t sector = (disk_sector_t)inumber(fd);
    struct inode *symlink = inode_open(sector);
-   // printf("linkpaty: %s, sector: %d \n", linkpath, symlink->sector);
+   // printf("linkpath: %s, sector: %d in symlink\n", linkpath, symlink->sector);
 
    symlink->data._issym = true;
    symlink->data._isdir = false;

@@ -105,7 +105,7 @@ file_write (struct file *file, const void *buffer, off_t size) {
 	}
 	if(file->inode->data._issym){
 		struct file *ans = file_open (file->inode->data.link_path);
-		printf("link sector: %d in filesys_open\n", ans->inode->sector);
+		// printf("link sector: %d in filesys_open\n", ans->inode->sector);
 		off_t bytes_written = inode_write_at (ans->inode, buffer, size, ans->pos);
 		ans->pos += bytes_written;
 		return bytes_written;

@@ -96,8 +96,8 @@ lookup (const struct dir *dir, const char *name,
 
 	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
 			ofs += sizeof e){
-		if(!strcmp("a", name)) //for symlink-file test
-			printf("name: %s in lookup \n", e.name);
+		// if(!strcmp("a", name)) //for symlink-file test
+		// 	printf("\n name: %s in lookup \n", e.name);
 		if (e.in_use && !strcmp (name, e.name)) {
 			if (ep != NULL)
 				*ep = e;
@@ -169,6 +169,7 @@ dir_add (struct dir *dir, const char *name, disk_sector_t inode_sector) {
 	e.in_use = true;
 	strlcpy (e.name, name, sizeof e.name);
 	e.inode_sector = inode_sector;
+	// printf("here? in dir_add name: %s dir: %d \n", e.name, dir->inode->sector);
 	success = inode_write_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
 done:
 	return success;
@@ -348,9 +349,6 @@ parse_path(char *path_name, char *last_name)
 		//absolute path 면 argv[0] 가 "0" 이다 -- TODO
 		if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
 			if(i == 0){
-				// if(!strcmp(token, ".")){
-				// 	continue;
-				// }
 				strlcpy (last_name, token, PGSIZE);
 				return t_dir;
 			}
@@ -358,8 +356,11 @@ parse_path(char *path_name, char *last_name)
 			return NULL;
 			// break;
 		}
-		if(!t_inode->data._isdir){ //t_inode 가 file inode 면
+		if(!t_inode->data._isdir && !t_inode->data._issym){ //t_inode 가 file inode 면
 			break;
+		}
+		if(t_inode->data._issym){ //t_node가 symlink 이면
+			return parse_path(t_inode->data.link_path, last_name);
 		}
 		dir_close(t_dir);
 		t_dir = dir_open(t_inode);

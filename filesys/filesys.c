@@ -35,6 +35,9 @@ filesys_init (bool format) {
 		do_format ();
 
 	fat_open ();
+
+	if (!dir_create (ROOT_DIR_SECTOR, 16))
+		PANIC ("root directory creation failed");
 #else
 	/* Original FS */
 	free_map_init ();
@@ -86,7 +89,9 @@ filesys_create (const char *name, off_t initial_size) {
 
 	bool i_1 = inode_sector;
 	bool i_2 = inode_create (inode_sector, initial_size);
-	bool i_3 = dir_add (dir, file_name, inode_sector);
+	bool i_3 = false;
+	if(i_2)
+		i_3 = dir_add (dir, file_name, inode_sector);
 
 	bool success = (dir != NULL
 			// && free_map_allocate (1, &inode_sector)
@@ -94,10 +99,12 @@ filesys_create (const char *name, off_t initial_size) {
 			&& i_2 //inode_create (inode_sector, initial_size)
 			&& i_3); //dir_add (dir, name, inode_sector));
 	write_isdir(inode_sector, false);
-	if (!success && inode_sector != 0)
+	if (!success && inode_sector != 0){
 		// free_map_release (inode_sector, 1);
+		// dir_remove(dir, file_name);
 		fat_remove_chain(inode_sector, 0);
 		// fat_put(inode_sector, 0);
+	}
 	dir_close (dir);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
@@ -198,11 +205,11 @@ filesys_remove (const char *name) {
 			bool sym_remove = dir_remove(dir, file_name);
 			palloc_free_page(file_name);
 			palloc_free_page(name_copy);
-			// dir_close(r_inode);
 			return sym_remove;
 		}
 	}
 	else{
+		// printf("file name: %s in filesys_remove\n", file_name);
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
 		return true;
@@ -216,7 +223,7 @@ filesys_remove (const char *name) {
 	if(r_inode->data._isdir && dir_readdir(r_dir, t_name)){
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
-		dir_close(r_inode);
+		dir_close(r_dir);
 		dir_close (dir);
 		return false;
 	}
@@ -241,8 +248,8 @@ do_format (void) {
 #ifdef EFILESYS
 	/* Create FAT and save it to the disk. */
 	fat_create ();
-	if (!dir_create (ROOT_DIR_SECTOR, 16))
-		PANIC ("root directory creation failed");
+	// if (!dir_create (ROOT_DIR_SECTOR, 16))
+	// 	PANIC ("root directory creation failed");
 	// struct dir *t_dir = dir_open_root();
 	// thread_current()->t_sector = ROOT_DIR_SECTOR;
 	// dir_add (t_dir, ".", ROOT_DIR_SECTOR);

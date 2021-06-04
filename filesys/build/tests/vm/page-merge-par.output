@@ -46,10 +46,10 @@ child-sort: exit(123)
 (page-merge-par) end
 page-merge-par: exit(0)
 Execution of 'page-merge-par' complete.
-Timer: 6377 ticks
-Thread: 159 idle ticks, 53 kernel ticks, 6165 user ticks
+Timer: 6230 ticks
+Thread: 205 idle ticks, 56 kernel ticks, 5969 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 5004 reads, 7185 writes
+hd0:1: 5139 reads, 7172 writes
 hd1:0: 218 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1858 characters output

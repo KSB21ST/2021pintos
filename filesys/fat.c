@@ -177,7 +177,7 @@ fat_create_chain (cluster_t clst) {
 	/* TODO: Your code goes here. */
 	// if (clst == 0) return 0;
 	cluster_t idx = 0;
-	for (cluster_t i=fat_fs->data_start; i< fat_fs->fat_length; i++) //20180109 unint overflow carefull!
+	for (cluster_t i=fat_fs->data_start+1; i< fat_fs->fat_length; i++) //20180109 unint overflow carefull!
 	{
 		if(fat_fs->fat[i] == 0){
 			idx = i;

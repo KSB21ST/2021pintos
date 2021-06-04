@@ -222,7 +222,7 @@ done:
  * NAME.  Returns true if successful, false if the directory
  * contains no more entries. */
 bool
-dir_readdir (struct dir *dir, char *name) {
+dir_readdir (struct dir *dir, char name[NAME_MAX + 1]) {
 	struct dir_entry e;
 
 	while (inode_read_at (dir->inode, &e, sizeof e, dir->pos) == sizeof e) {

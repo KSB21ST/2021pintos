@@ -152,6 +152,7 @@ filesys_open (const char *name) {
 	// struct dir * dir = parse_path(dir, file_name);
 	// else
 		// dir = dir_open (inode_reopen (t_sector));
+
 	//end 20180109
 	if(!dir){
 		palloc_free_page(file_name);
@@ -162,9 +163,18 @@ filesys_open (const char *name) {
 	if (dir != NULL)
 		dir_lookup (dir, file_name, &inode);
 
+
+	if(inode->data._issym){
+		dir_close(dir);
+		palloc_free_page(file_name);
+		palloc_free_page(name_copy);
+		return file_open(inode_open(inode->data.start));
+	}
+
 	dir_close (dir);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
+
 
 	return file_open (inode);
 }
@@ -199,6 +209,7 @@ filesys_remove (const char *name) {
 	if(!dir){
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
+		printf("here??\n");
 		return false;
 	}
 
@@ -208,12 +219,16 @@ filesys_remove (const char *name) {
 	struct dir *r_dir = dir_open(r_inode);
 	temp_r = r_dir->inode->sector;
 	char t_name[NAME_MAX + 1];
+
+	if(!r_dir->inode->data._issym){
 	if(dir_readdir(r_dir, t_name) && r_inode->data._isdir){
+		printf("dir_readdir: %s\n", t_name);
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
 		dir_close(r_dir);
 		dir_close (dir);
 		return false;
+	}
 	}
 	if(thread_current()->t_sector == r_dir->inode->sector)
 		thread_current()->t_sector = 0;

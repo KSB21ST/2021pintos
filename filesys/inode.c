@@ -58,6 +58,12 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 		for(off_t i=0;i<pos_sector;i++)
 		{
 			temp = fat_get(temp);
+			// if (temp == EOChain)
+			// {
+			// 	static char zeros[DISK_SECTOR_SIZE];
+			// 	temp = fat_create_chain(inode->data.start);
+			// 	disk_write (filesys_disk, cluster_to_sector(temp), zeros);
+			// }
 		}
 		return (disk_sector_t)temp;
 	}

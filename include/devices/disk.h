@@ -3,13 +3,27 @@
 
 #include <inttypes.h>
 #include <stdint.h>
+typedef uint32_t disk_sector_t;
+/* An ATA device. */
+#include <stdbool.h>
+struct disk {
+	char name[8];               /* Name, e.g. "hd0:1". */
+	struct channel *channel;    /* Channel disk is on. */
+	int dev_no;                 /* Device 0 or 1 for master or slave. */
+
+	bool is_ata;                /* 1=This device is an ATA disk. */
+	disk_sector_t capacity;     /* Capacity in sectors (if is_ata). */
+
+	long long read_cnt;         /* Number of sectors read. */
+	long long write_cnt;        /* Number of sectors written. */
+};
 
 /* Size of a disk sector in bytes. */
 #define DISK_SECTOR_SIZE 512
 
 /* Index of a disk sector within a disk.
  * Good enough for disks up to 2 TB. */
-typedef uint32_t disk_sector_t;
+// typedef uint32_t disk_sector_t;
 
 /* Format specifier for printf(), e.g.:
  * printf ("sector=%"PRDSNu"\n", sector); */

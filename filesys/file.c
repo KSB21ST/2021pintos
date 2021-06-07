@@ -18,9 +18,6 @@ file_open (struct inode *inode) {
 	struct file *file = calloc (1, sizeof *file);
 	if (inode != NULL && file != NULL) {
 		file->inode = inode;
-		//start 20180109 - for subdir
-		// file->inode->_isdir = false;
-		//end 20180109
 		file->pos = 0;
 		file->deny_write = false;
 		return file;

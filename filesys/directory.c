@@ -337,6 +337,9 @@ parse_path(char *path_name, char *last_name)
 		}
 		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
 		else{
+			if (thread_current()->t_sector==ROOT_DIR_SECTOR)
+				t_dir = dir_open_root();
+			else
 			t_dir = dir_open(inode_open(thread_current()->t_sector));
 		} 
 	}

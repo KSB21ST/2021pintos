@@ -25,10 +25,10 @@ Executing 'grow-seq-lg':
 (grow-seq-lg) end
 grow-seq-lg: exit(0)
 Execution of 'grow-seq-lg' complete.
-Timer: 264 ticks
-Thread: 51 idle ticks, 38 kernel ticks, 175 user ticks
+Timer: 291 ticks
+Thread: 63 idle ticks, 41 kernel ticks, 187 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 478 reads, 1189 writes
+hd0:1: 477 reads, 1193 writes
 hd1:0: 223 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1250 characters output

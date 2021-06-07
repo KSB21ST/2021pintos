@@ -19,10 +19,10 @@ Executing 'dir-empty-name':
 (dir-empty-name) end
 dir-empty-name: exit(0)
 Execution of 'dir-empty-name' complete.
-Timer: 88 ticks
-Thread: 41 idle ticks, 44 kernel ticks, 3 user ticks
+Timer: 93 ticks
+Thread: 49 idle ticks, 42 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 179 reads, 742 writes
+hd0:1: 178 reads, 745 writes
 hd1:0: 222 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1080 characters output

@@ -633,7 +633,7 @@ isdir (int fd) {
    _file = file_table[fd];
    if(_file == -1 || _file == -2)
       return;
-   struct inode *_inode = inode_open(_file->inode);
+   struct inode *_inode = inode_open(_file->inode->sector);
    bool isdir = _inode->data._isdir;
    inode_close(_inode);
    return isdir;
@@ -649,7 +649,7 @@ inumber (int fd) {
    if(_file == -1 || _file == -2)
       return;
    struct inode *_inode = _file->inode;
-   return _inode->sector; //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
+   return inode_get_inumber(_inode); //disk_sector_t 인데, int 로 캐스팅 안해줘도 됨..??
 }
 
 static bool //very similar with filesys_create
@@ -725,7 +725,7 @@ symlink (const char* target, const char* linkpath) {
    ASSERT (strlen(target) < 100);
 	strlcpy(symlink->data.link_path, target, strlen(target) + 1);
 
-   disk_write(filesys_disk, symlink->sector, &symlink->data);
+   disk_write(filesys_disk, cluster_to_sector(symlink->sector), &symlink->data);
    dir_close(parent_dir);
    // inode_close(symlink);
 

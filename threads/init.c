@@ -119,7 +119,7 @@ main (void) {
 	printf ("Boot complete.\n");
 
 #ifdef FILESYS
-	create_directory_root();
+	// create_directory_root();
 #endif
 	/* Run actions specified on kernel command line. */
 	run_actions (argv);

@@ -1,7 +1,8 @@
 FAIL
-Kernel panic in file system extraction run: PANIC at ../../userprog/process.c:96 in initd(): Fail to launch initd
-Call stack: 0x8004214511 0x8004217c98 0x8004207680
+Kernel panic in file system extraction run: PANIC at ../../filesys/fsutil.c:161 in fsutil_get(): fs.tar: open failed
+Call stack: 0x8004214500 0x800421fd8a 0x80042068d9 0x8004206186
 Translation of call stack:
-0x0000008004214511: debug_panic (lib/kernel/debug.c:32)
-0x0000008004217c98: initd (userprog/process.c:97)
-0x0000008004207680: kernel_thread (threads/thread.c:472)
+0x0000008004214500: debug_panic (lib/kernel/debug.c:32)
+0x000000800421fd8a: fsutil_get (filesys/fsutil.c:162)
+0x00000080042068d9: run_actions (threads/init.c:302)
+0x0000008004206186: main (threads/init.c:128)

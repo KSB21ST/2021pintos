@@ -312,6 +312,7 @@ process_exec (void *f_name) {
    and sema_up fork_sema to notify the parent that load is finished.
    parent thread will be running from now, woken up from sema_down in process_fork
    */
+
    if(success){
       argument_stack(argv, argc, &_if);
       #ifndef VM
@@ -372,6 +373,7 @@ process_wait (tid_t child_tid UNUSED) {
    /*
    iterate lists of child and find the child that has the same tid with input argument. If there is no such child, return -1.
    */
+   // printf("wait start, child_tid: %d\n", child_tid);
    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
    {
       t = list_entry(e, struct thread, child_elem);
@@ -400,6 +402,7 @@ process_wait (tid_t child_tid UNUSED) {
          */
          lock_acquire(&t->exit_lock);
          if(t->status != THREAD_EXIT){
+            // printf("before cond_wait\n");
             cond_wait(&t->exit_cond, &t->exit_lock);
          }
          /*
@@ -502,6 +505,7 @@ process_exit (void) {
       Initialized as false in init_thread() in thread.c
       */
       curr->process_exit = true;
+      // printf("cond_signal\n");
       cond_signal(&cur->exit_cond, &cur->exit_lock);
    }
 
@@ -1012,7 +1016,6 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
 
       if_->rsp = if_->rsp - 8;
       memset(if_->rsp, 0, sizeof(void *));
-   
    palloc_free_page(argu_address);
 }
 

@@ -255,6 +255,7 @@ dir_path_parse(const char *path_name, char **argv)
 }
 
 struct dir *
+
 locate_dir(char **argv, int number, char *real_name)
 {
 	struct dir *t_dir = NULL;

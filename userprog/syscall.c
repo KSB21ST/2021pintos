@@ -10,6 +10,7 @@
 
 //start 20180109
 #include "filesys/file.h" //없어도 될듯?
+#include "filesys/fat.h"
 #include "filesys/inode.h"
 #include "filesys/filesys.h"
 #include "filesys/directory.h"
@@ -459,7 +460,11 @@ close (int fd) {
    }else{
       lock_acquire(&file_lock);
       t->open_cnt--;
-      file_close(_file);
+      if(_file->inode->data._isdir){ // edit 2
+         dir_close(_file);
+      }else{
+         file_close(_file);
+      }
       lock_release(&file_lock);
       t->fd_table[fd] = 0;
    }
@@ -559,7 +564,7 @@ chdir (const char *dir) {
       dir_close(parent_dir);
       return false;
    }
-
+   // dir_close(last_dir); // edit
    last_dir = dir_open(inode);
    thread_current()->t_sector = last_dir->inode->sector;
    temp_s = thread_current()->t_sector;
@@ -567,7 +572,7 @@ chdir (const char *dir) {
    palloc_free_page(file_name);
 
    }
-   // dir_close(parent_dir);
+   dir_close(last_dir); // edit
    return true;
 }
 
@@ -582,7 +587,8 @@ mkdir (const char *dir) {
    struct dir * t_dir = parse_path(dir, file_name);
    if(!t_dir){
       palloc_free_page(file_name);
-      fat_put(inode_sector, 0);
+      // fat_put(inode_sector, 0);
+      fat_remove_chain(inode_sector, 0);
       return false;
    }
    lock_release(&file_lock);
@@ -597,7 +603,7 @@ mkdir (const char *dir) {
 			&& i_1
 			&& i_2);
 	if (!success && inode_sector != 0){
-      // dir_remove(t_dir, file_name);
+      dir_remove(t_dir, file_name);
 		fat_remove_chain(inode_sector, 0);
    }
    palloc_free_page(file_name);
@@ -685,7 +691,7 @@ sym_mkdir (const char *dir) {
 			&& i_2);
 
 	if (!success && inode_sector != 0){
-		// dir_remove(t_dir, file_name);
+		dir_remove(t_dir, file_name);
 		fat_remove_chain(inode_sector, 0);
    }
    palloc_free_page(file_name);
@@ -727,7 +733,7 @@ symlink (const char* target, const char* linkpath) {
 
    disk_write(filesys_disk, symlink->sector, &symlink->data);
    dir_close(parent_dir);
-   // inode_close(symlink);
+   inode_close(symlink); // edit
 
    palloc_free_page(name_copy);
    palloc_free_page(file_name);

@@ -17,8 +17,8 @@ Executing 'write-stdin':
 (write-stdin) end
 write-stdin: exit(0)
 Execution of 'write-stdin' complete.
-Timer: 85 ticks
-Thread: 36 idle ticks, 45 kernel ticks, 4 user ticks
+Timer: 83 ticks
+Thread: 41 idle ticks, 38 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 273 reads, 631 writes
 hd1:0: 102 reads, 0 writes

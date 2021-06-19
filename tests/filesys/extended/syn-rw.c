@@ -30,6 +30,6 @@ test_main (void)
            "write %d bytes at offset %zu in \"%s\"",
            (int) CHUNK_SIZE, ofs, file_name);
   quiet = false;
-
+  // printf("after for loop\n");
   wait_children (children, CHILD_CNT);
 }

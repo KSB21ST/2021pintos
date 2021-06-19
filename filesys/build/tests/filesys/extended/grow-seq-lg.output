@@ -7,7 +7,7 @@ Pintos booting with:
 Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 361 sector (180 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 223 sector (111 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 224 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
 Formatting file system...done.
 Boot complete.
@@ -25,11 +25,11 @@ Executing 'grow-seq-lg':
 (grow-seq-lg) end
 grow-seq-lg: exit(0)
 Execution of 'grow-seq-lg' complete.
-Timer: 264 ticks
-Thread: 51 idle ticks, 38 kernel ticks, 175 user ticks
+Timer: 299 ticks
+Thread: 49 idle ticks, 41 kernel ticks, 210 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 478 reads, 1189 writes
-hd1:0: 223 reads, 0 writes
+hd0:1: 478 reads, 1192 writes
+hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1250 characters output
 Keyboard: 0 keys pressed

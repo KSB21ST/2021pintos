@@ -205,6 +205,8 @@ filesys_remove (const char *name) {
 			bool sym_remove = dir_remove(dir, file_name);
 			palloc_free_page(file_name);
 			palloc_free_page(name_copy);
+			inode_close(r_inode); // edit
+			dir_close(dir); // edit
 			return sym_remove;
 		}
 	}
@@ -212,6 +214,7 @@ filesys_remove (const char *name) {
 		// printf("file name: %s in filesys_remove\n", file_name);
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
+		dir_close(dir); // edit
 		return true;
 	}
 
@@ -236,6 +239,8 @@ filesys_remove (const char *name) {
 	// free(file_name);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
+
+	// dir_close(r_dir); // edit
 
 	return success;
 }

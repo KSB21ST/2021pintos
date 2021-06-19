@@ -16,5 +16,6 @@ userprog/syscall.o: ../../userprog/syscall.c \
  ../../include/userprog/gdt.h ../../include/threads/flags.h \
  ../../include/intrinsic.h ../../include/threads/mmu.h \
  ../../include/threads/pte.h ../../include/threads/vaddr.h \
- ../../include/filesys/filesys.h ../../include/filesys/directory.h \
- ../../include/lib/string.h ../../include/threads/malloc.h
+ ../../include/filesys/fat.h ../../include/filesys/filesys.h \
+ ../../include/filesys/directory.h ../../include/lib/string.h \
+ ../../include/threads/malloc.h

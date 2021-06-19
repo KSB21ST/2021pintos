@@ -4,7 +4,7 @@ Kernel command line: -q -f put page-merge-mm put child-qsort-mm run page-merge-m
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  106,291,200 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 361 sector (180 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 224 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -17,7 +17,6 @@ Executing 'page-merge-mm':
 (page-merge-mm) begin
 (page-merge-mm) init
 (page-merge-mm) sort chunk 0
-child-qsort-mm: exit(80)
 (page-merge-mm) sort chunk 1
 child-qsort-mm: exit(80)
 (page-merge-mm) sort chunk 2
@@ -26,33 +25,13 @@ child-qsort-mm: exit(80)
 child-qsort-mm: exit(80)
 (page-merge-mm) sort chunk 4
 child-qsort-mm: exit(80)
-(page-merge-mm) sort chunk 5
-child-qsort-mm: exit(80)
-(page-merge-mm) sort chunk 6
-child-qsort-mm: exit(80)
-(page-merge-mm) sort chunk 7
-child-qsort-mm: exit(80)
-(page-merge-mm) wait for child 0
-(page-merge-mm) wait for child 1
-(page-merge-mm) wait for child 2
-(page-merge-mm) wait for child 3
-(page-merge-mm) wait for child 4
-(page-merge-mm) wait for child 5
-(page-merge-mm) wait for child 6
-(page-merge-mm) wait for child 7
-(page-merge-mm) merge
-(page-merge-mm) verify
-(page-merge-mm) success, buf_idx=1,048,576
-(page-merge-mm) end
-page-merge-mm: exit(0)
-Execution of 'page-merge-mm' complete.
-Timer: 2434 ticks
-Thread: 37 idle ticks, 57 kernel ticks, 2340 user ticks
-hd0:0: 0 reads, 0 writes
-hd0:1: 5156 reads, 7449 writes
-hd1:0: 224 reads, 0 writes
-hd1:1: 0 reads, 0 writes
-Console: 1861 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Kernel PANIC at ../../threads/malloc.c:253 in block_to_arena(): assertion `a->desc == NULL || (pg_ofs (b) - sizeof *a) % a->desc->block_size == 0' failed.
+Call stack: 0x8004214500 0x800420c9dc 0x800420c72e 0x800421d8b4 0x800421ad06 0x80042184cc 0x80042071f3 0x800421a24a 0x8004219c65 0x8004219af0 0x4010c1 0Interrupt 0x0d (#GP General Protection Exception) at rip=800421153a
+ cr2=000000001001e000 error=               0
+rax 22ef280000008004 rbx 000000004747ff50 rcx 00000080040b8000 rdx 00000000000003d4
+rsp 0000008004294cd0 rbp 0000008004294ce0 rsi 000000000000c80f rdi 0000000000000000
+rip 000000800421153a r8 0000008004294be8  r9 00000080042179de r10 0000000000000000
+r11 0000000000000206 r12 0000008004219bc7 r13 294e100000008004 r14 20d8c00000008004
+r15 294e100000008004 rflags 00000002
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:100 in kill().

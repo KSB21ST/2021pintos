@@ -316,9 +316,9 @@ process_exec (void *f_name) {
    */
    if(success){
       argument_stack(argv, argc, &_if);
-      #ifndef VM
-      sema_up(&(thread_current()->parent)->fork_sema);
-      #endif
+      // #ifndef VM
+      // sema_up(&(thread_current()->parent)->fork_sema);
+      // #endif
    }
    
    /*
@@ -348,6 +348,7 @@ process_exec (void *f_name) {
    }
 
    /* Start switched process. */
+   sema_up(&(thread_current()->parent)->fork_sema);
    do_iret (&_if);
    NOT_REACHED ();
 }
@@ -401,7 +402,8 @@ process_wait (tid_t child_tid UNUSED) {
          So either child has parent but doesn't wait, child has parent but wait, child does not have parent. Three cases. This is for the second case.
          */
          lock_acquire(&t->exit_lock);
-         if(t->status != THREAD_EXIT){
+         // if(t->status != THREAD_EXIT){
+         while(t->process_exit != true){
             cond_wait(&t->exit_cond, &t->exit_lock);
          }
          /*
@@ -475,10 +477,10 @@ process_exit (void) {
       if(t->status == THREAD_EXIT) palloc_free_page(t);
    }
 
-   #ifdef VM
-      if(thread_current()->parent != NULL)
-         sema_up(&(thread_current()->parent)->fork_sema);
-   #endif
+   // #ifdef VM
+   //    if(thread_current()->parent != NULL)
+   //       sema_up(&(thread_current()->parent)->fork_sema);
+   // #endif
 
    /*
    sema_up the fork_sema, where the parent will have been waiting for in process_fork if load in process_exec haven't failed.

@@ -7,7 +7,7 @@ Pintos booting with:
 Calibrating timer...  117,760,000 loops/s.
 hd0:0: detected 361 sector (180 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 231 sector (115 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 232 sector (116 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
 Formatting file system...done.
 Boot complete.
@@ -31,13 +31,13 @@ Executing 'dir-rm-cwd':
 (dir-rm-cwd) end
 dir-rm-cwd: exit(0)
 Execution of 'dir-rm-cwd' complete.
-Timer: 114 ticks
-Thread: 52 idle ticks, 44 kernel ticks, 18 user ticks
+Timer: 84 ticks
+Thread: 31 idle ticks, 41 kernel ticks, 12 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 322 reads, 784 writes
-hd1:0: 231 reads, 0 writes
+hd0:1: 322 reads, 787 writes
+hd1:0: 232 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1421 characters output
+Console: 1420 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

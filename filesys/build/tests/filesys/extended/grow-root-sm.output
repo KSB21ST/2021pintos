@@ -4,10 +4,10 @@ Kernel command line: -q -f put grow-root-sm put tar run grow-root-sm
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  209,510,400 loops/s.
 hd0:0: detected 361 sector (180 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 224 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:0: detected 225 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
 Formatting file system...done.
 Boot complete.
@@ -38,11 +38,11 @@ Executing 'grow-root-sm':
 (grow-root-sm) end
 grow-root-sm: exit(0)
 Execution of 'grow-root-sm' complete.
-Timer: 199 ticks
-Thread: 70 idle ticks, 39 kernel ticks, 90 user ticks
+Timer: 181 ticks
+Thread: 59 idle ticks, 48 kernel ticks, 74 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 1549 reads, 927 writes
-hd1:0: 224 reads, 0 writes
+hd0:1: 1549 reads, 930 writes
+hd1:0: 225 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1931 characters output
 Keyboard: 0 keys pressed

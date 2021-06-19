@@ -97,7 +97,7 @@ lookup (const struct dir *dir, const char *name,
 	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
 			ofs += sizeof e){
 		// if(!strcmp("a", name)) //for symlink-file test
-		// 	printf("\n name: %s in lookup \n", e.name);
+		// printf("\n name: %s in lookup \n", e.name);
 		if (e.in_use && !strcmp (name, e.name)) {
 			if (ep != NULL)
 				*ep = e;
@@ -363,9 +363,7 @@ parse_path(char *path_name, char *last_name)
 			// return parse_path(t_inode->data.link_path, last_name);
 			dir_close(t_dir);
 			t_dir = dir_open(parse_path(t_inode->data.link_path, last_name)->inode);
-			if(!dir_lookup(t_dir, last_name, &t_inode)){
-				// printf("something's wrong!!\n");
-			}
+			dir_lookup(t_dir, last_name, &t_inode);
 		}
 		dir_close(t_dir);
 		t_dir = dir_open(t_inode);

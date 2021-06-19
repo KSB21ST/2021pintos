@@ -559,7 +559,6 @@ chdir (const char *dir) {
       dir_close(parent_dir);
       return false;
    }
-
    last_dir = dir_open(inode);
    thread_current()->t_sector = last_dir->inode->sector;
    temp_s = thread_current()->t_sector;

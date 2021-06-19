@@ -86,6 +86,8 @@ filesys_create (const char *name, off_t initial_size) {
 
 	bool i_1 = inode_sector;
 	bool i_2 = inode_create (inode_sector, initial_size);
+	// if(!i_2)
+	// 	printf("filesys_create: %d \n", inode_sector);
 	bool i_3 = false;
 	if(i_2)
 		i_3 = dir_add (dir, file_name, inode_sector);
@@ -184,6 +186,7 @@ filesys_remove (const char *name) {
 	char *name_copy = palloc_get_page(0);
 	strlcpy(name_copy, name, PGSIZE);
 	struct dir * dir = parse_path(name_copy, file_name);
+	// struct dir * dir  = dir_open(inode_open(thread_current()->t_sector));
 
 	if(!dir){
 		palloc_free_page(file_name);
@@ -194,7 +197,7 @@ filesys_remove (const char *name) {
 	struct inode *r_inode;
 	if(dir_lookup(dir, file_name, &r_inode)){
 	// printf("file name: %s r_inode: %d in filesys_remove\n", file_name, r_inode->sector);
-		if(r_inode->data._issym){
+		if(r_inode->data._issym || !r_inode->data._isdir){
 			bool sym_remove = dir_remove(dir, file_name);
 			palloc_free_page(file_name);
 			palloc_free_page(name_copy);
@@ -224,11 +227,11 @@ filesys_remove (const char *name) {
 		thread_current()->t_sector = 0;
 	// if(strcmp(file_name, "file10") && strcmp(file_name, "dir10")){
 	// 	dir_remove(r_dir, "..");
-	// 	dir_remove(r_dir, ".");
 	// }
-	bool success = dir != NULL && dir_remove (dir, file_name);
+	dir_close(r_dir);
+	bool success = false;
+	success = dir != NULL && dir_remove (dir, file_name);
 	dir_close (dir);
-	// free(file_name);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
 

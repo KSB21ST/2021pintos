@@ -4,7 +4,7 @@ Kernel command line: -q -f put dir-vine put tar run dir-vine
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  78,540,800 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 361 sector (180 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 230 sector (115 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -20,8 +20,8 @@ Executing 'dir-vine':
 (dir-vine) end
 dir-vine: exit(0)
 Execution of 'dir-vine' complete.
-Timer: 5467 ticks
-Thread: 1427 idle ticks, 45 kernel ticks, 3996 user ticks
+Timer: 4447 ticks
+Thread: 732 idle ticks, 47 kernel ticks, 3668 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 91295 reads, 15150 writes
 hd1:0: 230 reads, 0 writes

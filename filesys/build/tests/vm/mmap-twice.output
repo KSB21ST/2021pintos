@@ -24,13 +24,13 @@ Executing 'mmap-twice':
 (mmap-twice) end
 mmap-twice: exit(0)
 Execution of 'mmap-twice' complete.
-Timer: 102 ticks
-Thread: 45 idle ticks, 45 kernel ticks, 12 user ticks
+Timer: 88 ticks
+Thread: 40 idle ticks, 42 kernel ticks, 7 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 329 reads, 656 writes
 hd1:0: 109 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1278 characters output
+Console: 1276 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

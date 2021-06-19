@@ -155,7 +155,7 @@ fat_boot_create (void) {
 void
 fat_fs_init (void) {
 	/* TODO: Your code goes here. */
-    fat_fs->fat_length = (&fat_fs->bs)->total_sectors / (&fat_fs->bs)->sectors_per_cluster;//20180109 every sectors in disk are changed into clusters
+    fat_fs->fat_length = (&fat_fs->bs)->total_sectors / (&fat_fs->bs)->sectors_per_cluster - fat_fs->bs.fat_sectors;//20180109 every sectors in disk are changed into clusters
     fat_fs->data_start = (&fat_fs->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
 	// fat_fs->fat_length = fat_fs->bs.fat_sectors * DISK_SECTOR_SIZE / sizeof(cluster_t) / SECTORS_PER_CLUSTER;
 	// fat_fs->data_start = fat_fs->bs.fat_start + fat_fs->bs.fat_sectors;
@@ -175,17 +175,23 @@ fat_create_chain (cluster_t clst) {
 	// if (clst == 0) return 0;
 	cluster_t idx = 0;
 	// for (cluster_t i=fat_fs->data_start+1; i< fat_fs->fat_length; i++) //20180109 unint overflow carefull!
-	 for (cluster_t i=1; i< fat_fs->fat_length; i++)
+	cluster_t i;
+	for (i=1; i< fat_fs->fat_length; i++)
 	{
 		if(fat_fs->fat[i] == 0){
 			idx = i;
 			break;
 		}
 	}
-	if(idx == 0)
+	// printf("i: %d in fat_create_chain \n", i);
+	if(idx == 0){
+		// printf("fat create chain here? \n");
 		return 0;
-	if(cluster_to_sector(idx) >= (filesys_disk)->capacity)
+	}
+	if(cluster_to_sector(idx) >= (filesys_disk)->capacity){
+		printf("fat create chain here? %d %d\n", (filesys_disk)->capacity, idx, cluster_to_sector(idx));
 		return 0;
+	}
 	if(clst == 0){
 		fat_fs->fat[idx] = EOChain;
 		return idx;

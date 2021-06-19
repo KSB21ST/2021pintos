@@ -167,8 +167,9 @@ inode_open (disk_sector_t sector) {
 /* Reopens and returns INODE. */
 struct inode *
 inode_reopen (struct inode *inode) {
-	if (inode != NULL)
+	if (inode != NULL){
 		inode->open_cnt++;
+	}
 	return inode;
 }
 
@@ -191,18 +192,11 @@ inode_close (struct inode *inode) {
 	if (--inode->open_cnt == 0) {
 		/* Remove from inode list and release lock. */
 		list_remove (&inode->elem);
-
 		/* Deallocate blocks if removed. */
 		if (inode->removed) { 
 			fat_remove_chain (inode->sector, 0);
 			fat_remove_chain (inode->data.start, 0);
-			// static char zeros[DISK_SECTOR_SIZE];
-			// disk_write (filesys_disk, inode->sector, zeros); 
-			// disk_write (filesys_disk, inode->sector, &inode->data); 
 		}
-		// else{
-		// disk_write (filesys_disk, inode->sector, &inode->data); //이거 해주면 swap
-		// }
 		free (inode); 
 	}
 }
@@ -212,6 +206,7 @@ inode_close (struct inode *inode) {
 void
 inode_remove (struct inode *inode) {
 	ASSERT (inode != NULL);
+	// printf("inode remove %d \n", inode->sector);
 	inode->removed = true;
 }
 

@@ -222,6 +222,7 @@ __do_fork (void *aux) {
    /*if we memcpy parent's fd table to child's fd table without duplicating file, multioom pass but other tests fail*/
    // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table)); 
    // printf("before process_init\n");
+   // sema_up(&parent->fork_sema);
    process_init ();
    /* Finally, switch to the newly created process. */
    // printf("after process_init\n");
@@ -235,6 +236,7 @@ error:
 this is the same with exit(-1). If loading while forking fails, exit with status -1. 
 sema_up(fork_sema) will be done in thread_exit, no need to be done here.
 */
+   // sema_up(&parent->fork_sema);
    current->exit_status=-1;
    thread_exit ();
 }
@@ -1070,6 +1072,7 @@ file_lazy_load_segment (struct page *page, void *aux) {
    lock_release(&mmap_lock);
    size_t _zero_bytes = PGSIZE - _read_bytes; 
    memset (kva + _read_bytes, 0, _zero_bytes);
+   // file_close(opend_file);
 
    return true;
 }

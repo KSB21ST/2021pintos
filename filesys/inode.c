@@ -304,10 +304,12 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offsetì
 			off_t alloc_sector = bytes_to_sectors(alloc_amt);
 			cluster_t clst = fat_get_end(inode->data.start);
 			// printf("data start: %d in inode_write_at \n", inode->data.start);
+			static char zeros[DISK_SECTOR_SIZE];
+			disk_write (filesys_disk, cluster_to_sector(clst), zeros);
 			for(int i=0;i<alloc_sector;i++)
 			{
 				// printf("clst: %d \n", clst);
-				static char zeros[DISK_SECTOR_SIZE];
+				// static char zeros[DISK_SECTOR_SIZE];
 				clst = fat_create_chain(clst);
 				disk_write (filesys_disk, cluster_to_sector(clst), zeros);
 			}

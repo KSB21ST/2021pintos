@@ -162,9 +162,9 @@ void
 fat_fs_init (void) {
 	/* TODO: Your code goes here. */
     // fat_fs->fat_length = (&fat_fs->bs)->total_sectors / (&fat_fs->bs)->sectors_per_cluster;//20180109 every sectors in disk are changed into clusters
-    // fat_fs->data_start = (&fat_fs->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
+    fat_fs->data_start = (&fat_fs->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
 	fat_fs->fat_length = fat_fs->bs.fat_sectors * DISK_SECTOR_SIZE / sizeof(cluster_t) / SECTORS_PER_CLUSTER;
-	fat_fs->data_start = fat_fs->bs.fat_start + fat_fs->bs.fat_sectors;
+	// fat_fs->data_start = fat_fs->bs.fat_start + fat_fs->bs.fat_sectors;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -193,7 +193,7 @@ fat_create_chain (cluster_t clst) {
 	if(cluster_to_sector(idx) >= (filesys_disk)->capacity)
 		return 0;
 	if(clst == 0){
-		disk_write (filesys_disk, cluster_to_sector(idx), zeros);
+		// disk_write (filesys_disk, cluster_to_sector(idx), zeros);
 		fat_fs->fat[idx] = EOChain;
 		return idx;
 	}
@@ -201,8 +201,8 @@ fat_create_chain (cluster_t clst) {
 	fat_fs->fat[clst] = idx;
 	fat_fs->fat[idx] = EOChain;
 	// printf("clst: %d, idx: %d", clst, idx);
-	disk_write (filesys_disk, cluster_to_sector(clst), zeros);
-	disk_write (filesys_disk, cluster_to_sector(idx), zeros);
+	// disk_write (filesys_disk, cluster_to_sector(clst), zeros);
+	// disk_write (filesys_disk, cluster_to_sector(idx), zeros);
 	return idx;
 }
 
@@ -265,7 +265,8 @@ cluster_to_sector (cluster_t clst) {
 	// return clst;
 	// if (clst == 1)
 	// 	return clst;
-	return (disk_sector_t) clst + fat_fs->data_start;
+	// return (disk_sector_t) clst + fat_fs->data_start;
+	return (disk_sector_t) clst + fat_fs->bs.fat_sectors;
 }
 
 /*20180109 implemented - returns the end of the linked list*/

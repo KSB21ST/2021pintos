@@ -40,7 +40,7 @@ filesys_init (bool format) {
 	// 	PANIC ("root directory creation failed");
 	// dir_open_root();
 	// thread_current()->t_sector = ROOT_DIR_SECTOR;
-	create_directory_root();
+	// create_directory_root();
 #else
 	/* Original FS */
 	free_map_init ();
@@ -254,7 +254,7 @@ do_format (void) {
 	if (!dir_create (ROOT_DIR_SECTOR, 16))
 		PANIC ("root directory creation failed");
 	struct dir *t_dir = dir_open_root();
-	// thread_current()->t_sector = ROOT_DIR_SECTOR;
+	thread_current()->t_sector = ROOT_DIR_SECTOR;
 	dir_add (t_dir, ".", ROOT_DIR_SECTOR);
 	dir_add (t_dir, "..", ROOT_DIR_SECTOR);
 	dir_close(t_dir);

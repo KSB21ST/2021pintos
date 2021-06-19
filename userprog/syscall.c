@@ -583,6 +583,7 @@ mkdir (const char *dir) {
    if(!t_dir){
       palloc_free_page(file_name);
       fat_put(inode_sector, 0);
+      lock_release(&file_lock);
       return false;
    }
    lock_release(&file_lock);

@@ -127,11 +127,11 @@ fat_create (void) {
 	// Set up ROOT_DIR_CLST
 	fat_put (ROOT_DIR_CLUSTER, EOChain);
 
-	//start 20180109
-	for(cluster_t i=fat_fs->data_start;i<fat_fs->fat_length;i++){
-		fat_fs->fat[i] = 0;
-	}
-	//end 20180109
+	// //start 20180109
+	// for(cluster_t i=2;i<fat_fs->fat_length;i++){
+	// 	fat_fs->fat[i] = 0;
+	// }
+	// //end 20180109
 
 	// Fill up ROOT_DIR_CLUSTER region with 0
 	uint8_t *buf = calloc (1, DISK_SECTOR_SIZE);
@@ -161,9 +161,9 @@ fat_boot_create (void) {
 void
 fat_fs_init (void) {
 	/* TODO: Your code goes here. */
-    // fat_fs->fat_length = (&fat_fs->bs)->total_sectors / (&fat_fs->bs)->sectors_per_cluster;//20180109 every sectors in disk are changed into clusters
+    fat_fs->fat_length = (&fat_fs->bs)->total_sectors / (&fat_fs->bs)->sectors_per_cluster;//20180109 every sectors in disk are changed into clusters
     fat_fs->data_start = (&fat_fs->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
-	fat_fs->fat_length = fat_fs->bs.fat_sectors * DISK_SECTOR_SIZE / sizeof(cluster_t) / SECTORS_PER_CLUSTER;
+	// fat_fs->fat_length = fat_fs->bs.fat_sectors * DISK_SECTOR_SIZE / sizeof(cluster_t) / SECTORS_PER_CLUSTER;
 	// fat_fs->data_start = fat_fs->bs.fat_start + fat_fs->bs.fat_sectors;
 }
 
@@ -181,7 +181,7 @@ fat_create_chain (cluster_t clst) {
 	// if (clst == 0) return 0;
 	cluster_t idx = 0;
 	// for (cluster_t i=fat_fs->data_start+1; i< fat_fs->fat_length; i++) //20180109 unint overflow carefull!
-	 for (cluster_t i=2; i< fat_fs->fat_length; i++)
+	 for (cluster_t i=1; i< fat_fs->fat_length; i++)
 	{
 		if(fat_fs->fat[i] == 0){
 			idx = i;
@@ -193,16 +193,13 @@ fat_create_chain (cluster_t clst) {
 	if(cluster_to_sector(idx) >= (filesys_disk)->capacity)
 		return 0;
 	if(clst == 0){
-		// disk_write (filesys_disk, cluster_to_sector(idx), zeros);
 		fat_fs->fat[idx] = EOChain;
 		return idx;
 	}
 	ASSERT(fat_fs->fat[clst] == EOChain); //clst 가 chain 의 마지막 요소가 아니면 error를 내준다
 	fat_fs->fat[clst] = idx;
 	fat_fs->fat[idx] = EOChain;
-	// printf("clst: %d, idx: %d", clst, idx);
-	// disk_write (filesys_disk, cluster_to_sector(clst), zeros);
-	// disk_write (filesys_disk, cluster_to_sector(idx), zeros);
+	// printf("clst: %d, idx: %d\n", clst, idx);
 	return idx;
 }
 

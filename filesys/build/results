@@ -179,8 +179,8 @@ FAIL tests/filesys/extended/dir-vine-persistence
 pass tests/filesys/extended/grow-create-persistence
 pass tests/filesys/extended/grow-dir-lg-persistence
 pass tests/filesys/extended/grow-file-size-persistence
-FAIL tests/filesys/extended/grow-root-lg-persistence
-FAIL tests/filesys/extended/grow-root-sm-persistence
+pass tests/filesys/extended/grow-root-lg-persistence
+pass tests/filesys/extended/grow-root-sm-persistence
 pass tests/filesys/extended/grow-seq-lg-persistence
 pass tests/filesys/extended/grow-seq-sm-persistence
 pass tests/filesys/extended/grow-sparse-persistence

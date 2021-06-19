@@ -608,7 +608,6 @@ mkdir (const char *dir) {
 		dir_add(new_dir, ".", inode_sector);
 		dir_add(new_dir, "..", t_dir->inode->sector);
    }
-
    dir_close (new_dir);
 	dir_close (t_dir);
 	return success;

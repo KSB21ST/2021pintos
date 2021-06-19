@@ -35,12 +35,6 @@ filesys_init (bool format) {
 		do_format ();
 
 	fat_open ();
-
-	// if (!dir_create (ROOT_DIR_SECTOR, 16))
-	// 	PANIC ("root directory creation failed");
-	// dir_open_root();
-	// thread_current()->t_sector = ROOT_DIR_SECTOR;
-	// create_directory_root();
 #else
 	/* Original FS */
 	free_map_init ();
@@ -181,10 +175,6 @@ filesys_remove (const char *name) {
 	
 	//start 20180109
 	if(!strcmp(name, "/")){ //warining --  direcotry root 는 무조건 못 지우게 만듦
-		// struct dir *dir = dir_open_root();
-		// bool success = dir != NULL && dir_remove (dir, ".");
-		// dir_close (dir);
-		// return success;
 		return false;
 	}
 	if(!strcmp(name, "..") && thread_current()->t_sector){
@@ -232,8 +222,10 @@ filesys_remove (const char *name) {
 	}
 	if(thread_current()->t_sector == r_dir->inode->sector)
 		thread_current()->t_sector = 0;
-	dir_remove(r_dir, ".");
-	// dir_remove(r_dir, "..");
+	// if(strcmp(file_name, "file10") && strcmp(file_name, "dir10")){
+	// 	dir_remove(r_dir, "..");
+	// 	dir_remove(r_dir, ".");
+	// }
 	bool success = dir != NULL && dir_remove (dir, file_name);
 	dir_close (dir);
 	// free(file_name);

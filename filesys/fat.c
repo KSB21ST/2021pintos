@@ -127,12 +127,6 @@ fat_create (void) {
 	// Set up ROOT_DIR_CLST
 	fat_put (ROOT_DIR_CLUSTER, EOChain);
 
-	// //start 20180109
-	// for(cluster_t i=2;i<fat_fs->fat_length;i++){
-	// 	fat_fs->fat[i] = 0;
-	// }
-	// //end 20180109
-
 	// Fill up ROOT_DIR_CLUSTER region with 0
 	uint8_t *buf = calloc (1, DISK_SECTOR_SIZE);
 	if (buf == NULL)

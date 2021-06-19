@@ -39,7 +39,7 @@ Executing 'grow-root-sm':
 grow-root-sm: exit(0)
 Execution of 'grow-root-sm' complete.
 Timer: 180 ticks
-Thread: 56 idle ticks, 46 kernel ticks, 78 user ticks
+Thread: 52 idle ticks, 39 kernel ticks, 89 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 1549 reads, 927 writes
 hd1:0: 224 reads, 0 writes

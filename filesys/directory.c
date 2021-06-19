@@ -199,10 +199,6 @@ dir_remove (struct dir *dir, const char *name) {
 
 	/* Erase directory entry. */
 	e.in_use = false;
-	//start 20180109
-	// static char zeros[NAME_MAX + 1];
-	// memcpy(e.name, zeros, sizeof(char)*(NAME_MAX + 1));
-	//end 20180109
 	if (inode_write_at (dir->inode, &e, sizeof e, ofs) != sizeof e)
 		goto done;
 

@@ -18,7 +18,6 @@ test_main (void)
   CHECK ((fd = open (file_name)) > 1, "open \"%s\"", file_name);
   msg ("seek \"%s\"", file_name);
   seek (fd, sizeof buf - 1);
-  // printf("fd: %d \n", fd);
   CHECK (write (fd, &zero, 1) > 0, "write \"%s\"", file_name);
   msg ("close \"%s\"", file_name);
   close (fd);

@@ -24,13 +24,11 @@ main (int argc UNUSED, char *argv[] UNUSED) {
 
   close (0);
   CHECK ((fd1 = open ("sample.txt")) > -1, "open \"sample.txt\"");
-  // printf("open success, fd: %d \n", fd1);
   buffer = get_boundary_area () - sizeof sample / 2;
-
   byte_cnt += read (fd1, buffer + byte_cnt, 10);
-  // printf("before dup %d \n", byte_cnt);
+
   CHECK (dup2 (fd1, fd2) > 1, "first dup2()");
-  // printf("after dup \n");
+
   byte_cnt += read (fd2, buffer + byte_cnt , sizeof sample - byte_cnt);
 
   if (strcmp (sample, buffer)) {

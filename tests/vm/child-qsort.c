@@ -19,17 +19,13 @@ main (int argc UNUSED, char *argv[])
   size_t size;
 
   quiet = true;
-  printf("\nbefore open\n");
+
   CHECK ((handle = open (argv[1])) > 1, "open \"%s\"", argv[1]);
-  printf("before read\n");
+
   size = read (handle, buf, sizeof buf);
-  printf("before qsort_bytes\n");
   qsort_bytes (buf, sizeof buf);
-  printf("before seek\n");
   seek (handle, 0);
-  printf("before write\n");
   write (handle, buf, size);
-  printf("before close\n");
   close (handle);
   
   return 72;

@@ -4,8 +4,8 @@
 #include <inttypes.h>
 #include <stdint.h>
 typedef uint32_t disk_sector_t;
-/* An ATA device. */
 #include <stdbool.h>
+/* An ATA device. */
 struct disk {
 	char name[8];               /* Name, e.g. "hd0:1". */
 	struct channel *channel;    /* Channel disk is on. */
@@ -37,4 +37,5 @@ disk_sector_t disk_size (struct disk *);
 void disk_read (struct disk *, disk_sector_t, void *);
 void disk_write (struct disk *, disk_sector_t, const void *);
 
+void 	register_disk_inspect_intr ();
 #endif /* devices/disk.h */

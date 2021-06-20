@@ -184,7 +184,7 @@ __do_fork (void *aux) {
       goto error;
 
    process_activate (current);
-   lock_acquire(&file_locker); // edit
+   
 #ifdef VM
    supplemental_page_table_init (&current->spt);
    if (!supplemental_page_table_copy (&current->spt, &parent->spt))
@@ -201,7 +201,7 @@ __do_fork (void *aux) {
     * TODO:       the resources of parent.*/
 
    /*acquire file_locker for file_duplicate, and any other possible interruptions*/
-   // lock_acquire(&file_locker); 
+   lock_acquire(&file_locker); 
    struct file ** parent_fd_table = parent->fd_table;
    struct file ** child_fd_table = current->fd_table;
    struct file *child_f;
@@ -352,7 +352,7 @@ process_exec (void *f_name) {
    if this is a child, it will sema_up at thread_exit().
    */
    if(!success){
-      sema_up(&(thread_current()->parent)->fork_sema); // edit
+      // sema_up(&(thread_current()->parent)->fork_sema); // edit
       // printf("kill??\n");
       return -1;
    }
@@ -360,7 +360,7 @@ process_exec (void *f_name) {
    /* Start switched process. */
    // lock_release(&exec_lock);
    // printf("end of p_exec, tid: %d\n", thread_current()->tid);
-   sema_up(&(thread_current()->parent)->fork_sema); // edit
+   // sema_up(&(thread_current()->parent)->fork_sema); // edit
    do_iret (&_if);
    NOT_REACHED ();
 }
@@ -524,7 +524,7 @@ process_exit (void) {
       
       cond_signal(&cur->exit_cond, &cur->exit_lock);
       cur->process_exit = true;
-      
+      sema_up(&cur->parent->fork_sema);
    }
 
    process_cleanup ();

@@ -219,9 +219,7 @@ int
 exec (const char *file)
 {
    if(file == NULL || *file == NULL) exit(-1);
-   // printf("start of exec\n");
    tid_t tid = process_exec(file);
-   // printf("end of exec\n");
    return tid;
 }
 
@@ -370,7 +368,7 @@ read (int fd, void *buffer, unsigned length)
 
 int 
 write (int fd, const void *buffer, unsigned length)
-{
+{  
    /* check the validity of buffer pointer */
    // check_buffer(buffer);
    // check_addr(buffer);
@@ -381,6 +379,7 @@ write (int fd, const void *buffer, unsigned length)
    struct thread *cur = thread_current();
    int cnt = 0;
    lock_acquire(&file_lock);
+   // printf("write file lock acquire, tid: %d\n", thread_current()->tid);
    struct file *temp = cur->fd_table[fd];
    if(temp == -2){
       putbuf(buffer, length);

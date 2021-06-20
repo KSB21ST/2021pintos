@@ -508,7 +508,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 	// t->success_load = false;
 	// sema_init(&t->child_sema, 0);    
 	// sema_init(&t->exit_sema, 0); 
-	sema_init(&t->exec_sema, 1); // only using first process
+	sema_init(&t->exec_sema, 100); // only using first process
 	sema_init(&t->fork_sema, 0);  
 	// sema_init(&t->load_sema, 0); 
 	// lock_init(&t->file_t_lock);

@@ -71,6 +71,7 @@ file_get_inode (struct file *file) {
  * Advances FILE's position by the number of bytes read. */
 off_t
 file_read (struct file *file, void *buffer, off_t size) {
+	// printf("before inode_read_at\n");
 	off_t bytes_read = inode_read_at (file->inode, buffer, size, file->pos);
 	file->pos += bytes_read;
 	return bytes_read;
@@ -109,6 +110,7 @@ file_write (struct file *file, const void *buffer, off_t size) {
 	}
 	// printf("write at: %d in file_write\n", file->inode->data.start);
 	//eend 20180109
+	// printf("before inode_write_at\n");
 	off_t bytes_written = inode_write_at (file->inode, buffer, size, file->pos);
 	file->pos += bytes_written;
 	return bytes_written;

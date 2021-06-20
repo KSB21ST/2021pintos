@@ -335,19 +335,20 @@ filesize (int fd)
 
 int 
 read (int fd, void *buffer, unsigned length)
-{  
+{ 
    #ifdef VM
    check_buffer(buffer, length);
-   struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
-   if(p->writable != true) //edit for cow
-      exit(-1);
+   // struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
+   // if(p->writable != true) //edit for cow
+      // exit(-1);
    #endif
-   check_addr(buffer);
+   // check_addr(buffer); // already in check_buffer function
    int cnt = 0;
    struct thread *cur =thread_current();
    lock_acquire(&file_lock);
    struct file *temp = cur->fd_table[fd];
    if(temp == -1){
+      // printf("temp == -1\n");
       for(int i=0; i<length; i++){
          if(input_getc() == NULL){
             break;
@@ -355,11 +356,17 @@ read (int fd, void *buffer, unsigned length)
          cnt++;
       }
    }else if(temp == -2){
+      // printf("temp == -2\n");
       cnt = -1;
    }else{
-      if(temp == NULL)
+      if(temp == NULL){
+         // printf("temp == NULL\n");
          cnt = -1;
-      cnt = file_read(cur->fd_table[fd], buffer, length);
+      }
+      else{
+         // printf("temp is valid\n");
+         cnt = file_read(cur->fd_table[fd], buffer, length);
+      }
       // printf("after file_read\n");
    }
    lock_release(&file_lock);
@@ -375,7 +382,7 @@ write (int fd, const void *buffer, unsigned length)
    #ifdef VM
    check_buffer(buffer, length);
    #endif
-   check_addr(buffer);
+   // check_addr(buffer); // already in check_buffer function
    struct thread *cur = thread_current();
    int cnt = 0;
    lock_acquire(&file_lock);
@@ -385,15 +392,19 @@ write (int fd, const void *buffer, unsigned length)
       putbuf(buffer, length);
       cnt = length;
    }else if(temp == -1){
+      // printf("temp == -1 in write\n");
       cnt = -1;
    }else{
       if(temp == NULL){
+         // printf("temp == NULL in write\n");
          cnt = -1;
-      }
+      }else{
       // printf("fd: %d in syscall write\n", fd);
       // struct file *t_f = cur->fd_table[fd];
       // printf("sector: %d in syscall write\n", t_f->inode->sector);
-      cnt = file_write(cur->fd_table[fd], buffer, length);
+         // printf("temp is valid to write\n");
+         cnt = file_write(cur->fd_table[fd], buffer, length);
+      }
    }
    lock_release(&file_lock);
    return cnt;
@@ -751,12 +762,12 @@ check_addr(const void* va)
 void
 check_buffer(void *buffer, unsigned size)
 {
-   for (int i=0;i<size;i++){
-      check_addr(buffer);
+   check_addr(buffer);
+   // for (int i=0;i<size;i++){
       struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
       if(!p)
          exit(-1);
       // if(writable && !p->writable)
       //    exit(-1);
-   }
+   // }
 }

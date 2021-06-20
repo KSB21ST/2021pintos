@@ -234,7 +234,7 @@ __do_fork (void *aux) {
       
       if_.R.rax = 0; 
       sema_up(&parent->fork_sema); // edit
-      sema_down(&current->exec_sema); // edit
+      sema_init(&current->exec_sema, 0); // edit
       do_iret (&if_);
    }
 error:
@@ -257,6 +257,7 @@ process_exec (void *f_name) {
    bool success;
    // printf("p_exec\n");
    sema_down(&cur->exec_sema);
+   // printf("after sema_down\n");
    /*palloc_get_page might be too big to allocate, since it is 4KB. But couldn't risk using malloc. free it later.
    pointer for argument array. Would contain parsed argument from input f_name after 'argument_parse' function
    */

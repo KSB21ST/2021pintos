@@ -139,6 +139,7 @@ struct thread {
 	bool process_exit; /*if I(process) ended, true.*/
 	// struct semaphore child_sema;
 	// struct semaphore exit_sema;/*lock to hold child until I remove child from child_list*/
+	struct semaphore exec_sema; /* only using for the first process */
 	struct semaphore fork_sema; /*lock for forking child*/
 	//struct file *fd_table;
 	//fd_table = (struct file*) malloc(sizeof(struct file) * 128);

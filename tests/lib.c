@@ -89,7 +89,7 @@ exec_children (const char *child_name, pid_t pids[], size_t child_cnt)
         CHECK (pids[i] != PID_ERROR,
              "exec child %zu of %zu: \"%s\"", i + 1, child_cnt, cmd_line);
       } else {
-        // CHECK(false, "cmd_line : %s child name: %s\n", cmd_line, child_name);
+        // printf("child(%d) exec: %s\n", i, cmd_line);
         exec (cmd_line);
       }
       

@@ -31,6 +31,7 @@ static struct lock file_locker; //lock for file access, before proj3 implementat
 struct thread *find_child(struct list *child_list, int tid);
 //end 20180109
 struct lock mmap_lock;
+struct lock exec_lock;
 
 static void process_cleanup (void);
 static bool load (const char *file_name, struct intr_frame *if_);
@@ -57,6 +58,7 @@ process_create_initd (const char *file_name) {
    lock_init(&file_locker); 
    //end 20180109
    lock_init(&mmap_lock);
+   lock_init(&exec_lock);
 
    /* Make a copy of FILE_NAME.
     * Otherwise there's a race between the caller and load(). */
@@ -182,6 +184,7 @@ __do_fork (void *aux) {
       goto error;
 
    process_activate (current);
+   lock_acquire(&file_locker); // edit
 #ifdef VM
    supplemental_page_table_init (&current->spt);
    if (!supplemental_page_table_copy (&current->spt, &parent->spt))
@@ -198,7 +201,7 @@ __do_fork (void *aux) {
     * TODO:       the resources of parent.*/
 
    /*acquire file_locker for file_duplicate, and any other possible interruptions*/
-   lock_acquire(&file_locker); 
+   // lock_acquire(&file_locker); 
    struct file ** parent_fd_table = parent->fd_table;
    struct file ** child_fd_table = current->fd_table;
    struct file *child_f;
@@ -228,7 +231,10 @@ __do_fork (void *aux) {
    // printf("after process_init\n");
    if (succ){
       /*child's return should be 0. rax is the return register*/
+      
       if_.R.rax = 0; 
+      sema_up(&parent->fork_sema); // edit
+      sema_down(&current->exec_sema); // edit
       do_iret (&if_);
    }
 error:
@@ -236,7 +242,7 @@ error:
 this is the same with exit(-1). If loading while forking fails, exit with status -1. 
 sema_up(fork_sema) will be done in thread_exit, no need to be done here.
 */
-   // sema_up(&parent->fork_sema);
+   sema_up(&parent->fork_sema);
    current->exit_status=-1;
    thread_exit ();
 }
@@ -245,10 +251,12 @@ sema_up(fork_sema) will be done in thread_exit, no need to be done here.
  * Returns -1 on fail. */
 int
 process_exec (void *f_name) {
+   // lock_acquire(&exec_lock);
    struct thread *cur = thread_current();
    char *file_name = f_name;
    bool success;
-
+   // printf("p_exec\n");
+   sema_down(&cur->exec_sema);
    /*palloc_get_page might be too big to allocate, since it is 4KB. But couldn't risk using malloc. free it later.
    pointer for argument array. Would contain parsed argument from input f_name after 'argument_parse' function
    */
@@ -344,11 +352,15 @@ process_exec (void *f_name) {
    if this is a child, it will sema_up at thread_exit().
    */
    if(!success){
+      sema_up(&(thread_current()->parent)->fork_sema); // edit
+      // printf("kill??\n");
       return -1;
    }
 
    /* Start switched process. */
-   sema_up(&(thread_current()->parent)->fork_sema);
+   // lock_release(&exec_lock);
+   // printf("end of p_exec, tid: %d\n", thread_current()->tid);
+   sema_up(&(thread_current()->parent)->fork_sema); // edit
    do_iret (&_if);
    NOT_REACHED ();
 }
@@ -401,14 +413,20 @@ process_wait (tid_t child_tid UNUSED) {
          if it has parent but parent doesn't wait, parent will make all the children orphans in thread_exit() by iterating child_list before it dies.
          So either child has parent but doesn't wait, child has parent but wait, child does not have parent. Three cases. This is for the second case.
          */
-         lock_acquire(&t->exit_lock);
-         // if(t->status != THREAD_EXIT){
-         while(t->process_exit != true){
-            cond_wait(&t->exit_cond, &t->exit_lock);
+         for(int temp = 0; temp < 50; temp++){
+            sema_up(&t->exec_sema);
          }
-         /*
-
-         */
+         // printf("before lock in p_wait\n");
+         lock_acquire(&t->exit_lock);
+         // printf("after lock in p_wait\n");
+         // if(t->status != THREAD_EXIT){
+            
+         while(t->process_exit != true){
+            // printf("wait child %d\n", t->tid);
+            cond_wait(&t->exit_cond, &t->exit_lock);
+            // printf("after cond_wait\n");
+         }
+         // printf("after waiting\n");
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
          lock_release(&t->exit_lock);
@@ -426,7 +444,6 @@ process_wait (tid_t child_tid UNUSED) {
 /* Exit the process. This function is called by thread_exit (). */
 void
 process_exit (void) {
-   struct thread *curr = thread_current ();
    // printf("size of thread : %d \n", sizeof(*curr));
    /* TODO: Your code goes here.
     * TODO: Implement process termination message (see
@@ -488,8 +505,7 @@ process_exit (void) {
    because normal threads enter process_exit too.
    However, it doesn't mater because once the parent is sema_up-ed, it will sema_init again in process_fork.
    */
-   if(cur->parent)
-      sema_up(&(cur->parent)->fork_sema);
+
 
    /*
    signal waiting parent if there is a parent. 
@@ -505,13 +521,18 @@ process_exit (void) {
       Only when this one has parent.
       Initialized as false in init_thread() in thread.c
       */
-      curr->process_exit = true;
+      
       cond_signal(&cur->exit_cond, &cur->exit_lock);
+      cur->process_exit = true;
+      
    }
 
    process_cleanup ();
    /*release lock for cond_signal, exit_lock*/
    lock_release(&cur->exit_lock);
+
+   // if(cur->parent) // i don't know here is the right place
+   // sema_up(&(cur->parent)->fork_sema);
    // printf("process_exit is done!\n");
 }
 

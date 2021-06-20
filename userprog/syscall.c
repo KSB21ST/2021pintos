@@ -219,7 +219,9 @@ int
 exec (const char *file)
 {
    if(file == NULL || *file == NULL) exit(-1);
+   // printf("start of exec\n");
    tid_t tid = process_exec(file);
+   // printf("end of exec\n");
    return tid;
 }
 
@@ -438,7 +440,7 @@ close (int fd) {
    struct file **file_table = t->fd_table;
    int cnt; //number of fd who has same file with given argument fd
    _file = file_table[fd];
-   if(_file == -1 || _file == -2)
+   if(_file == -1 || _file == -2 || _file == NULL)
       return;
    // lock_acquire(&file_lock);
    // if(fd<=1) return;
@@ -459,7 +461,11 @@ close (int fd) {
    }else{
       lock_acquire(&file_lock);
       t->open_cnt--;
-      file_close(_file);
+      if(_file->inode->data._isdir){
+         dir_close(_file);
+      }else{
+         file_close(_file);
+      }
       lock_release(&file_lock);
       t->fd_table[fd] = 0;
    }

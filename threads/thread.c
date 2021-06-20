@@ -219,7 +219,6 @@ thread_create (const char *name, int priority,
 	t->fd_table[0] = -1;
 	t->fd_table[1] = -2;
 	tid = t->tid = allocate_tid ();
-
 	/* Call the kernel_thread if it scheduled.
 	 * Note) rdi is 1st argument, and rsi is 2nd argument. */
 	t->tf.rip = (uintptr_t) kernel_thread;
@@ -509,6 +508,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 	// t->success_load = false;
 	// sema_init(&t->child_sema, 0);    
 	// sema_init(&t->exit_sema, 0); 
+	sema_init(&t->exec_sema, 1); // only using first process
 	sema_init(&t->fork_sema, 0);  
 	// sema_init(&t->load_sema, 0); 
 	// lock_init(&t->file_t_lock);

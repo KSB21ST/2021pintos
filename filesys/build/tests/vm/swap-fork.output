@@ -27,24 +27,24 @@ child-swap: exit(0)
 child-swap: exit(0)
 (child-swap) begin
 child-swap: exit(0)
-(swap-fork) More than one child process' stack is corrupted: FAILED
-child-swap: exit(1)
 (child-swap) begin
 child-swap: exit(0)
 (child-swap) begin
 child-swap: exit(0)
 (child-swap) begin
 child-swap: exit(0)
-(swap-fork) More than one child process' stack is corrupted: FAILED
-swap-fork: exit(1)
+(child-swap) begin
+child-swap: exit(0)
+(swap-fork) end
+swap-fork: exit(0)
 Execution of 'swap-fork' complete.
-Timer: 595 ticks
-Thread: 237 idle ticks, 257 kernel ticks, 102 user ticks
+Timer: 513 ticks
+Thread: 163 idle ticks, 230 kernel ticks, 120 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 751 reads, 12686 writes
+hd0:1: 800 reads, 12686 writes
 hd1:0: 4119 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1512 characters output
+Console: 1411 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

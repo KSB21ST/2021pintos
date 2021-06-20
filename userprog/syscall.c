@@ -342,7 +342,7 @@ read (int fd, void *buffer, unsigned length)
    if(p->writable != true) //edit for cow
       exit(-1);
    #endif
-   check_addr(buffer);
+   // check_addr(buffer);
    int cnt = 0;
    struct thread *cur =thread_current();
    lock_acquire(&file_lock);
@@ -375,7 +375,7 @@ write (int fd, const void *buffer, unsigned length)
    #ifdef VM
    check_buffer(buffer, length);
    #endif
-   check_addr(buffer);
+   // check_addr(buffer);
    struct thread *cur = thread_current();
    int cnt = 0;
    lock_acquire(&file_lock);
@@ -751,12 +751,12 @@ check_addr(const void* va)
 void
 check_buffer(void *buffer, unsigned size)
 {
-   for (int i=0;i<size;i++){
+   // for (int i=0;i<size;i++){
       check_addr(buffer);
       struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
       if(!p)
          exit(-1);
       // if(writable && !p->writable)
       //    exit(-1);
-   }
+   // }
 }

@@ -189,7 +189,7 @@ fat_create_chain (cluster_t clst) {
 		return 0;
 	}
 	if(cluster_to_sector(idx) >= (filesys_disk)->capacity){
-		printf("fat create chain here? %d %d\n", (filesys_disk)->capacity, idx, cluster_to_sector(idx));
+		// printf("fat create chain here? %d %d\n", (filesys_disk)->capacity, idx, cluster_to_sector(idx));
 		return 0;
 	}
 	if(clst == 0){

@@ -233,7 +233,7 @@ __do_fork (void *aux) {
       /*child's return should be 0. rax is the return register*/
       
       if_.R.rax = 0; 
-      sema_up(&parent->fork_sema); // edit
+      // sema_up(&parent->fork_sema); // edit
       sema_down(&current->exec_sema); // edit
       do_iret (&if_);
    }
@@ -256,7 +256,7 @@ process_exec (void *f_name) {
    char *file_name = f_name;
    bool success;
    // printf("p_exec\n");
-   sema_down(&cur->exec_sema);
+   // sema_down(&cur->exec_sema);
    /*palloc_get_page might be too big to allocate, since it is 4KB. But couldn't risk using malloc. free it later.
    pointer for argument array. Would contain parsed argument from input f_name after 'argument_parse' function
    */
@@ -317,6 +317,8 @@ process_exec (void *f_name) {
    /*load - did not change anything in load*/
    success = load(realname, &_if);
 
+   sema_up(&cur->parent->fork_sema);
+   sema_down(&cur->exec_sema);
    /*
    if load success, stack parsed arguments in stack.
    and sema_up fork_sema to notify the parent that load is finished.

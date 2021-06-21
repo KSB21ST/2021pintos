@@ -100,13 +100,9 @@ page_cache_readahead (struct page *page, void *kva) {
 		lock_acquire (&read_ahead_lock);
 		while (list_empty (&read_ahead_queue))
 		{
-		cond_wait (&read_ahead_cond, &read_ahead_lock);
+		  cond_wait (&read_ahead_cond, &read_ahead_lock);
 		}
-		struct read_ahead_entry* entry
-		= list_entry (
-			list_pop_front (&read_ahead_queue),
-			struct read_ahead_entry,
-			elem);
+		struct read_ahead_entry* entry = list_entry (list_pop_front (&read_ahead_queue), struct read_ahead_entry, elem);
 		disk_sector_t sector = entry->sector;
 		lock_release (&read_ahead_lock);
 
@@ -222,7 +218,7 @@ get_cache (disk_sector_t sector)
   ASSERT (lock_held_by_current_thread (&cache_lock));
   int index = sti_get (sector);
   struct page_cache *info;
-  if (index >= 0)
+  if (index >= 0 && index < BUFFER_CACHE_NUM)
   {
     info = &buffer_cache[index];
     lock_acquire (&info->lock);
@@ -261,7 +257,7 @@ get_empty_cache (disk_sector_t sector)
 static struct page_cache*
 evict_cache (disk_sector_t sector)
 {
-  ASSERT (lock_held_by_current_thread (&cache_lock));
+  // ASSERT (lock_held_by_current_thread (&cache_lock));
   static size_t clock = 0;
   while (true)
   {
@@ -339,7 +335,7 @@ static unsigned
 sti_hash_func (const struct hash_elem *elem, void *aux UNUSED)
 {
   struct sector_to_index *entry = hash_entry (elem, struct sector_to_index, helem);
-  return hash_bytes( &entry->sector, sizeof (entry->sector) );
+  return hash_bytes(&entry->sector, sizeof (entry->sector));
 }
 
 static bool

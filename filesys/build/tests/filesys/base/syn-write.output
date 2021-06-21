@@ -38,18 +38,26 @@ child-syn-wrt: exit(4)
 (syn-write) wait for child 5 of 10 returned 4 (expected 4)
 child-syn-wrt: exit(5)
 (syn-write) wait for child 6 of 10 returned 5 (expected 5)
-child-syn-wrt: exit(-1)
-(syn-write) wait for child 7 of 10 returned -1 (expected 6)
-(syn-write) wait for child 7 of 10 returned -1 (expected 6): FAILED
-syn-write: exit(1)
+child-syn-wrt: exit(6)
+(syn-write) wait for child 7 of 10 returned 6 (expected 6)
+child-syn-wrt: exit(7)
+(syn-write) wait for child 8 of 10 returned 7 (expected 7)
+child-syn-wrt: exit(8)
+(syn-write) wait for child 9 of 10 returned 8 (expected 8)
+child-syn-wrt: exit(9)
+(syn-write) wait for child 10 of 10 returned 9 (expected 9)
+(syn-write) open "stuff"
+(syn-write) read "stuff"
+(syn-write) end
+syn-write: exit(0)
 Execution of 'syn-write' complete.
-Timer: 147 ticks
-Thread: 50 idle ticks, 66 kernel ticks, 31 user ticks
+Timer: 164 ticks
+Thread: 42 idle ticks, 76 kernel ticks, 46 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 782 reads, 788 writes
+hd0:1: 900 reads, 793 writes
 hd1:0: 226 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 2173 characters output
+Console: 2416 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...

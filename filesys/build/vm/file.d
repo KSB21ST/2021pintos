@@ -13,4 +13,5 @@ vm/file.o: ../../vm/file.c ../../include/vm/vm.h \
  ../../include/threads/interrupt.h ../../include/lib/stdlib.h \
  ../../include/threads/vaddr.h ../../include/threads/loader.h \
  ../../include/userprog/process.h ../../include/threads/mmu.h \
- ../../include/threads/pte.h
+ ../../include/threads/pte.h ../../include/filesys/filesys.h \
+ ../../include/filesys/inode.h ../../include/filesys/fat.h

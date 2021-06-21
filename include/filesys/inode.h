@@ -65,6 +65,8 @@ off_t inode_length (const struct inode *);
 //start 20180109 - for isdir, subdir
 void write_isdir(disk_sector_t sector, bool isdir);
 void write_mountpt(disk_sector_t sector, bool isscratch, bool mountpt);
+disk_sector_t byte_to_sector (const struct inode *inode, off_t pos);
+size_t bytes_to_sectors (off_t size);
 //end 20180109
 
 #endif /* filesys/inode.h */

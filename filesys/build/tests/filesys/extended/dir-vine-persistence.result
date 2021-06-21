@@ -1,1 +1,2 @@
-PASS
+FAIL
+File system extraction run didn't start up properly: no "Pintos booting" message

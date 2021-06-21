@@ -161,6 +161,9 @@ inode_open (disk_sector_t sector) {
 	inode->deny_write_cnt = 0;
 	inode->removed = false;
 	disk_read (filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+	//for extra- mount
+	inode->_isscratch = inode->data._isscratch;
+	inode->_mountpt = inode->data._mountpt;
 	return inode;
 }
 
@@ -378,6 +381,16 @@ write_isdir(disk_sector_t sector, bool isdir)
 {
 	struct inode *inode = inode_open(sector);
 	inode->data._isdir = isdir;
+	disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+	inode_close(inode);
+}
+
+void
+write_mountpt(disk_sector_t sector, bool isscratch, bool mountpt)
+{
+	struct inode *inode = inode_open(sector);
+	inode->data._mountpt = mountpt;
+	inode->data._isscratch = isscratch;
 	disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
 	inode_close(inode);
 }

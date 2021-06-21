@@ -149,7 +149,6 @@ syscall_handler (struct intr_frame *f) {
       break;
    case SYS_CLOSE:
       check_addr(f->R.rdi);
-      // check_stack_addr(f->rsp, f->R.rdi);
       close(f->R.rdi);
       break;
    case SYS_DUP2:
@@ -158,8 +157,13 @@ syscall_handler (struct intr_frame *f) {
       f->R.rax = dup2(f->R.rdi, f->R.rsi);
       break;
    case SYS_MOUNT:
+      check_addr(f->R.rdi);
+      ans = mount(f->R.rdi, f->R.rsi, f->R.rdx);
+      f->R.rax = ans;
       break;
 	case SYS_UMOUNT:
+      check_addr(f->R.rdi);
+      f->R.rax = umount(f->R.rdi);
       break;
    case SYS_MMAP:  /* Map a file into memory. */
 //      printf("helloooo\n");
@@ -549,7 +553,6 @@ chdir (const char *dir) {
    
 
    if(!dir_lookup(parent_dir, file_name, &inode)){
-      // printf("something's wrong!\n");
       palloc_free_page(name_copy);
       palloc_free_page(file_name);
       dir_close(parent_dir);
@@ -558,7 +561,6 @@ chdir (const char *dir) {
    dir_close(parent_dir);
 
    if(!inode->data._isdir){
-      // printf("it is not a directory!\n");
       palloc_free_page(name_copy);
       palloc_free_page(file_name);
       dir_close(parent_dir);
@@ -566,12 +568,19 @@ chdir (const char *dir) {
    }
    last_dir = dir_open(inode);
    thread_current()->t_sector = last_dir->inode->sector;
-   temp_s = thread_current()->t_sector;
    palloc_free_page(name_copy);
    palloc_free_page(file_name);
-
    }
-   // dir_close(parent_dir);
+   //for mount unmount
+   if(last_dir->inode->_isscratch){
+      if (!last_dir->inode->_mountpt){
+         if (!mounted){
+            dir_close(last_dir);
+            thread_current()->t_sector = temp_s;
+            return false;
+         }
+      }
+   }
    return true;
 }
 
@@ -602,12 +611,12 @@ mkdir (const char *dir) {
 			&& i_1
 			&& i_2);
 	if (!success && inode_sector != 0){
-      // dir_remove(t_dir, file_name);
 		fat_remove_chain(inode_sector, 0);
    }
    palloc_free_page(file_name);
    struct inode * t_i = NULL;
    struct dir *new_dir = dir_open(inode_open(inode_sector));
+   write_mountpt(inode_sector, t_dir->inode->data._isscratch, false);
    if(success == true && new_dir != NULL){
 		dir_add(new_dir, ".", inode_sector);
 		dir_add(new_dir, "..", t_dir->inode->sector);
@@ -739,6 +748,44 @@ symlink (const char* target, const char* linkpath) {
 
 }
 
+/*
+filesys_disk = disk_get (0, 1); at filesys_init()
+original disk: (0, 1)
+Returns the disk numbered DEV_NO--either 0 or 1 for master or
+   slave, respectively--within the channel numbered CHAN_NO.
+
+   Pintos uses disks this way:
+0:0 - boot loader, command line args, and operating system kernel
+0:1 - file system
+1:0 - scratch
+1:1 - swap
+*/
+int
+mount (const char *path, int chan_no, int dev_no) {
+   if (chan_no == 0 && dev_no == 0)
+      return -1;
+   if (chan_no == 1 && dev_no == 1)
+      return -1;
+   if(chan_no == 1 && dev_no == 0){
+      mounted = true;
+      uint32_t save_pt = thread_current()->t_sector;
+      bool success = chdir(path);
+      write_mountpt(thread_current()->t_sector, true, true);
+      if (!hasbeen_mounted){
+         hasbeen_mounted = true;
+         printf("Formatting file system...done.\n");
+      }
+      thread_current()->t_sector = save_pt;
+   }
+	return 0;
+}
+
+int
+umount (const char *path) {
+   mounted = false;
+	return 0;
+}
+
 
 void 
 check_addr(const void* va)
@@ -751,12 +798,8 @@ check_addr(const void* va)
 void
 check_buffer(void *buffer, unsigned size)
 {
-   // for (int i=0;i<size;i++){
-      check_addr(buffer);
-      struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
-      if(!p)
-         exit(-1);
-      // if(writable && !p->writable)
-      //    exit(-1);
-   // }
+   check_addr(buffer);
+   struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
+   if(!p)
+      exit(-1);
 }

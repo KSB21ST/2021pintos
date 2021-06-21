@@ -18,7 +18,8 @@ struct inode_disk {
 	//start 20180109 - for subdir
 	bool _isdir; 
 	bool _issym;
-	bool b_unused[2]; /*total 4byte*/
+	bool _mountpt;
+	bool _isscratch;
 
 	char link_path[100];  /*for symlink, 100byte*/
 	//eid 20180109
@@ -37,6 +38,9 @@ struct inode {
 	int deny_write_cnt;                 /* 0: writes ok, >0: deny writes. */
 	struct inode_disk data;             /* Inode content. */
 	bool _issym;
+	//for extra - mount
+	bool _isscratch;
+	bool _mountpt;
 
 	//start 20180109 - for subdir
 	// bool _isdir;
@@ -60,6 +64,7 @@ off_t inode_length (const struct inode *);
 
 //start 20180109 - for isdir, subdir
 void write_isdir(disk_sector_t sector, bool isdir);
+void write_mountpt(disk_sector_t sector, bool isscratch, bool mountpt);
 //end 20180109
 
 #endif /* filesys/inode.h */

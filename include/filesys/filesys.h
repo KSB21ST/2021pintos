@@ -10,6 +10,8 @@
 
 /* Disk used for file system. */
 extern struct disk *filesys_disk;
+bool mounted; //for mount
+bool hasbeen_mounted;
 
 void filesys_init (bool format);
 void filesys_done (void);

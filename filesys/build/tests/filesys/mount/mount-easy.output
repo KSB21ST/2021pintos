@@ -4,7 +4,7 @@ Kernel command line: -q -f put mount-easy put tar run mount-easy
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  156,876,800 loops/s.
+Calibrating timer...  130,867,200 loops/s.
 hd0:0: detected 377 sector (188 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 226 sector (113 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -29,10 +29,10 @@ Formatting file system...done.
 (mount-easy) end
 mount-easy: exit(0)
 Execution of 'mount-easy' complete.
-Timer: 113 ticks
-Thread: 31 idle ticks, 72 kernel ticks, 10 user ticks
+Timer: 126 ticks
+Thread: 42 idle ticks, 68 kernel ticks, 16 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 543 reads, 533 writes
+hd0:1: 605 reads, 534 writes
 hd1:0: 226 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1394 characters output

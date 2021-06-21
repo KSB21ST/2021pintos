@@ -20,13 +20,13 @@ Executing 'mmap-over-code':
 (mmap-over-code) end
 mmap-over-code: exit(0)
 Execution of 'mmap-over-code' complete.
-Timer: 99 ticks
-Thread: 39 idle ticks, 52 kernel ticks, 8 user ticks
+Timer: 111 ticks
+Thread: 45 idle ticks, 60 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 447 reads, 532 writes
+hd0:1: 469 reads, 534 writes
 hd1:0: 106 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1130 characters output
+Console: 1131 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

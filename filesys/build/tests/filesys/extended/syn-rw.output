@@ -33,13 +33,13 @@ child-syn-rw: exit(3)
 (syn-rw) end
 syn-rw: exit(0)
 Execution of 'syn-rw' complete.
-Timer: 192 ticks
-Thread: 43 idle ticks, 68 kernel ticks, 81 user ticks
+Timer: 280 ticks
+Thread: 54 idle ticks, 100 kernel ticks, 126 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 1372 reads, 1285 writes
+hd0:1: 1785 reads, 1288 writes
 hd1:0: 343 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1576 characters output
+Console: 1578 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

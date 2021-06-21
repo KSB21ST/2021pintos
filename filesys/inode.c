@@ -261,7 +261,7 @@ inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset) {
 			page_cache_read(cluster_to_sector(sector_idx), bounce);
 			memcpy (buffer + bytes_read, bounce + sector_ofs, chunk_size);
 		}
-		page_cache_read_len (cluster_to_sector(sector_idx), buffer + bytes_read, sector_ofs, chunk_size); 
+		// page_cache_read_len (cluster_to_sector(sector_idx), buffer + bytes_read, sector_ofs, chunk_size); 
 
 		/* Advance. */
 		size -= chunk_size;

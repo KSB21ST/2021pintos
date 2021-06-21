@@ -37,6 +37,8 @@ test_main (void) {
     if (c != 'a') fail("file content mismatch in %d : %x %x", i, buf[i], c);
   }
 
+  // printf("read count: %d limit: %d \n", get_fs_disk_read_cnt(), read_cnt);
+
   CHECK (get_fs_disk_read_cnt() <= read_cnt, 
         "check read_cnt");
   CHECK (get_fs_disk_write_cnt() <= write_cnt + TEST_SIZE / 512, 

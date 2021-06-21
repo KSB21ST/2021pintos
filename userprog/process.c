@@ -659,12 +659,12 @@ load (const char *file_name, struct intr_frame *if_) {
       goto done;
    process_activate (thread_current ());
 
-   lock_acquire(&file_locker);
+   // lock_acquire(&file_locker);
 
    /* Open executable file. */
    file = filesys_open (file_name);
 
-   lock_release(&file_locker);
+   // lock_release(&file_locker);
 
    if (file == NULL) {
       printf ("load: %s: open failed\n", file_name);
@@ -966,15 +966,15 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* TODO: Set up aux to pass information to the lazy_load_segment. */
       struct page_load *aux = aux_load(file, ofs, page_read_bytes, page_zero_bytes);
-      lock_acquire(&file_locker);
+      // lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
                writable, lazy_load_segment, aux))
       {
-         lock_release(&file_locker);
+         // lock_release(&file_locker);
          return false;
       }
          
-      lock_release(&file_locker);
+      // lock_release(&file_locker);
       /* Advance. */
       zero_bytes -= page_zero_bytes;
       read_bytes -= page_read_bytes;
@@ -1092,9 +1092,9 @@ file_lazy_load_segment (struct page *page, void *aux) {
    ASSERT(zero_bytes == PGSIZE - read_bytes);
 
    struct file *opend_file = temp_aux->file;
-   lock_acquire(&mmap_lock);
+   // lock_acquire(&mmap_lock);
    size_t _read_bytes = file_read_at(opend_file, kva, read_bytes, ofs);
-   lock_release(&mmap_lock);
+   // lock_release(&mmap_lock);
    size_t _zero_bytes = PGSIZE - _read_bytes; 
    memset (kva + _read_bytes, 0, _zero_bytes);
    // file_close(opend_file);

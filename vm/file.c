@@ -49,15 +49,9 @@ file_backed_swap_in (struct page *page, void *kva) {
    	off_t ofs = aux->ofs;
     size_t page_read_bytes = aux->read_bytes;
     size_t page_zero_bytes = (PGSIZE - page_read_bytes)%PGSIZE; 
-   	// file_seek (file, ofs);
-    // if (file_read (file, kva, page_read_bytes) != (int) page_read_bytes) {
-	// 	palloc_free_page (kva);
-    //     return false;
-    // }
-    // memset (kva + page_read_bytes, 0, page_zero_bytes);
-	lock_acquire(&unmap_lock);
+	// lock_acquire(&unmap_lock);
 	size_t _read_bytes = file_read_at(file, kva, page_read_bytes, ofs);
-	lock_release(&unmap_lock);
+	// lock_release(&unmap_lock);
 	size_t _zero_bytes = PGSIZE - _read_bytes; 
 	memset (kva + _read_bytes, 0, _zero_bytes);
    	list_push_back(&victim_list, &page->victim);
@@ -74,11 +68,8 @@ file_backed_swap_out (struct page *page) {
     struct page_load * aux = (struct page_load *) (page->file).aux;
         
     if(pml4_is_dirty(thread_current()->pml4, page->va)){
-		// lock_acquire(&unmap_lock);
 		file_seek (aux->file, aux->ofs);
 		file_write(aux->file, page->va, aux->read_bytes);
-      	// file_write_at(aux->file, page->va, aux->read_bytes, aux->ofs);
-		// lock_release(&unmap_lock);
 	}
 	page->frame = NULL;
 	pml4_clear_page (thread_current()->pml4, page->va);
@@ -110,13 +101,13 @@ do_mmap (void *addr, size_t length, int writable,
 		size_t page_zero_bytes = page_read_bytes % PGSIZE == 0 ? 0 : (PGSIZE - page_read_bytes)%PGSIZE;
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
 		struct page_load *aux = aux_load(reopen_file, offset, page_read_bytes, page_zero_bytes);
-		lock_acquire(&unmap_lock);
+		// lock_acquire(&unmap_lock);
 		if (!vm_alloc_page_with_initializer (VM_FILE, pg_round_down(temp_addr),
 				writable, file_lazy_load_segment, aux)){
-			lock_release(&unmap_lock);
+			// lock_release(&unmap_lock);
 			return NULL;
 		}
-		lock_release(&unmap_lock);
+		// lock_release(&unmap_lock);
 		/* Advance. */
 		zero_bytes -= page_zero_bytes;
 		read_bytes -= page_read_bytes;

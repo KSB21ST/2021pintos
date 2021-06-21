@@ -11,6 +11,7 @@
 //20180109 start
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "filesys/page_cache.h"
 struct dir *parse_path(char * path_name, char *file_name);
 
 /* The disk that contains the file system. */
@@ -28,6 +29,7 @@ filesys_init (bool format) {
 	if (filesys_disk == NULL)
 		PANIC ("hd0:1 (hdb) not present, file system initialization failed");
 
+	pagecache_init ();
 	inode_init ();
 
 #ifdef EFILESYS
@@ -55,6 +57,7 @@ filesys_done (void) {
 	/* Original FS */
 #ifdef EFILESYS
 	fat_close ();
+	page_cache_destroy(NULL);
 #else
 	free_map_close ();
 #endif

@@ -521,9 +521,9 @@ mmap (void *addr, unsigned long int length, int writable, int fd, off_t offset){
 void 
 munmap (void *addr)
 {
-   lock_acquire(&file_lock);
+   // lock_acquire(&file_lock);
    do_munmap(addr);
-   lock_release(&file_lock);
+   // lock_release(&file_lock);
 }
 
 bool
@@ -738,7 +738,9 @@ symlink (const char* target, const char* linkpath) {
    ASSERT (strlen(target) < 100);
 	strlcpy(symlink->data.link_path, target, strlen(target) + 1);
 
-   disk_write(filesys_disk, cluster_to_sector(symlink->sector), &symlink->data);
+   // disk_write(filesys_disk, cluster_to_sector(symlink->sector), &symlink->data);
+   //################for proj4###################
+   page_cache_write(cluster_to_sector(symlink->sector), &symlink->data);
    dir_close(parent_dir);
    // inode_close(symlink);
 

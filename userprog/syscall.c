@@ -16,7 +16,7 @@
 #include "vm/file.h"
 #include <hash.h>
 //end 20180109
-
+#include "filesys/fat.h"
 
 // register uint64_t *num asm ("rax") = (uint64_t *) num_;
 //    register uint64_t *a1 asm ("rdi") = (uint64_t *) a1_;
@@ -36,6 +36,8 @@ int ans = -1;
 static struct lock file_lock;
 static bool sym_mkdir (const char *dir);
 //end 20180109
+
+bool format_scratch = true;
 
 /* System call.
  *
@@ -158,8 +160,10 @@ syscall_handler (struct intr_frame *f) {
       f->R.rax = dup2(f->R.rdi, f->R.rsi);
       break;
    case SYS_MOUNT:
+      f->R.rax = mount(f->R.rdi, f->R.rsi, f->R.rdx);
       break;
 	case SYS_UMOUNT:
+      f->R.rax = umount(f->R.rdi);
       break;
    case SYS_MMAP:  /* Map a file into memory. */
 //      printf("helloooo\n");
@@ -737,6 +741,70 @@ symlink (const char* target, const char* linkpath) {
    palloc_free_page(file_name);
    return 0;
 
+}
+
+int mount (const char *path, int chan_no, int dev_no){
+   if(chan_no == dev_no){
+      return -1;
+   }
+
+   if(strlen(path) <= 0){
+      return -1;
+   }
+
+   struct inode *inode = NULL;
+
+	char *path_name = palloc_get_page(0);
+	char *path_copy = palloc_get_page(0);
+	strlcpy(path_copy, path, PGSIZE);
+	struct dir * dir = parse_path(path_copy, path_name);
+
+   if(!dir){
+		palloc_free_page(path_name);
+		palloc_free_page(path_copy);
+		return false;
+	}
+	if (dir != NULL)
+		dir_lookup (dir, path_name, &inode);
+	dir_close (dir);
+	if (inode == NULL){
+		palloc_free_page(path_name);
+		palloc_free_page(path_copy);
+		return false;
+	}   
+
+
+   if(chan_no == 1 && dev_no == 0){
+      scratch_disk = disk_get (1, 0);
+      if (scratch_disk == NULL)
+      	PANIC ("hd1:0 (hdb) not present, scratch disk initialization failed");
+
+      inode_init ();
+
+      fat_init_scratch ();
+
+      if(format_scratch){
+         printf ("Formatting file system...");
+         fat_create_scratch ();
+         cluster_t mount_point_clst = fat_create_chain_scratch(0);
+         disk_write(scratch_disk, cluster_to_sector_scratch(mount_point_clst), &inode->data);
+         fat_close_scratch ();
+         printf ("done.\n");
+         format_scratch = false;
+      }
+      fat_open ();
+
+   }
+
+
+
+   return 0;
+}
+
+
+int umount (const char *path){
+   int success = -1;
+   return success;
 }
 
 

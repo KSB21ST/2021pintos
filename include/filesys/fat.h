@@ -44,4 +44,26 @@ disk_sector_t cluster_to_sector (cluster_t clst);
 cluster_t fat_get_end(cluster_t clst);
 //end 20180109
 
+
+// edit for mount
+void fat_init_scratch (void);
+void fat_open_scratch (void);
+void fat_close_scratch (void);
+void fat_create_scratch (void);
+void fat_close_scratch (void);
+
+cluster_t fat_create_chain_scratch (
+    cluster_t clst /* Cluster # to stretch, 0: Create a new chain */
+);
+void fat_remove_chain_scratch (
+    cluster_t clst, /* Cluster # to be removed */
+    cluster_t pclst /* Previous cluster of clst, 0: clst is the start of chain */
+);
+cluster_t fat_get_scratch (cluster_t clst);
+void fat_put_scratch (cluster_t clst, cluster_t val);
+disk_sector_t cluster_to_sector_scratch (cluster_t clst);
+
+cluster_t fat_get_end_scratch (cluster_t clst);
+
+
 #endif /* filesys/fat.h */

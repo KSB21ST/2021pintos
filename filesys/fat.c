@@ -27,9 +27,13 @@ struct fat_fs {
 };
 
 static struct fat_fs *fat_fs;
+static struct fat_fs *fat_fs_scratch; 	// edit
 
 void fat_boot_create (void);
 void fat_fs_init (void);
+
+void fat_boot_create_scratch (void);	// edit
+void fat_fs_init_scratch (void); 		// edit
 
 void
 fat_init (void) {
@@ -49,6 +53,30 @@ fat_init (void) {
 	if (fat_fs->bs.magic != FAT_MAGIC)
 		fat_boot_create ();
 	fat_fs_init ();
+}
+
+
+void
+fat_init_scratch (void) {
+	fat_fs_scratch = calloc (1, sizeof (struct fat_fs));
+	if (fat_fs_scratch == NULL)
+		PANIC ("FAT init failed");
+
+	// Read boot sector from the disk
+	unsigned int *bounce = malloc (DISK_SECTOR_SIZE);
+	if (bounce == NULL)
+		PANIC ("FAT init failed");
+
+	if (scratch_disk == NULL)
+		PANIC ("SCRATCH_DISK is not available");
+	disk_read (scratch_disk, FAT_BOOT_SECTOR, bounce);
+	memcpy (&fat_fs_scratch->bs, bounce, sizeof (fat_fs_scratch->bs));
+	free (bounce);
+
+	// Extract FAT info
+	if (fat_fs_scratch->bs.magic != FAT_MAGIC)
+		fat_boot_create_scratch ();
+	fat_fs_init_scratch ();
 }
 
 void
@@ -73,6 +101,35 @@ fat_open (void) {
 			if (bounce == NULL)
 				PANIC ("FAT load failed");
 			disk_read (filesys_disk, fat_fs->bs.fat_start + i, bounce);
+			memcpy (buffer + bytes_read, bounce, bytes_left);
+			bytes_read += bytes_left;
+			free (bounce);
+		}
+	}
+}
+
+void
+fat_open_scratch (void) {
+	fat_fs_scratch->fat = calloc (fat_fs_scratch->fat_length, sizeof (cluster_t));
+	if (fat_fs_scratch->fat == NULL)
+		PANIC ("FAT load failed");
+
+	// Load FAT directly from the disk
+	uint8_t *buffer = (uint8_t *) fat_fs_scratch->fat;
+	off_t bytes_read = 0;
+	off_t bytes_left = sizeof (fat_fs_scratch->fat);
+	const off_t fat_size_in_bytes = fat_fs_scratch->fat_length * sizeof (cluster_t);
+	for (unsigned i = 0; i < fat_fs_scratch->bs.fat_sectors; i++) {
+		bytes_left = fat_size_in_bytes - bytes_read;
+		if (bytes_left >= DISK_SECTOR_SIZE) {
+			disk_read (scratch_disk, fat_fs_scratch->bs.fat_start + i,
+			           buffer + bytes_read);
+			bytes_read += DISK_SECTOR_SIZE;
+		} else {
+			uint8_t *bounce = malloc (DISK_SECTOR_SIZE);
+			if (bounce == NULL)
+				PANIC ("FAT load failed");
+			disk_read (scratch_disk, fat_fs_scratch->bs.fat_start + i, bounce);
 			memcpy (buffer + bytes_read, bounce, bytes_left);
 			bytes_read += bytes_left;
 			free (bounce);
@@ -114,6 +171,39 @@ fat_close (void) {
 }
 
 void
+fat_close_scratch (void) {
+	// Write FAT boot sector
+	uint8_t *bounce = calloc (1, DISK_SECTOR_SIZE);
+	if (bounce == NULL)
+		PANIC ("FAT close failed");
+	memcpy (bounce, &fat_fs_scratch->bs, sizeof (fat_fs_scratch->bs));
+	disk_write (scratch_disk, FAT_BOOT_SECTOR, bounce);
+	free (bounce);
+
+	// Write FAT directly to the disk
+	uint8_t *buffer = (uint8_t *) fat_fs_scratch->fat;
+	off_t bytes_wrote = 0;
+	off_t bytes_left = sizeof (fat_fs_scratch->fat);
+	const off_t fat_size_in_bytes = fat_fs_scratch->fat_length * sizeof (cluster_t);
+	for (unsigned i = 0; i < fat_fs_scratch->bs.fat_sectors; i++) {
+		bytes_left = fat_size_in_bytes - bytes_wrote;
+		if (bytes_left >= DISK_SECTOR_SIZE) {
+			disk_write (scratch_disk, fat_fs_scratch->bs.fat_start + i,
+			            buffer + bytes_wrote);
+			bytes_wrote += DISK_SECTOR_SIZE;
+		} else {
+			bounce = calloc (1, DISK_SECTOR_SIZE);
+			if (bounce == NULL)
+				PANIC ("FAT close failed");
+			memcpy (bounce, buffer + bytes_wrote, bytes_left);
+			disk_write (scratch_disk, fat_fs_scratch->bs.fat_start + i, bounce);
+			bytes_wrote += bytes_left;
+			free (bounce);
+		}
+	}
+}
+
+void
 fat_create (void) {
 	// Create FAT boot
 	fat_boot_create ();
@@ -136,6 +226,28 @@ fat_create (void) {
 }
 
 void
+fat_create_scratch (void) {
+	// Create FAT boot
+	fat_boot_create_scratch ();
+	fat_fs_init_scratch ();
+
+	// Create FAT table
+	fat_fs_scratch->fat = calloc (fat_fs_scratch->fat_length, sizeof (cluster_t));
+	if (fat_fs_scratch->fat == NULL)
+		PANIC ("FAT creation failed");
+
+	// Set up ROOT_DIR_CLST
+	fat_put_scratch (ROOT_DIR_CLUSTER, EOChain);
+
+	// Fill up ROOT_DIR_CLUSTER region with 0
+	uint8_t *buf = calloc (1, DISK_SECTOR_SIZE);
+	if (buf == NULL)
+		PANIC ("FAT create failed due to OOM");
+	disk_write (scratch_disk, cluster_to_sector (ROOT_DIR_CLUSTER), buf);
+	free (buf);
+}
+
+void
 fat_boot_create (void) {
 	unsigned int fat_sectors =
 	    (disk_size (filesys_disk) - 1)
@@ -153,12 +265,36 @@ fat_boot_create (void) {
 }
 
 void
+fat_boot_create_scratch (void) {
+	unsigned int fat_sectors =
+	    (disk_size (scratch_disk) - 1)
+	    / (DISK_SECTOR_SIZE / sizeof (cluster_t) * SECTORS_PER_CLUSTER + 1) + 1; //20180109 Q: what is fat_sectors?
+	// printf("fat sectors: %d \n", fat_sectors); //fat sectors: 157 
+	fat_fs_scratch->bs = (struct fat_boot){
+	    .magic = FAT_MAGIC,
+	    .sectors_per_cluster = SECTORS_PER_CLUSTER,
+	    .total_sectors = disk_size (scratch_disk),
+	    .fat_start = 1,
+	    .fat_sectors = fat_sectors,
+	    .root_dir_cluster = ROOT_DIR_CLUSTER,
+	};
+	// printf("total sectors: %d \n", fat_fs->bs.total_sectors); //total sectors: 20160 
+}
+
+void
 fat_fs_init (void) {
 	/* TODO: Your code goes here. */
     fat_fs->fat_length = (&fat_fs->bs)->total_sectors / (&fat_fs->bs)->sectors_per_cluster - fat_fs->bs.fat_sectors;//20180109 every sectors in disk are changed into clusters
     fat_fs->data_start = (&fat_fs->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
 	// fat_fs->fat_length = fat_fs->bs.fat_sectors * DISK_SECTOR_SIZE / sizeof(cluster_t) / SECTORS_PER_CLUSTER;
 	// fat_fs->data_start = fat_fs->bs.fat_start + fat_fs->bs.fat_sectors;
+}
+
+void
+fat_fs_init_scratch (void) {
+	/* TODO: Your code goes here. */
+    fat_fs_scratch->fat_length = (&fat_fs_scratch->bs)->total_sectors / (&fat_fs_scratch->bs)->sectors_per_cluster - fat_fs_scratch->bs.fat_sectors;//20180109 every sectors in disk are changed into clusters
+    fat_fs_scratch->data_start = (&fat_fs_scratch->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
 }
 
 /*----------------------------------------------------------------------------*/
@@ -203,6 +339,35 @@ fat_create_chain (cluster_t clst) {
 	return idx;
 }
 
+cluster_t
+fat_create_chain_scratch (cluster_t clst) {
+	static char zeros[DISK_SECTOR_SIZE];
+	/* TODO: Your code goes here. */
+	cluster_t idx = 0;
+	cluster_t i;
+	for (i=1; i< fat_fs_scratch->fat_length; i++)
+	{
+		if(fat_fs_scratch->fat[i] == 0){
+			idx = i;
+			break;
+		}
+	}
+	if(idx == 0){
+		return 0;
+	}
+	if(cluster_to_sector(idx) >= (scratch_disk)->capacity){
+		return 0;
+	}
+	if(clst == 0){
+		fat_fs_scratch->fat[idx] = EOChain;
+		return idx;
+	}
+	ASSERT(fat_fs_scratch->fat[clst] == EOChain); //clst 가 chain 의 마지막 요소가 아니면 error를 내준다
+	fat_fs_scratch->fat[clst] = idx;
+	fat_fs_scratch->fat[idx] = EOChain;
+	return idx;
+}
+
 /* Remove the chain of clusters starting from CLST.
  * If PCLST is 0, assume CLST as the start of the chain. */
 /*
@@ -232,6 +397,27 @@ fat_remove_chain (cluster_t clst, cluster_t pclst) {
 		fat_fs->fat[pclst] = EOChain;
 }
 
+void
+fat_remove_chain_scratch (cluster_t clst, cluster_t pclst) {
+	/* TODO: Your code goes here. */
+	if (clst == 0)
+	{
+		fat_fs_scratch->fat[pclst] = 0;
+		return;
+	}
+	while(fat_fs_scratch->fat[clst] != EOChain)
+	{
+		cluster_t temp = fat_fs_scratch->fat[clst];
+		fat_fs_scratch->fat[clst] = 0;
+		clst = temp;
+	}
+	fat_fs_scratch->fat[clst] = 0;
+	if(pclst == 0)
+		fat_fs_scratch->fat[pclst] = 0;
+	else
+		fat_fs_scratch->fat[pclst] = EOChain;
+}
+
 // /* Update a value in the FAT table. */
 void
 fat_put (cluster_t clst, cluster_t val) {
@@ -247,11 +433,22 @@ fat_put (cluster_t clst, cluster_t val) {
 	fat_fs->fat[clst] = val;
 }
 
+void
+fat_put_scratch (cluster_t clst, cluster_t val) {
+	fat_fs_scratch->fat[clst] = val;
+}
+
 /* Fetch a value in the FAT table. */
 cluster_t
 fat_get (cluster_t clst) {
 	/* TODO: Your code goes here. */
 	return fat_fs->fat[clst];
+}
+
+cluster_t
+fat_get_scratch (cluster_t clst) {
+	/* TODO: Your code goes here. */
+	return fat_fs_scratch->fat[clst];
 }
 
 /* Covert a cluster # to a sector number. */
@@ -266,6 +463,13 @@ cluster_to_sector (cluster_t clst) {
 	return (disk_sector_t) clst + fat_fs->bs.fat_sectors;
 }
 
+disk_sector_t
+cluster_to_sector_scratch (cluster_t clst) {
+	/* TODO: Your code goes here. */
+	ASSERT(clst >= 0);
+	return (disk_sector_t) clst + fat_fs_scratch->bs.fat_sectors;
+}
+
 /*20180109 implemented - returns the end of the linked list*/
 cluster_t
 fat_get_end(cluster_t clst){
@@ -277,6 +481,20 @@ fat_get_end(cluster_t clst){
 	while(next != EOChain){
 		i = next;
 		next = fat_fs->fat[i];
+	}
+	return i;
+}
+
+cluster_t
+fat_get_end_scratch(cluster_t clst){
+	if(clst == 0){
+		return 0;
+	}
+	cluster_t next = clst;
+	cluster_t i = 0;
+	while(next != EOChain){
+		i = next;
+		next = fat_fs_scratch->fat[i];
 	}
 	return i;
 }

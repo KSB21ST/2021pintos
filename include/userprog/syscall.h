@@ -39,4 +39,7 @@ bool isdir (int fd);
 int inumber (int fd);
 int symlink (const char* target, const char* linkpath);
 
+int mount (const char *path, int chan_no, int dev_no);
+int umount (const char *path);
+
 #endif /* userprog/syscall.h */

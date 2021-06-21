@@ -27,7 +27,7 @@ struct fat_fs {
 };
 
 static struct fat_fs *fat_fs;
-static struct fat_fs *fat_fs_scratch; 	// edit
+static struct fat_fs *fat_fs_scratch; 	// edit for mount
 
 void fat_boot_create (void);
 void fat_fs_init (void);
@@ -243,12 +243,13 @@ fat_create_scratch (void) {
 	uint8_t *buf = calloc (1, DISK_SECTOR_SIZE);
 	if (buf == NULL)
 		PANIC ("FAT create failed due to OOM");
-	disk_write (scratch_disk, cluster_to_sector (ROOT_DIR_CLUSTER), buf);
+	disk_write (scratch_disk, cluster_to_sector_scratch (ROOT_DIR_CLUSTER), buf);
 	free (buf);
 }
 
 void
 fat_boot_create (void) {
+	mount_cnt[0] = 1; // edit for mount
 	unsigned int fat_sectors =
 	    (disk_size (filesys_disk) - 1)
 	    / (DISK_SECTOR_SIZE / sizeof (cluster_t) * SECTORS_PER_CLUSTER + 1) + 1; //20180109 Q: what is fat_sectors?
@@ -266,10 +267,11 @@ fat_boot_create (void) {
 
 void
 fat_boot_create_scratch (void) {
+	mount_cnt[1] = 1; // edit for mount
 	unsigned int fat_sectors =
 	    (disk_size (scratch_disk) - 1)
 	    / (DISK_SECTOR_SIZE / sizeof (cluster_t) * SECTORS_PER_CLUSTER + 1) + 1; //20180109 Q: what is fat_sectors?
-	// printf("fat sectors: %d \n", fat_sectors); //fat sectors: 157 
+	// printf("scratch fat sectors: %d \n", fat_sectors); //fat sectors: 157 
 	fat_fs_scratch->bs = (struct fat_boot){
 	    .magic = FAT_MAGIC,
 	    .sectors_per_cluster = SECTORS_PER_CLUSTER,
@@ -294,7 +296,7 @@ void
 fat_fs_init_scratch (void) {
 	/* TODO: Your code goes here. */
     fat_fs_scratch->fat_length = (&fat_fs_scratch->bs)->total_sectors / (&fat_fs_scratch->bs)->sectors_per_cluster - fat_fs_scratch->bs.fat_sectors;//20180109 every sectors in disk are changed into clusters
-    fat_fs_scratch->data_start = (&fat_fs_scratch->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
+	fat_fs_scratch->data_start = (&fat_fs_scratch->bs)->fat_start;//20180109 Q: why +1 --> so that 0th index is free, and not confused between NULL. + because root directory goes into 1
 }
 
 /*----------------------------------------------------------------------------*/
@@ -355,7 +357,7 @@ fat_create_chain_scratch (cluster_t clst) {
 	if(idx == 0){
 		return 0;
 	}
-	if(cluster_to_sector(idx) >= (scratch_disk)->capacity){
+	if(cluster_to_sector_scratch(idx) >= (scratch_disk)->capacity){
 		return 0;
 	}
 	if(clst == 0){

@@ -177,6 +177,8 @@ struct thread {
 	/* Owned by thread.c. */
 	struct intr_frame tf;               /* Information for switching */
 	unsigned magic;                     /* Detects stack overflow. */
+
+	int disk_num; // edit for mount
 };
 
 /* If false (default), use round-robin scheduler.

@@ -118,7 +118,7 @@ pass tests/filesys/extended/syn-rw
 pass tests/filesys/extended/symlink-file
 pass tests/filesys/extended/symlink-dir
 pass tests/filesys/extended/symlink-link
-FAIL tests/filesys/mount/mount-easy
+pass tests/filesys/mount/mount-easy
 pass tests/vm/pt-grow-stack
 pass tests/vm/pt-grow-bad
 pass tests/vm/pt-big-stk-obj

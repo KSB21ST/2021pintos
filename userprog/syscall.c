@@ -528,6 +528,7 @@ munmap (void *addr)
 
 bool
 chdir (const char *dir) {
+   // printf("start chdir: %s\n", dir);
    uint32_t temp_s = thread_current()->t_sector;
    if(dir == NULL) exit(-1);
    struct dir *last_dir;
@@ -538,87 +539,163 @@ chdir (const char *dir) {
    }
    else{
 
-   char *file_name = palloc_get_page(0);
-	char *name_copy = palloc_get_page(0);
-	strlcpy(name_copy, dir, PGSIZE);
-	struct dir * parent_dir = parse_path(name_copy, file_name);
+      char *file_name = palloc_get_page(0);
+      char *name_copy = palloc_get_page(0);
+      strlcpy(name_copy, dir, PGSIZE);
+      struct dir * parent_dir = parse_path(name_copy, file_name);
+      if(!parent_dir){
+         palloc_free_page(file_name);
+         palloc_free_page(name_copy);
+         return false;
+      }
 
-   if(!parent_dir){
-      palloc_free_page(file_name);
-	   palloc_free_page(name_copy);
-      return false;
+      struct inode *inode = NULL;
+      
+      if(parent_dir->inode->data._isscratch){
+         // printf("is scratch disk!\n");
+         // if(parent_dir->inode->data._mountpt){
+         //    dir_close_scratch(parent_dir);
+         //    parent_dir = dir_open_scratch(inode_open_scratch(ROOT_DIR_SECTOR));
+         // }
+         if(!dir_lookup_scratch(parent_dir, file_name, &inode)){
+            // printf("something's wrong!\n");
+            palloc_free_page(name_copy);
+            palloc_free_page(file_name);
+            dir_close_scratch(parent_dir);
+            return false;
+         }
+         dir_close_scratch(parent_dir);
+
+         if(!inode->data._isdir){
+            // printf("it is not a directory!\n");
+            palloc_free_page(name_copy);
+            palloc_free_page(file_name);
+            dir_close_scratch(parent_dir);
+            return false;
+         }
+         last_dir = dir_open_scratch(inode);
+         thread_current()->t_sector = last_dir->inode->sector;
+         temp_s = thread_current()->t_sector;
+         palloc_free_page(name_copy);
+         palloc_free_page(file_name);
+         // printf("ch done\n");
+
+      }else{
+
+         if(!dir_lookup(parent_dir, file_name, &inode)){
+            // printf("something's wrong!\n");
+            palloc_free_page(name_copy);
+            palloc_free_page(file_name);
+            dir_close(parent_dir);
+            return false;
+         }
+         dir_close(parent_dir);
+
+         if(!inode->data._isdir){
+            // printf("it is not a directory!\n");
+            palloc_free_page(name_copy);
+            palloc_free_page(file_name);
+            dir_close(parent_dir);
+            return false;
+         }
+         last_dir = dir_open(inode);
+         thread_current()->t_sector = last_dir->inode->sector;
+         temp_s = thread_current()->t_sector;
+         palloc_free_page(name_copy);
+         palloc_free_page(file_name);
+
+      }
+      return true;
    }
-
-   struct inode *inode = NULL;
-   
-
-   if(!dir_lookup(parent_dir, file_name, &inode)){
-      // printf("something's wrong!\n");
-      palloc_free_page(name_copy);
-      palloc_free_page(file_name);
-      dir_close(parent_dir);
-      return false;
-   }
-   dir_close(parent_dir);
-
-   if(!inode->data._isdir){
-      // printf("it is not a directory!\n");
-      palloc_free_page(name_copy);
-      palloc_free_page(file_name);
-      dir_close(parent_dir);
-      return false;
-   }
-   last_dir = dir_open(inode);
-   thread_current()->t_sector = last_dir->inode->sector;
-   temp_s = thread_current()->t_sector;
-   palloc_free_page(name_copy);
-   palloc_free_page(file_name);
-
-   }
-   // dir_close(parent_dir);
-   return true;
 }
 
 bool //very similar with filesys_create
 mkdir (const char *dir) {
+   // printf("start mkdir: %s\n", dir);
    if(strlen(dir) == 0)
       return false;
-   disk_sector_t inode_sector = 0;
-	inode_sector = fat_create_chain(0);
+
    lock_acquire(&file_lock);
    char *file_name = palloc_get_page(0);
-   struct dir * t_dir = parse_path(dir, file_name);
+   char *name_copy = palloc_get_page(0);
+   strlcpy(name_copy, dir, PGSIZE);
+   struct dir * t_dir = parse_path(name_copy, file_name);
    if(!t_dir){
       palloc_free_page(file_name);
-      fat_put(inode_sector, 0);
+      palloc_free_page(name_copy);
       lock_release(&file_lock);
       return false;
    }
    lock_release(&file_lock);
 
-   bool i_1, i_2;
-   i_1 = dir_create (inode_sector, 16);
-   if(i_1)
-      i_2 = dir_add (t_dir, file_name, inode_sector);
+   disk_sector_t inode_sector = 0;
+   // printf("before if statement\n");
+   if(t_dir->inode->data._isscratch){
+      if(t_dir->inode->data._mountpt){
+         t_dir = dir_open_scratch(inode_open_scratch(ROOT_DIR_SECTOR));
+      }
+      inode_sector = fat_create_chain_scratch(0);
+      bool i_1, i_2;
+      // printf("before dir_create\n");
+      i_1 = dir_create_scratch (inode_sector, 16);
+      // printf("before dir_add\n");
+      if(i_1)
+         i_2 = dir_add_scratch (t_dir, file_name, inode_sector);
+      // printf("after dir_add\n");
 
-   bool success = (t_dir != NULL
-			&& inode_sector
-			&& i_1
-			&& i_2);
-	if (!success && inode_sector != 0){
-      // dir_remove(t_dir, file_name);
-		fat_remove_chain(inode_sector, 0);
+      bool success = (t_dir != NULL
+            && inode_sector
+            && i_1
+            && i_2);
+      if (!success && inode_sector != 0){
+         fat_remove_chain_scratch(inode_sector, 0);
+      }
+      palloc_free_page(file_name);
+      palloc_free_page(name_copy);
+      struct inode * t_i = NULL;
+      // printf("before dir_open\n");
+      struct dir *new_dir = dir_open_scratch(inode_open_scratch(inode_sector));
+      if(success == true && new_dir != NULL){
+         dir_add_scratch(new_dir, ".", inode_sector);
+         dir_add_scratch(new_dir, "..", t_dir->inode->sector);
+      }
+      dir_close_scratch (new_dir);
+      dir_close_scratch (t_dir);
+      // printf("mkdir is done\n");
+      return success;
+
+   }else{                           // have to handle mount filesys_disk
+      
+      if(t_dir->inode->data._mountpt){
+         t_dir = dir_open_root();
+      }
+
+      inode_sector = fat_create_chain(0);
+      bool i_1, i_2;
+      i_1 = dir_create (inode_sector, 16);
+      if(i_1)
+         i_2 = dir_add (t_dir, file_name, inode_sector);
+
+      bool success = (t_dir != NULL
+            && inode_sector
+            && i_1
+            && i_2);
+      if (!success && inode_sector != 0){
+         // dir_remove(t_dir, file_name);
+         fat_remove_chain(inode_sector, 0);
+      }
+      palloc_free_page(file_name);
+      palloc_free_page(name_copy);
+      struct inode * t_i = NULL;
+      struct dir *new_dir = dir_open(inode_open(inode_sector));
+      if(success == true && new_dir != NULL){
+         dir_add(new_dir, ".", inode_sector);
+         dir_add(new_dir, "..", t_dir->inode->sector);
+      }
+      dir_close (new_dir);
+      dir_close (t_dir);
+      return success;
    }
-   palloc_free_page(file_name);
-   struct inode * t_i = NULL;
-   struct dir *new_dir = dir_open(inode_open(inode_sector));
-   if(success == true && new_dir != NULL){
-		dir_add(new_dir, ".", inode_sector);
-		dir_add(new_dir, "..", t_dir->inode->sector);
-   }
-   dir_close (new_dir);
-	dir_close (t_dir);
-	return success;
 }
 
 // readdir (int fd, char name[READDIR_MAX_LEN + 1]) {
@@ -650,7 +727,7 @@ isdir (int fd) {
 int
 inumber (int fd) {
    struct thread* t = thread_current();
-	// if(pml4_get_page (t->pml4, fd) == NULL) return;
+	// if(pml4_get_pag (t->pml4, fd) == NULL) return;
    struct file *_file;
    struct file **file_table = t->fd_table;
    _file = file_table[fd];
@@ -753,16 +830,18 @@ int mount (const char *path, int chan_no, int dev_no){
    }
 
    struct inode *inode = NULL;
-
+   // printf("mount start\n");
 	char *path_name = palloc_get_page(0);
 	char *path_copy = palloc_get_page(0);
 	strlcpy(path_copy, path, PGSIZE);
 	struct dir * dir = parse_path(path_copy, path_name);
-
+   // printf("after parse_path, dir sec: %d\n", dir->inode->data._isscratch);
+   // printf("dir sec no: %d, name: %s\n", dir->inode->sector, path_name);
+   // printf("filesys root, isscratch: %d, mountpt: %d\n", dir->inode->data._isscratch, dir->inode->data._mountpt);
    if(!dir){
 		palloc_free_page(path_name);
 		palloc_free_page(path_copy);
-		return false;
+		return -1;
 	}
 	if (dir != NULL)
 		dir_lookup (dir, path_name, &inode);
@@ -770,41 +849,150 @@ int mount (const char *path, int chan_no, int dev_no){
 	if (inode == NULL){
 		palloc_free_page(path_name);
 		palloc_free_page(path_copy);
-		return false;
+		return -1;
 	}   
 
-
-   if(chan_no == 1 && dev_no == 0){
+   // printf("before if statement\n");
+   if(chan_no == 1 && dev_no == 0){    // scratch disk
+      // printf("start of 1, 0\n");
       scratch_disk = disk_get (1, 0);
       if (scratch_disk == NULL)
       	PANIC ("hd1:0 (hdb) not present, scratch disk initialization failed");
 
-      inode_init ();
-
-      fat_init_scratch ();
-
       if(format_scratch){
+         // printf("here??\n");
+         fat_init_scratch ();
          printf ("Formatting file system...");
          fat_create_scratch ();
-         cluster_t mount_point_clst = fat_create_chain_scratch(0);
-         disk_write(scratch_disk, cluster_to_sector_scratch(mount_point_clst), &inode->data);
+         // disk_sector_t scratch_root_sec = cluster_to_sector_scratch(ROOT_DIR_CLUSTER);
+         if(!dir_create_scratch(ROOT_DIR_SECTOR, 16))
+            PANIC("root directory creation failed");
+         struct dir *t_dir = dir_open_scratch(inode_open_scratch(ROOT_DIR_SECTOR));
+         // printf("\nroot dir open is success!\n");
+      	dir_add_scratch (t_dir, ".", ROOT_DIR_SECTOR);
+         // printf("before dir_add\n");
+         dir_add_scratch (t_dir, "..", ROOT_DIR_SECTOR);
+         // struct dir *filesys_root = dir_open_root();
+         // printf("filesys_root isscratch: %d\n", filesys_root->inode->data._isscratch);
+         // printf("before dir_close \n");
+         // dir_close_scratch(t_dir);
+         // printf("before fat_close\n");
+
          fat_close_scratch ();
+         fat_open_scratch ();
          printf ("done.\n");
          format_scratch = false;
+      }else if(mount_cnt[1] == 0){ // scratch fat is already created before.
+         // printf("before fat_open_scratch\n");
+         fat_open_scratch ();
+         // printf("after fat open scratc\n");
+         mount_cnt[1]++;
+      }else{
+         // printf("masaka...\n");
+         mount_cnt[1]++;
       }
-      fat_open ();
+
+
+      struct dir *root = dir_open_scratch(inode_open_scratch(ROOT_DIR_SECTOR));
+      // saving original data
+      inode->data.origin_start = inode->data.start;
+      inode->data.origin_length = inode->data.length;
+      inode->data.origin_isdir = inode->data._isdir;
+      inode->data.origin_issym = inode->data._issym;
+      inode->data.origin_mountpt = inode->data._mountpt;
+      inode->data.origin_isscratch = inode->data._isscratch;
+
+      inode->data.start = root->inode->data.start;
+      inode->data.length = root->inode->data.length;
+      // cluster_t mount_point_clst = fat_create_chain_scratch(0);
+      // marking "_mountpt = true && _isscratch = true" at mount point
+      inode->data._mountpt = true;
+      inode->data._isscratch = true;
+      // disk_write(scratch_disk, cluster_to_sector_scratch(mount_point_clst), &inode->data);   // write at scratch_disk
+      disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+      dir_close_scratch(root);
+      inode_close(inode);
+
+   }else{      // filesys disk
+
+      if(mount_cnt[0] == 0){  // is it possible???
+         fat_open();
+      }
+      mount_cnt[0]++;
+      struct dir *root = dir_open_root();
+
+      // saving original data
+      inode->data.origin_start = inode->data.start;
+      inode->data.origin_length = inode->data.length;
+      inode->data.origin_isdir = inode->data._isdir;
+      inode->data.origin_issym = inode->data._issym;
+      inode->data.origin_mountpt = inode->data._mountpt;
+      inode->data.origin_isscratch = inode->data._isscratch;
+
+      inode->data.start = root->inode->data.start;
+      inode->data.length = root->inode->data.length;
+      inode->data._mountpt = true;
+      inode->data._isscratch = false;
+
+      disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+      dir_close(root);
+      inode_close(inode);
 
    }
 
-
+   palloc_free_page(path_name);
+	palloc_free_page(path_copy);
 
    return 0;
 }
 
 
 int umount (const char *path){
-   int success = -1;
-   return success;
+   // 해당 패스의 inode->data.start랑 등등을 다시 원래대로 바꿔주어야함.
+   struct inode *inode = NULL;
+
+	char *path_name = palloc_get_page(0);
+	char *path_copy = palloc_get_page(0);
+	strlcpy(path_copy, path, PGSIZE);
+	struct dir * dir = parse_path(path_copy, path_name);
+   // printf("dir sec no: %d, name: %s\n", dir->inode->sector, path_name);
+   // printf("filesys root, isscratch: %d, mountpt: %d\n", dir->inode->data._isscratch, dir->inode->data._mountpt);
+   if(!dir){
+		palloc_free_page(path_name);
+		palloc_free_page(path_copy);
+		return -1;
+	}
+	if (dir != NULL)
+		dir_lookup (dir, path_name, &inode);
+	dir_close (dir);
+	if (inode == NULL){
+		palloc_free_page(path_name);
+		palloc_free_page(path_copy);
+		return -1;
+	}
+
+   if(inode->data._isscratch){
+      mount_cnt[1]--;
+      if(mount_cnt[1] == 0){
+         fat_close_scratch();
+      }
+   }
+
+   inode->data.start = inode->data.origin_start;
+   inode->data.length = inode->data.origin_length;
+   inode->data._isdir = inode->data.origin_isdir;
+   inode->data._issym = inode->data.origin_issym;
+   inode->data._mountpt = inode->data.origin_mountpt;
+   inode->data._isscratch = inode->data.origin_isscratch; 
+
+   disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+   // need to edit for considering disk type later.
+   inode_close(inode);
+
+   palloc_free_page(path_name);
+   palloc_free_page(path_copy);
+
+   return 0;
 }
 
 

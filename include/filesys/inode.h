@@ -18,13 +18,23 @@ struct inode_disk {
 	//start 20180109 - for subdir
 	bool _isdir; 
 	bool _issym;
-	bool b_unused[2]; /*total 4byte*/
+	bool _mountpt;
+	bool _isscratch;
 
 	char link_path[100];  /*for symlink, 100byte*/
 	//eid 20180109
+	// start edit for mount
+	disk_sector_t origin_start;
+	off_t origin_length;
+	bool origin_isdir;		// actually don't need
+	bool origin_issym;		// actually don't need 
+	bool origin_mountpt;
+	bool origin_isscratch;
+	// end edit for mount
+
 	// uint32_t unused[125];               /* Not used. */ total 500byte
 	// uint32_t unused[124];               /* Not used. */ // uint32_t: 4byte, bool, char: 1byte
-	uint32_t unused[99];  /*99*4 = 396*/
+	uint32_t unused[96];  /*99*4 = 396*/
 };
 
 
@@ -58,8 +68,20 @@ void inode_deny_write (struct inode *);
 void inode_allow_write (struct inode *);
 off_t inode_length (const struct inode *);
 
+bool inode_create_scratch (disk_sector_t, off_t);
+struct inode *inode_open_scratch (disk_sector_t);
+void inode_close_scratch (struct inode *);
+// void inode_remove (struct inode *);
+off_t inode_read_at_scratch (struct inode *, void *, off_t size, off_t offset);
+off_t inode_write_at_scratch (struct inode *, const void *, off_t size, off_t offset);
+// void inode_deny_write (struct inode *);
+// void inode_allow_write (struct inode *);
+// off_t inode_length (const struct inode *);
+
+
 //start 20180109 - for isdir, subdir
 void write_isdir(disk_sector_t sector, bool isdir);
 //end 20180109
+void write_isdir_scratch(disk_sector_t sector, bool isdir);
 
 #endif /* filesys/inode.h */

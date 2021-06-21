@@ -59,4 +59,18 @@ int dir_path_parse(const char *path_name, char **argv);
 struct dir * parse_path(char *path_name, char *last_name);
 //end 20180109
 
+bool dir_create_scratch (disk_sector_t sector, size_t entry_cnt);
+struct dir *dir_open_scratch (struct inode *);
+// struct dir *dir_open_root (void);
+struct dir *dir_reopen_scratch (struct dir *);
+void dir_close_scratch (struct dir *);
+// struct inode *dir_get_inode (struct dir *);
+
+/* Reading and writing. */
+bool dir_lookup_scratch (const struct dir *, const char *name, struct inode **);
+bool dir_add_scratch (struct dir *, const char *name, disk_sector_t);
+// bool dir_remove_scratch (struct dir *, const char *name);
+// bool dir_readdir (struct dir *, char name[NAME_MAX + 1]);
+
+
 #endif /* filesys/directory.h */

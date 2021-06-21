@@ -32,6 +32,13 @@ dir_create (disk_sector_t sector, size_t entry_cnt) {
 	return success;
 }
 
+bool
+dir_create_scratch (disk_sector_t sector, size_t entry_cnt) {
+	bool success = inode_create_scratch (sector, entry_cnt * sizeof (struct dir_entry));
+	write_isdir_scratch(sector, true);
+	return success;
+}
+
 /* Opens and returns the directory for the given INODE, of which
  * it takes ownership.  Returns a null pointer on failure. */
 struct dir *
@@ -46,6 +53,23 @@ dir_open (struct inode *inode) {
 		return dir;
 	} else {
 		inode_close (inode);
+		free (dir);
+		return NULL;
+	}
+}
+
+struct dir *
+dir_open_scratch (struct inode *inode) {
+	struct dir *dir = calloc (1, sizeof *dir);
+	if (inode != NULL && dir != NULL) {
+		dir->inode = inode;
+		//start 20180109 - for subdir
+		// dir->inode->_isdir = true;
+		//end 20180109
+		dir->pos = 0;
+		return dir;
+	} else {
+		inode_close_scratch (inode);
 		free (dir);
 		return NULL;
 	}
@@ -70,6 +94,14 @@ void
 dir_close (struct dir *dir) {
 	if (dir != NULL) {
 		inode_close (dir->inode);
+		free (dir);
+	}
+}
+
+void
+dir_close_scratch (struct dir *dir) {
+	if (dir != NULL) {
+		inode_close_scratch (dir->inode);
 		free (dir);
 	}
 }
@@ -109,6 +141,32 @@ lookup (const struct dir *dir, const char *name,
 	return false;
 }
 
+static bool
+lookup_scratch (const struct dir *dir, const char *name,
+		struct dir_entry *ep, off_t *ofsp) {
+	// printf("start of lookup_s\n");
+	struct dir_entry e;
+	size_t ofs;
+
+	ASSERT (dir != NULL);
+	ASSERT (name != NULL);
+	// printf("before inode_read_at_s in lookup\n");
+	for (ofs = 0; inode_read_at_scratch (dir->inode, &e, sizeof e, ofs) == sizeof e;
+			ofs += sizeof e){
+		// if(!strcmp("a", name)) //for symlink-file test
+		// printf("\n name: %s in lookup \n", e.name);
+		if (e.in_use && !strcmp (name, e.name)) {
+			if (ep != NULL)
+				*ep = e;
+			if (ofsp != NULL)
+				*ofsp = ofs;
+			return true;
+		}
+	}
+	// printf("end of lookup_s\n");
+	return false;
+}
+
 /* Searches DIR for a file with the given NAME
  * and returns true if one exists, false otherwise.
  * On success, sets *INODE to an inode for the file, otherwise to
@@ -123,6 +181,22 @@ dir_lookup (const struct dir *dir, const char *name,
 
 	if (lookup (dir, name, &e, NULL))
 		*inode = inode_open (e.inode_sector);
+	else
+		*inode = NULL;
+
+	return *inode != NULL;
+}
+
+bool
+dir_lookup_scratch (const struct dir *dir, const char *name,
+		struct inode **inode) {
+	struct dir_entry e;
+
+	ASSERT (dir != NULL);
+	ASSERT (name != NULL);
+
+	if (lookup_scratch (dir, name, &e, NULL))
+		*inode = inode_open_scratch (e.inode_sector);
 	else
 		*inode = NULL;
 
@@ -171,6 +245,48 @@ dir_add (struct dir *dir, const char *name, disk_sector_t inode_sector) {
 	e.inode_sector = inode_sector;
 	// printf("here? in dir_add name: %s dir: %d \n", e.name, dir->inode->sector);
 	success = inode_write_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
+done:
+	return success;
+}
+
+bool
+dir_add_scratch (struct dir *dir, const char *name, disk_sector_t inode_sector) {
+	// printf("start of dir_add_s\n");
+	struct dir_entry e;
+	off_t ofs;
+	bool success = false;
+
+	ASSERT (dir != NULL);
+	ASSERT (name != NULL);
+
+	/* Check NAME for validity. */
+	if (*name == '\0' || strlen (name) > NAME_MAX)
+		return false;
+
+	/* Check that NAME is not in use. */
+	// printf("before lookup_scratch name: %s\n", name);
+	if (lookup_scratch (dir, name, NULL, NULL))
+		goto done;
+
+	/* Set OFS to offset of free slot.
+	 * If there are no free slots, then it will be set to the
+	 * current end-of-file.
+
+	 * inode_read_at() will only return a short read at end of file.
+	 * Otherwise, we'd need to verify that we didn't get a short
+	 * read due to something intermittent such as low memory. */
+	// printf("before inode_read_at_s\n");
+	for (ofs = 0; inode_read_at_scratch (dir->inode, &e, sizeof e, ofs) == sizeof e;
+			ofs += sizeof e)
+		if (!e.in_use)
+			break;
+
+	/* Write slot. */
+	e.in_use = true;
+	strlcpy (e.name, name, sizeof e.name);
+	e.inode_sector = inode_sector;
+	// printf("before inode_write_at_scratch\n");
+	success = inode_write_at_scratch (dir->inode, &e, sizeof e, ofs) == sizeof e;
 done:
 	return success;
 }
@@ -280,7 +396,6 @@ locate_dir(char **argv, int number, char *real_name)
 			if(i == 0){
 				t_inode = t_dir->inode;
 				ans = t_inode->sector;
-				// dir_close(t_dir);
 				return t_dir;
 			}
 			dir_close(t_dir);
@@ -339,6 +454,17 @@ parse_path(char *path_name, char *last_name)
 			t_dir = dir_open(inode_open(thread_current()->t_sector));
 		} 
 	}
+
+	if(t_dir->inode->data._mountpt){
+		if(t_dir->inode->data._isscratch){
+			dir_close_scratch(t_dir);
+			t_dir = dir_open_scratch(inode_open_scratch(ROOT_DIR_SECTOR));
+		}else{
+			dir_close(t_dir);
+			t_dir = dir_open_root();
+		}
+	}
+
 	char *token, *last, *extra;
 	token = strtok_r(path_name, "/", &last);
    	extra = strtok_r(NULL, "/", &last);
@@ -347,32 +473,88 @@ parse_path(char *path_name, char *last_name)
 	{
 		// printf("\ntoken: %s, extra: %s\n", token, extra);
 		//absolute path 면 argv[0] 가 "0" 이다 -- TODO
-		if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
-			if(i == 0){
-				strlcpy (last_name, token, PGSIZE);
-				return t_dir;
+		if(t_dir->inode->data._isscratch){
+			if(!dir_lookup_scratch(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
+				if(i == 0){
+					strlcpy (last_name, token, PGSIZE);
+					return t_dir;
+				}
+				dir_close_scratch(t_dir);
+				return NULL;
 			}
-			dir_close(t_dir);
-			return NULL;
-			// break;
+			if(!t_inode->data._isdir && !t_inode->data._issym){ //t_inode 가 file inode 면
+				break;
+			}
+
+			if(!t_inode->data._isdir && t_inode->data._issym){ //t_node가 symlink 이면
+				// return parse_path(t_inode->data.link_path, last_name);
+				dir_close_scratch(t_dir);
+				struct inode *temp = parse_path(t_inode->data.link_path, last_name)->inode;
+				if(temp->data._isscratch){
+					t_dir = dir_open_scratch(temp);
+					dir_lookup_scratch(t_dir, last_name, &t_inode);
+					dir_close_scratch(t_dir);
+				}else{
+					t_dir = dir_open(temp);
+					dir_lookup(t_dir, last_name, &t_inode);
+					dir_close(t_dir);
+				}
+			}else{
+				dir_close_scratch(t_dir);
+			}
+			if(t_inode->data._isscratch){
+				t_dir = dir_open_scratch(t_inode);
+			}else{
+				t_dir = dir_open(t_inode);
+			}
+			if (t_dir == NULL){
+				return NULL;
+			}
+			token = extra;
+			extra = strtok_r (NULL, "/", &last);
+			i++;
+
+		}else{
+			if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
+				if(i == 0){
+					strlcpy (last_name, token, PGSIZE);
+					return t_dir;
+				}
+				dir_close(t_dir);
+				return NULL;
+				// break;
+			}
+			if(!t_inode->data._isdir && !t_inode->data._issym){ //t_inode 가 file inode 면
+				break;
+			}
+			if(!t_inode->data._isdir && t_inode->data._issym){ //t_node가 symlink 이면
+				dir_close(t_dir);
+				struct inode *temp = parse_path(t_inode->data.link_path, last_name)->inode;
+				if(temp->data._isscratch){
+					t_dir = dir_open_scratch(temp);
+					dir_lookup_scratch(t_dir, last_name, &t_inode);
+					dir_close_scratch(t_dir);
+				}else{
+					t_dir = dir_open(temp);
+					dir_lookup(t_dir, last_name, &t_inode);
+					dir_close(t_dir);
+				}
+			}else{
+				dir_close(t_dir);
+			}
+
+			if(t_inode->data._isscratch){
+				t_dir = dir_open_scratch(t_inode);
+			}else{
+				t_dir = dir_open(t_inode);
+			}
+			if (t_dir == NULL){
+				return NULL;
+			}
+			token = extra;
+			extra = strtok_r (NULL, "/", &last);
+			i++;
 		}
-		if(!t_inode->data._isdir && !t_inode->data._issym){ //t_inode 가 file inode 면
-			break;
-		}
-		if(!t_inode->data._isdir && t_inode->data._issym){ //t_node가 symlink 이면
-			// return parse_path(t_inode->data.link_path, last_name);
-			dir_close(t_dir);
-			t_dir = dir_open(parse_path(t_inode->data.link_path, last_name)->inode);
-			dir_lookup(t_dir, last_name, &t_inode);
-		}
-		dir_close(t_dir);
-		t_dir = dir_open(t_inode);
-		if (t_dir == NULL){
-			return NULL;
-		}
-		token = extra;
-		extra = strtok_r (NULL, "/", &last);
-		i++;
 	}
 	strlcpy (last_name, token, PGSIZE);
 	return t_dir;

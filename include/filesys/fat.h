@@ -23,6 +23,8 @@ typedef uint32_t cluster_t;  /* Index of a cluster within FAT. */
 #define CLUSTER_SIZE DISK_SECTOR_SIZE*SECTORS_PER_CLUSTER
 //end 20180109
 
+int mount_cnt[2];
+
 void fat_init (void);
 void fat_open (void);
 void fat_close (void);

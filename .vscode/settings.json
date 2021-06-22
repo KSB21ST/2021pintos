@@ -28,6 +28,7 @@
         "mmu.h": "c",
         "debug.h": "c",
         "fat.h": "c",
-        "directory.h": "c"
+        "directory.h": "c",
+        "page_cache.h": "c"
     }
 }

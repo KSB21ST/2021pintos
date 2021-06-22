@@ -17,6 +17,7 @@
 #include <hash.h>
 //end 20180109
 #include "filesys/fat.h"
+#include "filesys/page_cache.h"
 
 // register uint64_t *num asm ("rax") = (uint64_t *) num_;
 //    register uint64_t *a1 asm ("rdi") = (uint64_t *) a1_;
@@ -819,7 +820,8 @@ symlink (const char* target, const char* linkpath) {
    ASSERT (strlen(target) < 100);
 	strlcpy(symlink->data.link_path, target, strlen(target) + 1);
 
-   disk_write(filesys_disk, cluster_to_sector(symlink->sector), &symlink->data);
+   // disk_write(filesys_disk, cluster_to_sector(symlink->sector), &symlink->data);
+   page_cache_write (cluster_to_sector(symlink->sector), &symlink->data);
    dir_close(parent_dir);
    // inode_close(symlink);
 
@@ -872,6 +874,7 @@ int mount (const char *path, int chan_no, int dev_no){
 
       if(format_scratch){
          // printf("here??\n");
+         page_cache_init_s();
          fat_init_scratch ();
          printf ("Formatting file system...");
          fat_create_scratch ();
@@ -895,6 +898,7 @@ int mount (const char *path, int chan_no, int dev_no){
          format_scratch = false;
       }else if(mount_cnt[1] == 0){ // scratch fat is already created before.
          // printf("before fat_open_scratch\n");
+         page_cache_init_s(); // check later!!
          fat_open_scratch ();
          // printf("after fat open scratc\n");
          mount_cnt[1]++;
@@ -921,10 +925,12 @@ int mount (const char *path, int chan_no, int dev_no){
       inode->data._isscratch = true;
       // disk_write(scratch_disk, cluster_to_sector_scratch(mount_point_clst), &inode->data);   // write at scratch_disk
       if(inode->data.origin_isscratch){
-         disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
+         // disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
+         page_cache_write_s (cluster_to_sector_scratch(inode->sector), &inode->data);
          inode_close_scratch(inode);
       }else{
-         disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         // disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         page_cache_write (cluster_to_sector(inode->sector), &inode->data);
          inode_close(inode);
       }
 
@@ -953,10 +959,12 @@ int mount (const char *path, int chan_no, int dev_no){
       inode->data._isscratch = false;
 
       if(inode->data.origin_isscratch){
-         disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
+         // disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
+         page_cache_write_s (cluster_to_sector_scratch(inode->sector), &inode->data);
          inode_close_scratch(inode);
       }else{
-         disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         // disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         page_cache_write (cluster_to_sector(inode->sector), &inode->data);
          inode_close(inode);
       }
       dir_close(root);
@@ -1004,11 +1012,13 @@ int umount (const char *path){
       mount_cnt[1]--;
       if(mount_cnt[1] == 0){
          fat_close_scratch();
+         page_cache_destroy_s(NULL);
       }
    }else{
       mount_cnt[0]--;
-      if(mount_cnt[0] == 0){
+      if(mount_cnt[0] == 0){ // may be never occured
          fat_close();
+         page_cache_destroy(NULL);
       }
    }
    inode->data.start = inode->data.origin_start;
@@ -1019,10 +1029,12 @@ int umount (const char *path){
    inode->data._isscratch = inode->data.origin_isscratch; 
    
    if(inode->data._isscratch){
-      disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
+      // disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
+      page_cache_write_s (cluster_to_sector_scratch(inode->sector), &inode->data);
       inode_close_scratch(inode);
    }else{
-      disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+      // disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+      page_cache_write (cluster_to_sector(inode->sector), &inode->data);
       inode_close(inode);
    }
    // need to edit for considering disk type later.

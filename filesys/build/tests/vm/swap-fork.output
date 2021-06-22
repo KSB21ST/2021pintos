@@ -38,8 +38,8 @@ child-swap: exit(0)
 (swap-fork) end
 swap-fork: exit(0)
 Execution of 'swap-fork' complete.
-Timer: 608 ticks
-Thread: 210 idle ticks, 248 kernel ticks, 150 user ticks
+Timer: 575 ticks
+Thread: 177 idle ticks, 246 kernel ticks, 152 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 800 reads, 12686 writes
 hd1:0: 4119 reads, 0 writes

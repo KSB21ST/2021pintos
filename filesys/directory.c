@@ -327,6 +327,39 @@ done:
 	return success;
 }
 
+bool
+dir_remove_scratch (struct dir *dir, const char *name) {
+	struct dir_entry e;
+	struct inode *inode = NULL;
+	bool success = false;
+	off_t ofs;
+
+	ASSERT (dir != NULL);
+	ASSERT (name != NULL);
+
+	/* Find directory entry. */
+	if (!lookup_scratch (dir, name, &e, &ofs))
+		goto done;
+
+	/* Open inode. */
+	inode = inode_open_scratch (e.inode_sector);
+	if (inode == NULL)
+		goto done;
+
+	/* Erase directory entry. */
+	e.in_use = false;
+	if (inode_write_at_scratch (dir->inode, &e, sizeof e, ofs) != sizeof e)
+		goto done;
+
+	/* Remove inode. */
+	inode_remove(inode);
+	success = true;
+
+done:
+	inode_close_scratch (inode);
+	return success;
+}
+
 /* Reads the next directory entry in DIR and stores the name in
  * NAME.  Returns true if successful, false if the directory
  * contains no more entries. */
@@ -335,6 +368,26 @@ dir_readdir (struct dir *dir, char name[NAME_MAX + 1]) {
 	struct dir_entry e;
 
 	while (inode_read_at (dir->inode, &e, sizeof e, dir->pos) == sizeof e) {
+		dir->pos += sizeof e;
+		//start 20180109
+		if(!strcmp(e.name, ".") || !strcmp(e.name, ".."))
+			continue;
+		if((e.name == ".") || (e.name == ".."))
+			continue;
+		//end 20180109
+		if (e.in_use) {
+			strlcpy (name, e.name, NAME_MAX + 1);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool
+dir_readdir_scratch (struct dir *dir, char name[NAME_MAX + 1]) {
+	struct dir_entry e;
+
+	while (inode_read_at_scratch (dir->inode, &e, sizeof e, dir->pos) == sizeof e) {
 		dir->pos += sizeof e;
 		//start 20180109
 		if(!strcmp(e.name, ".") || !strcmp(e.name, ".."))
@@ -431,7 +484,7 @@ parse_n_locate(const char *path_name)
 
 struct dir*
 parse_path(char *path_name, char *last_name)
-{	
+{	printf("parse_path start\n");
 	struct dir *t_dir = NULL;
 	struct inode *t_inode = NULL;
 	disk_sector_t ans = 0;
@@ -439,6 +492,7 @@ parse_path(char *path_name, char *last_name)
 	if (path_name[0] == '/'){ //absolute path, 첫번쨰 경로가 0이면
 		//open root directory
 		t_dir = dir_open_root();
+		printf("[parse_path] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", t_dir->inode->sector, t_dir->inode->data._isscratch, t_dir->inode->data._mountpt);
 		absolute_path = true;
 	}
 	else{ //relative path
@@ -448,14 +502,17 @@ parse_path(char *path_name, char *last_name)
 		}
 		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
 		else{
-			if (thread_current()->t_sector==ROOT_DIR_SECTOR)
+			if (thread_current()->t_sector==ROOT_DIR_SECTOR){
+				printf("open root\n");
 				t_dir = dir_open_root();
+			}
 			else
 			t_dir = dir_open(inode_open(thread_current()->t_sector));
 		} 
 	}
-
+	printf("[parse_path] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", t_dir->inode->sector, t_dir->inode->data._isscratch, t_dir->inode->data._mountpt);
 	if(t_dir->inode->data._mountpt){
+		printf("never here\n");
 		if(t_dir->inode->data._isscratch){
 			dir_close_scratch(t_dir);
 			t_dir = dir_open_scratch(inode_open_scratch(ROOT_DIR_SECTOR));
@@ -469,6 +526,7 @@ parse_path(char *path_name, char *last_name)
 	token = strtok_r(path_name, "/", &last);
    	extra = strtok_r(NULL, "/", &last);
 	int i = 0;
+	printf("token: %s, extra: %s\n", token, extra);
 	while (extra != NULL)
 	{
 		// printf("\ntoken: %s, extra: %s\n", token, extra);
@@ -515,6 +573,7 @@ parse_path(char *path_name, char *last_name)
 			i++;
 
 		}else{
+			printf("not scratch\n");
 			if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
 				if(i == 0){
 					strlcpy (last_name, token, PGSIZE);

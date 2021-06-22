@@ -535,6 +535,7 @@ chdir (const char *dir) {
 
    if(!strcmp(dir, "/")){
       last_dir = dir_open_root();
+      printf("[chdir] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", last_dir->inode->sector, last_dir->inode->data._isscratch, last_dir->inode->data._mountpt);
       thread_current()->t_sector = last_dir->inode->sector;
    }
    else{
@@ -843,10 +844,12 @@ int mount (const char *path, int chan_no, int dev_no){
 		palloc_free_page(path_copy);
 		return -1;
 	}
+   printf("dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", dir->inode->sector, dir->inode->data._isscratch, dir->inode->data._mountpt);
 	if (dir != NULL)
 		dir_lookup (dir, path_name, &inode);
 	dir_close (dir);
 	if (inode == NULL){
+      printf("inode is null\n");
 		palloc_free_page(path_name);
 		palloc_free_page(path_copy);
 		return -1;
@@ -875,7 +878,7 @@ int mount (const char *path, int chan_no, int dev_no){
          // struct dir *filesys_root = dir_open_root();
          // printf("filesys_root isscratch: %d\n", filesys_root->inode->data._isscratch);
          // printf("before dir_close \n");
-         // dir_close_scratch(t_dir);
+         dir_close_scratch(t_dir);
          // printf("before fat_close\n");
 
          fat_close_scratch ();
@@ -962,6 +965,7 @@ int umount (const char *path){
 		palloc_free_page(path_copy);
 		return -1;
 	}
+   printf("[umount] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", dir->inode->sector, dir->inode->data._isscratch, dir->inode->data._mountpt);
 	if (dir != NULL)
 		dir_lookup (dir, path_name, &inode);
 	dir_close (dir);
@@ -976,8 +980,12 @@ int umount (const char *path){
       if(mount_cnt[1] == 0){
          fat_close_scratch();
       }
+   }else{
+      mount_cnt[0]--;
+      if(mount_cnt[0] == 0){
+         fat_close();
+      }
    }
-
    inode->data.start = inode->data.origin_start;
    inode->data.length = inode->data.origin_length;
    inode->data._isdir = inode->data.origin_isdir;

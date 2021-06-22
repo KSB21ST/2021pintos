@@ -69,8 +69,8 @@ void dir_close_scratch (struct dir *);
 /* Reading and writing. */
 bool dir_lookup_scratch (const struct dir *, const char *name, struct inode **);
 bool dir_add_scratch (struct dir *, const char *name, disk_sector_t);
-// bool dir_remove_scratch (struct dir *, const char *name);
-// bool dir_readdir (struct dir *, char name[NAME_MAX + 1]);
+bool dir_remove_scratch (struct dir *, const char *name);
+bool dir_readdir_scratch (struct dir *, char name[NAME_MAX + 1]);
 
 
 #endif /* filesys/directory.h */

@@ -65,8 +65,6 @@ filesys_done (void) {
  * or if internal memory allocation fails. */
 bool
 filesys_create (const char *name, off_t initial_size) {
-	disk_sector_t inode_sector = 0;
-	inode_sector = fat_create_chain(0);
 	// struct dir *dir = dir_open_root ();
 	// disk_sector_t t_sector= parse_n_locate(name);
 	// ASSERT(_inode->data._isdir == true);
@@ -85,27 +83,71 @@ filesys_create (const char *name, off_t initial_size) {
 		return false;
 	}
 
-	bool i_1 = inode_sector;
-	bool i_2 = inode_create (inode_sector, initial_size);
-	// if(!i_2)
-	// 	printf("filesys_create: %d \n", inode_sector);
+	disk_sector_t inode_sector = 0;
+	bool success = false;
 	bool i_3 = false;
-	if(i_2)
-		i_3 = dir_add (dir, file_name, inode_sector);
-
-	bool success = (dir != NULL
+	printf("before if-else\n");
+	if(dir->inode->data._isscratch){
+		inode_sector = fat_create_chain_scratch(0);
+		bool i_1 = inode_sector;
+		bool i_2 = inode_create_scratch (inode_sector, initial_size);
+		if(i_2)
+			i_3 = dir_add_scratch (dir, file_name, inode_sector);
+		success = (dir != NULL
 			// && free_map_allocate (1, &inode_sector)
 			&& i_1 //inode_sector
 			&& i_2 //inode_create (inode_sector, initial_size)
 			&& i_3); //dir_add (dir, name, inode_sector));
-	write_isdir(inode_sector, false);
-	if (!success && inode_sector != 0){
-		// free_map_release (inode_sector, 1);
-		// dir_remove(dir, file_name);
-		fat_remove_chain(inode_sector, 0);
-		// fat_put(inode_sector, 0);
+		write_isdir_scratch(inode_sector, false);
+
+		if (!success && inode_sector != 0){
+			fat_remove_chain_scratch(inode_sector, 0);
+		}
+
+		dir_close_scratch (dir);
+		
+	}else{
+		printf("must here\n");
+		inode_sector = fat_create_chain(0);
+		bool i_1 = inode_sector;
+		bool i_2 = inode_create (inode_sector, initial_size);
+		if(i_2)
+			i_3 = dir_add (dir, file_name, inode_sector);
+		success = (dir != NULL
+			// && free_map_allocate (1, &inode_sector)
+			&& i_1 //inode_sector
+			&& i_2 //inode_create (inode_sector, initial_size)
+			&& i_3); //dir_add (dir, name, inode_sector));
+		write_isdir(inode_sector, false);
+		
+		if (!success && inode_sector != 0){
+			fat_remove_chain(inode_sector, 0);
+		}
+
+		dir_close (dir);
 	}
-	dir_close (dir);
+
+	// bool i_1 = inode_sector;
+	// bool i_2 = inode_create (inode_sector, initial_size);
+	// // if(!i_2)
+	// // 	printf("filesys_create: %d \n", inode_sector);
+	// bool i_3 = false;
+	// if(i_2)
+	// 	i_3 = dir_add (dir, file_name, inode_sector);
+
+	// bool success = (dir != NULL
+	// 		// && free_map_allocate (1, &inode_sector)
+	// 		&& i_1 //inode_sector
+	// 		&& i_2 //inode_create (inode_sector, initial_size)
+	// 		&& i_3); //dir_add (dir, name, inode_sector));
+	// write_isdir(inode_sector, false);
+	// if (!success && inode_sector != 0){
+	// 	// free_map_release (inode_sector, 1);
+	// 	// dir_remove(dir, file_name);
+	// 	fat_remove_chain(inode_sector, 0);
+	// 	// fat_put(inode_sector, 0);
+	// }
+	// dir_close (dir);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
 
@@ -194,45 +236,130 @@ filesys_remove (const char *name) {
 		palloc_free_page(name_copy);
 		return false;
 	}
-
+	
 	struct inode *r_inode;
-	if(dir_lookup(dir, file_name, &r_inode)){
-	// printf("file name: %s r_inode: %d in filesys_remove\n", file_name, r_inode->sector);
-		if(r_inode->data._issym || !r_inode->data._isdir){
-			bool sym_remove = dir_remove(dir, file_name);
+	struct dir *r_dir;
+	if(dir->inode->data._isscratch){
+		if(dir_lookup_scratch(dir, file_name, &r_inode)){
+		// printf("file name: %s r_inode: %d in filesys_remove\n", file_name, r_inode->sector);
+			if(r_inode->data._issym || !r_inode->data._isdir){
+				bool sym_remove = dir_remove_scratch(dir, file_name);
+				palloc_free_page(file_name);
+				palloc_free_page(name_copy);
+				return sym_remove;
+			}
+		}
+		else{
+			// printf("file name: %s in filesys_remove\n", file_name);
 			palloc_free_page(file_name);
 			palloc_free_page(name_copy);
-			return sym_remove;
+			return true;
+		}
+	}else{
+		if(dir_lookup(dir, file_name, &r_inode)){
+		// printf("file name: %s r_inode: %d in filesys_remove\n", file_name, r_inode->sector);
+			if(r_inode->data._issym || !r_inode->data._isdir){
+				bool sym_remove = dir_remove(dir, file_name);
+				palloc_free_page(file_name);
+				palloc_free_page(name_copy);
+				return sym_remove;
+			}
+		}
+		else{
+			// printf("file name: %s in filesys_remove\n", file_name);
+			palloc_free_page(file_name);
+			palloc_free_page(name_copy);
+			return true;
 		}
 	}
-	else{
-		// printf("file name: %s in filesys_remove\n", file_name);
-		palloc_free_page(file_name);
-		palloc_free_page(name_copy);
-		return true;
-	}
-
-
-	struct dir *r_dir = dir_open(r_inode);
-	temp_r = r_dir->inode->sector;
-	char t_name[NAME_MAX + 1];
-
-	if(r_inode->data._isdir && dir_readdir(r_dir, t_name)){
-		palloc_free_page(file_name);
-		palloc_free_page(name_copy);
-		dir_close(r_dir);
-		dir_close (dir);
-		return false;
-	}
-	if(thread_current()->t_sector == r_dir->inode->sector)
-		thread_current()->t_sector = 0;
-	// if(strcmp(file_name, "file10") && strcmp(file_name, "dir10")){
-	// 	dir_remove(r_dir, "..");
+	// if(dir_lookup(dir, file_name, &r_inode)){
+	// // printf("file name: %s r_inode: %d in filesys_remove\n", file_name, r_inode->sector);
+	// 	if(r_inode->data._issym || !r_inode->data._isdir){
+	// 		bool sym_remove = dir_remove(dir, file_name);
+	// 		palloc_free_page(file_name);
+	// 		palloc_free_page(name_copy);
+	// 		return sym_remove;
+	// 	}
 	// }
-	dir_close(r_dir);
+	// else{
+	// 	// printf("file name: %s in filesys_remove\n", file_name);
+	// 	palloc_free_page(file_name);
+	// 	palloc_free_page(name_copy);
+	// 	return true;
+	// }
 	bool success = false;
-	success = dir != NULL && dir_remove (dir, file_name);
-	dir_close (dir);
+	if(r_inode->data._isscratch){
+		r_dir = dir_open_scratch(r_inode);
+		temp_r = r_dir->inode->sector;
+		char t_name[NAME_MAX + 1];
+
+		if(r_inode->data._isdir && dir_readdir_scratch(r_dir, t_name)){
+			palloc_free_page(file_name);
+			palloc_free_page(name_copy);
+			dir_close_scratch(r_dir);
+			dir_close_scratch(dir);
+			return false;
+		}	
+		if(thread_current()->t_sector == r_dir->inode->sector)
+			thread_current()->t_sector = 0;
+
+		dir_close_scratch(r_dir);
+		
+		if(dir->inode->data._isscratch){
+			success = dir != NULL && dir_remove_scratch (dir, file_name);
+			dir_close_scratch(dir);
+		}else{
+			success = dir != NULL && dir_remove (dir, file_name);
+			dir_close(dir);
+		}
+		
+	}else{
+		r_dir = dir_open(r_inode);
+		temp_r = r_dir->inode->sector;
+		char t_name[NAME_MAX + 1];
+
+		if(r_inode->data._isdir && dir_readdir(r_dir, t_name)){
+			palloc_free_page(file_name);
+			palloc_free_page(name_copy);
+			dir_close(r_dir);
+			dir_close (dir);
+			return false;
+		}
+
+		if(thread_current()->t_sector == r_dir->inode->sector)
+			thread_current()->t_sector = 0;
+
+		dir_close(r_dir);
+
+		if(dir->inode->data._isscratch){
+			success = dir != NULL && dir_remove_scratch (dir, file_name);
+			dir_close_scratch(dir);
+		}else{
+			success = dir != NULL && dir_remove (dir, file_name);
+			dir_close(dir);
+		}
+	}
+	// struct dir *r_dir = dir_open(r_inode);
+	// temp_r = r_dir->inode->sector;
+	// char t_name[NAME_MAX + 1];
+
+	// if(r_inode->data._isdir && dir_readdir(r_dir, t_name)){
+	// 	palloc_free_page(file_name);
+	// 	palloc_free_page(name_copy);
+	// 	dir_close(r_dir);
+	// 	dir_close (dir);
+	// 	return false;
+	// }
+
+	// if(thread_current()->t_sector == r_dir->inode->sector)
+	// 	thread_current()->t_sector = 0;
+	// // if(strcmp(file_name, "file10") && strcmp(file_name, "dir10")){
+	// // 	dir_remove(r_dir, "..");
+	// // }
+	// dir_close(r_dir);
+	// bool success = false;
+	// success = dir != NULL && dir_remove (dir, file_name);
+	// dir_close (dir);
 	palloc_free_page(file_name);
 	palloc_free_page(name_copy);
 

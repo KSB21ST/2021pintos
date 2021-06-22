@@ -25,10 +25,10 @@ void
 pagecache_init (void) {
 	/* TODO: Create a worker daemon for page cache with page_cache_kworkerd */
 	for (int i = 0; i < BUFFER_CACHE_NUM; ++i)
-  	{
+  {
 		buffer_cache[i].is_valid = false;
 		lock_init (&buffer_cache[i].lock);
-  	}
+  }
 	list_init (&read_ahead_queue);
 	lock_init(&read_ahead_lock);
 	cond_init (&read_ahead_cond);
@@ -73,6 +73,7 @@ page_cache_read_len (disk_sector_t sector, void *buffer, off_t offset, off_t len
 	list_push_back (&read_ahead_queue, &entry->elem);
 	cond_signal (&read_ahead_cond, &read_ahead_lock);
 	lock_release (&read_ahead_lock);
+  // lock_release (&info->lock);
 }
 
 void
@@ -98,13 +99,16 @@ page_cache_readahead (struct page *page, void *kva) {
 		lock_release (&finished_lock);
 
 		lock_acquire (&read_ahead_lock);
+    // lock_acquire (&cache_lock);
 		while (list_empty (&read_ahead_queue))
 		{
 		  cond_wait (&read_ahead_cond, &read_ahead_lock);
 		}
 		struct read_ahead_entry* entry = list_entry (list_pop_front (&read_ahead_queue), struct read_ahead_entry, elem);
 		disk_sector_t sector = entry->sector;
+    free(entry);
 		lock_release (&read_ahead_lock);
+    // lock_release(&cache_lock);
 
 		struct page_cache *info = get_or_evict_cache (sector);
 		lock_release (&info->lock);
@@ -161,7 +165,7 @@ page_cache_destroy (struct page *page) {
 static void
 page_cache_kworkerd (void *aux) {
 	thread_create ("cache_read_ahead", 0, page_cache_readahead, NULL);
-  	thread_create ("cache_write_behind", 0, page_cache_writeback, NULL);
+  thread_create ("cache_write_behind", 0, page_cache_writeback, NULL);
 }
 
 static void

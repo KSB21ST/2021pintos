@@ -14,7 +14,7 @@
 struct page;
 enum vm_type;
 
-#define BUFFER_CACHE_NUM 64
+#define BUFFER_CACHE_NUM 12
 #define WRITE_BEIND_PERIOD_MS 1000
 
 struct page_cache {

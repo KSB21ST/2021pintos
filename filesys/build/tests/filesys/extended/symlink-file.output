@@ -36,10 +36,10 @@ Executing 'symlink-file':
 (symlink-file) end
 symlink-file: exit(0)
 Execution of 'symlink-file' complete.
-Timer: 278 ticks
-Thread: 57 idle ticks, 90 kernel ticks, 131 user ticks
+Timer: 258 ticks
+Thread: 61 idle ticks, 85 kernel ticks, 112 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 1799 reads, 1031 writes
+hd0:1: 2505 reads, 1356 writes
 hd1:0: 229 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1636 characters output

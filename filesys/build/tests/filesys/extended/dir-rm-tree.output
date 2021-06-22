@@ -23,13 +23,13 @@ Executing 'dir-rm-tree':
 (dir-rm-tree) end
 dir-rm-tree: exit(0)
 Execution of 'dir-rm-tree' complete.
-Timer: 999 ticks
-Thread: 79 idle ticks, 104 kernel ticks, 816 user ticks
+Timer: 751 ticks
+Thread: 82 idle ticks, 86 kernel ticks, 583 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 1748 reads, 1103 writes
+hd0:1: 2094 reads, 1160 writes
 hd1:0: 232 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1228 characters output
+Console: 1227 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

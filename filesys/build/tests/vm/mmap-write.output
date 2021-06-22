@@ -21,13 +21,13 @@ Executing 'mmap-write':
 (mmap-write) end
 mmap-write: exit(0)
 Execution of 'mmap-write' complete.
-Timer: 113 ticks
-Thread: 47 idle ticks, 55 kernel ticks, 11 user ticks
+Timer: 76 ticks
+Thread: 30 idle ticks, 41 kernel ticks, 5 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 430 reads, 541 writes
+hd0:1: 434 reads, 543 writes
 hd1:0: 107 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1105 characters output
+Console: 1103 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

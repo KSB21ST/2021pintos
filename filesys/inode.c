@@ -257,9 +257,10 @@ inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset) {
 				if (bounce == NULL)
 					break;
 			}
-			// disk_read (filesys_disk, cluster_to_sector(sector_idx), bounce);
+			// // disk_read (filesys_disk, cluster_to_sector(sector_idx), bounce);
 			page_cache_read(cluster_to_sector(sector_idx), bounce);
 			memcpy (buffer + bytes_read, bounce + sector_ofs, chunk_size);
+			// page_cache_read_len (cluster_to_sector(sector_idx), buffer + bytes_read, sector_ofs, chunk_size); 
 		}
 		// page_cache_read_len (cluster_to_sector(sector_idx), buffer + bytes_read, sector_ofs, chunk_size); 
 
@@ -334,25 +335,26 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offsetì
 			page_cache_write(cluster_to_sector(sector_idx), buffer + bytes_written);
 		} else {
 			/* We need a bounce buffer. */
-			if (bounce == NULL) {
-				bounce = malloc (DISK_SECTOR_SIZE);
-				if (bounce == NULL)
-					break;
-			}
+			// if (bounce == NULL) {
+			// 	bounce = malloc (DISK_SECTOR_SIZE);
+			// 	if (bounce == NULL)
+			// 		break;
+			// }
 
-			/* If the sector contains data before or after the chunk
-			   we're writing, then we need to read in the sector
-			   first.  Otherwise we start with a sector of all zeros. */
-			if (sector_ofs > 0 || chunk_size < sector_left) 
-				// disk_read (filesys_disk, cluster_to_sector(sector_idx), bounce);
-				page_cache_read (cluster_to_sector(sector_idx), bounce);
-			else
-				memset (bounce, 0, DISK_SECTOR_SIZE);
-			memcpy (bounce + sector_ofs, buffer + bytes_written, chunk_size);
-			// disk_write (filesys_disk, cluster_to_sector(sector_idx), bounce); 
-			page_cache_write(cluster_to_sector(sector_idx), bounce);
+			// /* If the sector contains data before or after the chunk
+			//    we're writing, then we need to read in the sector
+			//    first.  Otherwise we start with a sector of all zeros. */
+			// if (sector_ofs > 0 || chunk_size < sector_left) 
+			// 	// disk_read (filesys_disk, cluster_to_sector(sector_idx), bounce);
+			// 	page_cache_read (cluster_to_sector(sector_idx), bounce);
+			// else
+			// 	memset (bounce, 0, DISK_SECTOR_SIZE);
+			// memcpy (bounce + sector_ofs, buffer + bytes_written, chunk_size);
+			// // disk_write (filesys_disk, cluster_to_sector(sector_idx), bounce); 
+			// page_cache_write(cluster_to_sector(sector_idx), bounce);
+			page_cache_write_len (cluster_to_sector(sector_idx), buffer + bytes_written, sector_ofs, chunk_size);
 		}
-		page_cache_write_len (cluster_to_sector(sector_idx), buffer + bytes_written, sector_ofs, chunk_size);
+		// page_cache_write_len (cluster_to_sector(sector_idx), buffer + bytes_written, sector_ofs, chunk_size);
 
 		/* Advance. */
 		size -= chunk_size;
@@ -363,7 +365,7 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offsetì
 	// disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
 	page_cache_write(cluster_to_sector(inode->sector), &inode->data);
 
-	free (bounce);
+	// free (bounce);
 
 	return bytes_written;
 }

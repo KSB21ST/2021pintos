@@ -261,9 +261,9 @@ process_exec (void *f_name) {
    pointer for argument array. Would contain parsed argument from input f_name after 'argument_parse' function
    */
    char *argv;
-   argv = palloc_get_page(PAL_ZERO); 
+   // argv = palloc_get_page(PAL_ZERO); 
    // argv = malloc(128);
-   // argv = (char *)malloc(sizeof(char)*1024);
+   argv = (char *)malloc(sizeof(char)*200);
    if(f_name == NULL) exit(-1);
 
    /* We cannot use the intr_frame in the thread structure.
@@ -285,17 +285,17 @@ process_exec (void *f_name) {
    */
    char *fn_copy;
    char *fn_copy2;
-   fn_copy = palloc_get_page(0);
-   fn_copy2 = palloc_get_page (0);
-   //fn_copy = (char*)malloc(sizeof(char)*1024);
-   //fn_copy2 = (char*)malloc(sizeof(char)*1024);
-   if (fn_copy == NULL || fn_copy2 == NULL){
+   // fn_copy = palloc_get_page(0);
+   // fn_copy2 = palloc_get_page (0);
+   fn_copy = (char*)malloc(sizeof(char)*(strlen(f_name)+1));
+   fn_copy2 = (char*)malloc(sizeof(char)*(strlen(f_name)+1));
+   if (fn_copy == NULL || fn_copy2 == NULL || argv == NULL){
        return -1;
    }
-   strlcpy (fn_copy, file_name, PGSIZE);
-   strlcpy (fn_copy2, file_name, PGSIZE);
-   //strlcpy(fn_copy, file_name, sizeof(char)*1024);
-   //strlcpy(fn_copy2, file_name, sizeof(char)*1024);
+   // strlcpy (fn_copy, file_name, PGSIZE);
+   // strlcpy (fn_copy2, file_name, PGSIZE);
+   strlcpy(fn_copy, file_name, sizeof(char)*(strlen(f_name)+1));
+   strlcpy(fn_copy2, file_name, sizeof(char)*(strlen(f_name)+1));
    char *next_ptr;
    char *realname;
 
@@ -313,6 +313,8 @@ process_exec (void *f_name) {
 
    /*parse arguments. use fn_copy, which is copy of f_name. argv is list for arguments.*/
    int argc = argument_parse(fn_copy, argv);
+
+   // printf("argv: %s \n", argv[0]);
 
    /*load - did not change anything in load*/
    success = load(realname, &_if);
@@ -334,13 +336,13 @@ process_exec (void *f_name) {
    /*
    free all the allocated pages. important for multioom, memory leak.
    */
-   palloc_free_page(argv);
-   // free(argv);
+   // palloc_free_page(argv);
+   free(argv);
 
-   palloc_free_page (fn_copy); 
-   palloc_free_page(fn_copy2);
-   //free(fn_copy);
-   //free(fn_copy2);
+   // palloc_free_page (fn_copy); 
+   // palloc_free_page(fn_copy2);
+   free(fn_copy);
+   free(fn_copy2);
    // palloc_free_page(file_name); 
    /*
    file_name was allocated in process_create_initd, if this is the second created process. 
@@ -471,6 +473,7 @@ process_exit (void) {
       cur_fd_table[i] = 0;
    }
    palloc_free_page(cur->fd_table);
+   // free(cur->fd_table);
 
    if(cur->executable)
        file_close(cur->executable);

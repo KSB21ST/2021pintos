@@ -212,7 +212,7 @@ thread_create (const char *name, int priority,
 	init_thread (t, name, priority);
 	//t->fd_table = (struct file **)malloc(sizeof(struct file *) * 128);
 	//memset(t->fd_table, NULL, sizeof(t->fd_table));
-	//t->fd_table = palloc_get_multiple(PAL_ZERO, 128);
+	// t->fd_table = malloc(sizeof(struct file **)*129);
 	t->fd_table = palloc_get_page(PAL_ZERO);
 	if(t->fd_table == NULL)
 		return TID_ERROR;

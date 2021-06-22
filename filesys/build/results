@@ -161,9 +161,9 @@ pass tests/vm/mmap-bad-off
 pass tests/vm/mmap-kernel
 pass tests/vm/lazy-file
 pass tests/vm/lazy-anon
-FAIL tests/vm/swap-file
+pass tests/vm/swap-file
 pass tests/vm/swap-anon
-FAIL tests/vm/swap-iter
+pass tests/vm/swap-iter
 pass tests/vm/swap-fork
 pass tests/filesys/buffer-cache/bc-easy
 pass tests/filesys/extended/dir-empty-name-persistence

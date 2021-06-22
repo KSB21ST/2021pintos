@@ -4,7 +4,7 @@ Kernel command line: -q -f put swap-file put large.txt run swap-file
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x7e0000 (Usable: 7,040 kB)
-Calibrating timer...  104,755,200 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 377 sector (188 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 7,931 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -14,10 +14,19 @@ Boot complete.
 Putting 'swap-file' into the file system...
 Putting 'large.txt' into the file system...
 Executing 'swap-file':
-Kernel PANIC at ../../userprog/process.c:98 in initd(): Fail to launch initd
-
-Call stack: 0x8004214624 0x8004217dc1 0x800420766f.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../devices/timer.c:217 in real_time_sleep().
+(swap-file) begin
+(swap-file) open "large.txt"
+(swap-file) mmap "large.txt"
+(swap-file) end
+swap-file: exit(0)
+Execution of 'swap-file' complete.
+Timer: 1989 ticks
+Thread: 433 idle ticks, 962 kernel ticks, 594 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 29964 reads, 16193 writes
+hd1:0: 7931 reads, 0 writes
+hd1:1: 3752 reads, 3752 writes
+Console: 1080 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

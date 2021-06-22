@@ -12,6 +12,8 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 
+#include "threads/thread.h"
+
 /* Page allocator.  Hands out memory in page-size (or
    page-multiple) chunks.  See malloc.h for an allocator that
    hands out smaller chunks.
@@ -265,6 +267,7 @@ palloc_get_multiple (enum palloc_flags flags, size_t page_cnt) {
 
 	lock_acquire (&pool->lock);
 	size_t page_idx = bitmap_scan_and_flip (pool->used_map, 0, page_cnt, false);
+	// printf("page_idx %d palloc_get_multiple\n", page_idx);
 	lock_release (&pool->lock);
 	void *pages;
 

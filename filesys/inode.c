@@ -159,7 +159,7 @@ inode_create (disk_sector_t sector, off_t length) {
 
 bool
 inode_create_scratch (disk_sector_t sector, off_t length) {
-	printf("\n-----------------sector: %d in inode_create_s\n", sector);
+	// printf("\n-----------------sector: %d in inode_create_s\n", sector);
 	struct inode_disk *disk_inode = NULL;
 	bool success = false;
 

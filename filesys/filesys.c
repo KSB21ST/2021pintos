@@ -86,7 +86,7 @@ filesys_create (const char *name, off_t initial_size) {
 	disk_sector_t inode_sector = 0;
 	bool success = false;
 	bool i_3 = false;
-	printf("before if-else\n");
+	// printf("before if-else\n");
 	if(dir->inode->data._isscratch){
 		inode_sector = fat_create_chain_scratch(0);
 		bool i_1 = inode_sector;
@@ -107,7 +107,7 @@ filesys_create (const char *name, off_t initial_size) {
 		dir_close_scratch (dir);
 		
 	}else{
-		printf("must here\n");
+		// printf("must here\n");
 		inode_sector = fat_create_chain(0);
 		bool i_1 = inode_sector;
 		bool i_2 = inode_create (inode_sector, initial_size);
@@ -169,13 +169,20 @@ filesys_open (const char *name) {
 	}
 
 	if(!strcmp(name, ".")){
-		struct dir *dir = dir_open(inode_open(thread_current()->t_sector));
+		struct dir *dir;
+		if(thread_current()->isscratch){
+			dir = dir_open_scratch(inode_open_scratch(thread_current()->t_sector));
+		}else{
+			dir = dir_open(inode_open(thread_current()->t_sector));
+		}
+		
 		return file_open(dir->inode);
 	}
 
 	char *file_name = palloc_get_page(0);
 	char *name_copy = palloc_get_page(0);
 	strlcpy(name_copy, name, PGSIZE);
+	// printf("before parse_path\n");
 	struct dir * dir = parse_path(name_copy, file_name);
 	// printf("name: %s, file_name: %s, dir sector: %d in filesys_open\n", name_copy, file_name, dir->inode->sector);
 
@@ -184,22 +191,30 @@ filesys_open (const char *name) {
 		palloc_free_page(name_copy);
 		return false;
 	}
-
-	if (dir != NULL)
+	if(dir->inode->data._isscratch){
+		dir_lookup_scratch (dir, file_name, &inode);
+		dir_close_scratch (dir);
+	}else{
 		dir_lookup (dir, file_name, &inode);
-	dir_close (dir);
+		dir_close (dir);
+	}
+
 	if (inode == NULL){
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
 		return false;
 	}
-		
+	
 	if(inode->data._issym){
 		// printf("file_name: %s link sector: %d in filesys_open\n", file_name, inode->sector);
 		struct file *ans = filesys_open (inode->data.link_path);
 		palloc_free_page(file_name);
 		palloc_free_page(name_copy);
-		inode_close(inode);
+		if(inode->data._isscratch){
+			inode_close_scratch(inode);
+		}else{
+			inode_close(inode);
+		}
 		return ans;
 	}
 	palloc_free_page(file_name);

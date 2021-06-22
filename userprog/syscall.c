@@ -465,7 +465,11 @@ close (int fd) {
       lock_acquire(&file_lock);
       t->open_cnt--;
       if(_file->inode->data._isdir){
-         dir_close(_file);
+         if(_file->inode->data._isscratch){
+            dir_close_scratch(_file);
+         }else{
+            dir_close(_file);
+         }
       }else{
          file_close(_file);
       }
@@ -535,8 +539,10 @@ chdir (const char *dir) {
 
    if(!strcmp(dir, "/")){
       last_dir = dir_open_root();
-      printf("[chdir] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", last_dir->inode->sector, last_dir->inode->data._isscratch, last_dir->inode->data._mountpt);
+      // printf("[chdir] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", last_dir->inode->sector, last_dir->inode->data._isscratch, last_dir->inode->data._mountpt);
       thread_current()->t_sector = last_dir->inode->sector;
+      thread_current()->isscratch = false;
+      return true;
    }
    else{
 
@@ -576,6 +582,7 @@ chdir (const char *dir) {
          }
          last_dir = dir_open_scratch(inode);
          thread_current()->t_sector = last_dir->inode->sector;
+         thread_current()->isscratch = last_dir->inode->data.origin_isscratch;
          temp_s = thread_current()->t_sector;
          palloc_free_page(name_copy);
          palloc_free_page(file_name);
@@ -601,6 +608,7 @@ chdir (const char *dir) {
          }
          last_dir = dir_open(inode);
          thread_current()->t_sector = last_dir->inode->sector;
+         thread_current()->isscratch = last_dir->inode->data.origin_isscratch;
          temp_s = thread_current()->t_sector;
          palloc_free_page(name_copy);
          palloc_free_page(file_name);
@@ -844,12 +852,12 @@ int mount (const char *path, int chan_no, int dev_no){
 		palloc_free_page(path_copy);
 		return -1;
 	}
-   printf("dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", dir->inode->sector, dir->inode->data._isscratch, dir->inode->data._mountpt);
+   // printf("dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", dir->inode->sector, dir->inode->data._isscratch, dir->inode->data._mountpt);
 	if (dir != NULL)
 		dir_lookup (dir, path_name, &inode);
 	dir_close (dir);
 	if (inode == NULL){
-      printf("inode is null\n");
+      // printf("inode is null\n");
 		palloc_free_page(path_name);
 		palloc_free_page(path_copy);
 		return -1;
@@ -912,9 +920,16 @@ int mount (const char *path, int chan_no, int dev_no){
       inode->data._mountpt = true;
       inode->data._isscratch = true;
       // disk_write(scratch_disk, cluster_to_sector_scratch(mount_point_clst), &inode->data);   // write at scratch_disk
-      disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+      if(inode->data.origin_isscratch){
+         disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
+         inode_close_scratch(inode);
+      }else{
+         disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         inode_close(inode);
+      }
+
       dir_close_scratch(root);
-      inode_close(inode);
+
 
    }else{      // filesys disk
 
@@ -937,9 +952,14 @@ int mount (const char *path, int chan_no, int dev_no){
       inode->data._mountpt = true;
       inode->data._isscratch = false;
 
-      disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+      if(inode->data.origin_isscratch){
+         disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
+         inode_close_scratch(inode);
+      }else{
+         disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         inode_close(inode);
+      }
       dir_close(root);
-      inode_close(inode);
 
    }
 
@@ -965,10 +985,15 @@ int umount (const char *path){
 		palloc_free_page(path_copy);
 		return -1;
 	}
-   printf("[umount] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", dir->inode->sector, dir->inode->data._isscratch, dir->inode->data._mountpt);
-	if (dir != NULL)
-		dir_lookup (dir, path_name, &inode);
-	dir_close (dir);
+   // printf("[umount] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", dir->inode->sector, dir->inode->data._isscratch, dir->inode->data._mountpt);
+	if(dir->inode->data._isscratch){
+      dir_lookup_scratch (dir, path_name, &inode);
+      dir_close_scratch (dir);
+   }else{
+      dir_lookup (dir, path_name, &inode);
+      dir_close (dir);
+   }
+
 	if (inode == NULL){
 		palloc_free_page(path_name);
 		palloc_free_page(path_copy);
@@ -992,10 +1017,15 @@ int umount (const char *path){
    inode->data._issym = inode->data.origin_issym;
    inode->data._mountpt = inode->data.origin_mountpt;
    inode->data._isscratch = inode->data.origin_isscratch; 
-
-   disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+   
+   if(inode->data._isscratch){
+      disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
+      inode_close_scratch(inode);
+   }else{
+      disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+      inode_close(inode);
+   }
    // need to edit for considering disk type later.
-   inode_close(inode);
 
    palloc_free_page(path_name);
    palloc_free_page(path_copy);

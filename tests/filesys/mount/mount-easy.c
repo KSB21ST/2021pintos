@@ -1,7 +1,7 @@
 #include <syscall.h>
 #include "tests/lib.h"
 #include "tests/main.h"
-/*
+
 void
 test_main (void) 
 {
@@ -16,7 +16,7 @@ test_main (void)
   CHECK (mount ("a", 1, 0) == 0, "mount the second disk at \"/a\"");
   CHECK (chdir ("a/b"), "chdir to re-mounted directory");
 }
-*/
+
 
 // own test case 1
 /*
@@ -35,8 +35,8 @@ test_main (void)
   CHECK (chdir ("b/d"), "chdir \"/b/d\" (d is made in mount)");
   CHECK (mount ("/a", 0, 1) == 0, "mount the filesys disk at \"/a\"");
   CHECK (chdir ("/a/b/d"), "chdir to remounted directory");
-}*/
-
+}
+*/
 // own test case 2 (failed)
 /*
 void
@@ -83,8 +83,8 @@ test_main (void)
 }
 */
 
-// own test case 4 (failed)
-
+// own test case 4
+/*
 void
 test_main (void) 
 {
@@ -99,13 +99,13 @@ test_main (void)
   CHECK (chdir ("/"), "chdir \"/\"");
   CHECK (umount ("mount_point") == 0, "umount \"mount_point\"");
   CHECK (mkdir ("mount_point_2"), "mkdir \"mount_point_2\"");
-  // CHECK (create ("mount_point_2/a", 512), "create \"a\"");
+  CHECK (create ("mount_point_2/a", 512), "create \"a\"");
   CHECK (mount ("mount_point_2", 1, 0) == 0, "mount \"mount_point_2\"");
   CHECK (chdir ("mount_point_2"), "chdir \"mount_point_2\"");
-  // CHECK ((fd=open ("b")) > 1, "open \"b\"");
-  // close(fd);
+  CHECK ((fd=open ("b")) > 1, "open \"b\"");
+  close(fd);
   CHECK (chdir ("/"), "chdir \"/\"");
   CHECK (umount ("mount_point_2") == 0, "umount \"mount_point_2\"");
-  // CHECK (open ("a") == -1, "open \"a\" fails");
+  CHECK (open ("a") == -1, "open \"a\" fails");
 
-}
+}*/

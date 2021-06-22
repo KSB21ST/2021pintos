@@ -532,6 +532,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 	t->executable = NULL;
 	t->t_sector = 1;
+	t->isscratch = false; // edit for mount
 
 
 	//edit-for mlfqs

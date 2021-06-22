@@ -22,7 +22,11 @@ file_open (struct inode *inode) {
 		file->deny_write = false;
 		return file;
 	} else {
-		inode_close (inode);
+		if(inode->data._isscratch){
+			inode_close_scratch(inode);
+		}else{
+			inode_close (inode);
+		}
 		free (file);
 		return NULL;
 	}
@@ -53,7 +57,11 @@ void
 file_close (struct file *file) {
 	if (file != NULL) {
 		file_allow_write (file);
-		inode_close (file->inode);
+		if(file->inode->data._isscratch){
+			inode_close_scratch(file->inode);
+		}else{
+			inode_close (file->inode);
+		}
 		free (file);
 	}
 }

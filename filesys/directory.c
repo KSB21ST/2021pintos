@@ -484,7 +484,7 @@ parse_n_locate(const char *path_name)
 
 struct dir*
 parse_path(char *path_name, char *last_name)
-{	printf("parse_path start\n");
+{	
 	struct dir *t_dir = NULL;
 	struct inode *t_inode = NULL;
 	disk_sector_t ans = 0;
@@ -492,7 +492,7 @@ parse_path(char *path_name, char *last_name)
 	if (path_name[0] == '/'){ //absolute path, 첫번쨰 경로가 0이면
 		//open root directory
 		t_dir = dir_open_root();
-		printf("[parse_path] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", t_dir->inode->sector, t_dir->inode->data._isscratch, t_dir->inode->data._mountpt);
+		// printf("[parse_path] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", t_dir->inode->sector, t_dir->inode->data._isscratch, t_dir->inode->data._mountpt);
 		absolute_path = true;
 	}
 	else{ //relative path
@@ -502,17 +502,16 @@ parse_path(char *path_name, char *last_name)
 		}
 		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
 		else{
-			if (thread_current()->t_sector==ROOT_DIR_SECTOR){
-				printf("open root\n");
-				t_dir = dir_open_root();
+			if(thread_current()->isscratch){
+				printf("here??\n");
+				t_dir = dir_open_scratch(inode_open_scratch(thread_current()->t_sector));
+			}else{
+				t_dir = dir_open(inode_open(thread_current()->t_sector));
 			}
-			else
-			t_dir = dir_open(inode_open(thread_current()->t_sector));
 		} 
 	}
-	printf("[parse_path] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", t_dir->inode->sector, t_dir->inode->data._isscratch, t_dir->inode->data._mountpt);
+	// printf("[parse_path] dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", t_dir->inode->sector, t_dir->inode->data._isscratch, t_dir->inode->data._mountpt);
 	if(t_dir->inode->data._mountpt){
-		printf("never here\n");
 		if(t_dir->inode->data._isscratch){
 			dir_close_scratch(t_dir);
 			t_dir = dir_open_scratch(inode_open_scratch(ROOT_DIR_SECTOR));
@@ -526,7 +525,6 @@ parse_path(char *path_name, char *last_name)
 	token = strtok_r(path_name, "/", &last);
    	extra = strtok_r(NULL, "/", &last);
 	int i = 0;
-	printf("token: %s, extra: %s\n", token, extra);
 	while (extra != NULL)
 	{
 		// printf("\ntoken: %s, extra: %s\n", token, extra);
@@ -573,7 +571,7 @@ parse_path(char *path_name, char *last_name)
 			i++;
 
 		}else{
-			printf("not scratch\n");
+			// printf("not scratch\n");
 			if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면
 				if(i == 0){
 					strlcpy (last_name, token, PGSIZE);

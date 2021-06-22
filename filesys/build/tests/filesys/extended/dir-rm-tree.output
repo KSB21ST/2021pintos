@@ -23,8 +23,8 @@ Executing 'dir-rm-tree':
 (dir-rm-tree) end
 dir-rm-tree: exit(0)
 Execution of 'dir-rm-tree' complete.
-Timer: 880 ticks
-Thread: 266 idle ticks, 37 kernel ticks, 577 user ticks
+Timer: 638 ticks
+Thread: 117 idle ticks, 37 kernel ticks, 484 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 16129 reads, 2407 writes
 hd1:0: 232 reads, 0 writes

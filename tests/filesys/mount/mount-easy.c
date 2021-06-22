@@ -37,7 +37,7 @@ test_main (void)
   CHECK (chdir ("/a/b/d"), "chdir to remounted directory");
 }
 */
-// own test case 2 (failed)
+// own test case 2
 /*
 void
 test_main (void)
@@ -46,14 +46,14 @@ test_main (void)
   CHECK (mkdir ("/b"), "mkdir \"/b\"");
   CHECK (mkdir ("/c"), "mkdir \"/c\"");
   CHECK (mount ("a", 0, 1) == 0, "mount the filesys disk at \"/a\"");
-  CHECK (chdir ("a/a"), "chdir \"/a/a\"");
-  CHECK (mkdir ("d"), "mkdir \"/a/a/d\"");
-  CHECK (chdir ("d"), "chdir \"/a/a/d\"");
+  CHECK (chdir ("a/b"), "chdir \"/a/b\"");
+  CHECK (mkdir ("d"), "mkdir \"/a/b/d\"");
+  CHECK (chdir ("d"), "chdir \"/a/b/d\"");
   CHECK (chdir ("/"), "pop back to \"/\"");
   CHECK (umount ("a") == 0, "unmount the filesys disk from \"/a\"");
-  CHECK (chdir ("/a/d"), "chdir \"/a/d\" (d is made in mount)");
+  CHECK (chdir ("/b/d"), "chdir \"/b/d\" (d is made in mount)");
   CHECK (mount ("/a", 0, 1) == 0, "mount the filesys disk at \"/a\"");
-  CHECK (chdir ("/a/a/d"), "chdir to remounted directory");
+  CHECK (chdir ("/a/b/d"), "chdir to remounted directory");
 }
 */
 /*  need to fix parse_path... 

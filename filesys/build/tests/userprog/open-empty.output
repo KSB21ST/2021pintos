@@ -17,8 +17,8 @@ Executing 'open-empty':
 (open-empty) end
 open-empty: exit(0)
 Execution of 'open-empty' complete.
-Timer: 80 ticks
-Thread: 43 idle ticks, 35 kernel ticks, 2 user ticks
+Timer: 78 ticks
+Thread: 39 idle ticks, 37 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 273 reads, 636 writes
 hd1:0: 103 reads, 0 writes

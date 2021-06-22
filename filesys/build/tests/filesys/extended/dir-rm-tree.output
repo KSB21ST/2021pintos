@@ -5,7 +5,7 @@ Pintos booting with:
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
 Calibrating timer...  130,867,200 loops/s.
-hd0:0: detected 377 sector (188 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:0: detected 385 sector (192 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 232 sector (116 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
@@ -23,10 +23,10 @@ Executing 'dir-rm-tree':
 (dir-rm-tree) end
 dir-rm-tree: exit(0)
 Execution of 'dir-rm-tree' complete.
-Timer: 751 ticks
-Thread: 82 idle ticks, 86 kernel ticks, 583 user ticks
+Timer: 768 ticks
+Thread: 62 idle ticks, 93 kernel ticks, 614 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 2094 reads, 1160 writes
+hd0:1: 1960 reads, 1158 writes
 hd1:0: 232 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1227 characters output

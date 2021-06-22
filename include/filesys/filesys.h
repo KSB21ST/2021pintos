@@ -10,6 +10,7 @@
 
 /* Disk used for file system. */
 extern struct disk *filesys_disk;
+struct disk *scratch_disk;
 bool mounted; //for mount
 bool hasbeen_mounted;
 

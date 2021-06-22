@@ -16,6 +16,7 @@ struct dir *parse_path(char * path_name, char *file_name);
 
 /* The disk that contains the file system. */
 struct disk *filesys_disk;
+struct disk *scratch_disk;
 // bool mounted; //for mount
 
 static void do_format (void);

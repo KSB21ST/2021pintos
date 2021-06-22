@@ -47,23 +47,40 @@ static struct hash sti_hash; /* sector to index */
 static bool finished;
 static struct lock finished_lock;
 
+static struct page_cache buffer_cache_s[BUFFER_CACHE_NUM];
+static struct list read_ahead_queue_s;
+static struct lock read_ahead_lock_s;
+static struct condition read_ahead_cond_s;
+static struct lock cache_lock_s;
+static size_t remain_cache_space_s;
+static struct hash sti_hash_s; /* sector to index */
+static bool finished_s;
+static struct lock finished_lock_s;
+
 void page_cache_init (void);
 bool page_cache_initializer (struct page *page, enum vm_type type, void *kva);
 void page_cache_destroy (struct page *page);
-
-static void load_disk (struct page_cache *info, disk_sector_t sector);
-static void save_disk (struct page_cache *info);
-static struct page_cache* get_or_evict_cache (disk_sector_t);
-static struct page_cache* get_cache (disk_sector_t sector);
-static struct page_cache* get_empty_cache (disk_sector_t);
-static struct page_cache* evict_cache (disk_sector_t);
-static void sti_set (disk_sector_t sector, int index);
-static int sti_get (disk_sector_t sector);
-static void sti_clear (disk_sector_t sector, int index);
-static unsigned sti_hash_func(const struct hash_elem *, void *);
-static bool sti_less_func(const struct hash_elem *, const struct hash_elem *, void *);
 void  page_cache_read(disk_sector_t sector, void *buffer);
 void page_cache_write(disk_sector_t sector, void *buffer);
 void page_cache_read_len (disk_sector_t sector, void *buffer, off_t offset, off_t len);
 void page_cache_write_len (disk_sector_t sector, void *buffer, off_t offset, off_t len);
+static struct page_cache* get_or_evict_cache (disk_sector_t);
+static struct page_cache* evict_cache (disk_sector_t);
+static int sti_get (disk_sector_t sector);
+static void sti_clear (disk_sector_t sector);
+static void sti_set (disk_sector_t sector, int index);
+static unsigned sti_hash_func(const struct hash_elem *, void *);
+static bool sti_less_func(const struct hash_elem *, const struct hash_elem *, void *);
+
+void page_cache_init_s (void);
+void page_cache_destroy_s (struct page *page);
+void  page_cache_read_s(disk_sector_t sector, void *buffer);
+void page_cache_write_s(disk_sector_t sector, void *buffer);
+void page_cache_read_len_s (disk_sector_t sector, void *buffer, off_t offset, off_t len);
+void page_cache_write_len_s (disk_sector_t sector, void *buffer, off_t offset, off_t len);
+static struct page_cache* get_or_evict_cache_s (disk_sector_t);
+static struct page_cache* evict_cache_s (disk_sector_t);
+static int sti_get_s (disk_sector_t sector);
+static void sti_clear_s (disk_sector_t sector);
+static void sti_set_s (disk_sector_t sector, int index);
 #endif

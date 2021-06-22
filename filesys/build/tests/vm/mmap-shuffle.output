@@ -4,8 +4,8 @@ Kernel command line: -q -f put mmap-shuffle run mmap-shuffle
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  105,472,000 loops/s.
-hd0:0: detected 377 sector (188 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+Calibrating timer...  104,755,200 loops/s.
+hd0:0: detected 385 sector (192 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 114 sector (57 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
@@ -31,10 +31,10 @@ Executing 'mmap-shuffle':
 (mmap-shuffle) end
 mmap-shuffle: exit(0)
 Execution of 'mmap-shuffle' complete.
-Timer: 275 ticks
-Thread: 55 idle ticks, 63 kernel ticks, 157 user ticks
+Timer: 274 ticks
+Thread: 64 idle ticks, 53 kernel ticks, 158 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 1519 reads, 1071 writes
+hd0:1: 1516 reads, 1069 writes
 hd1:0: 114 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1531 characters output

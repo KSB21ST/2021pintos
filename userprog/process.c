@@ -105,8 +105,7 @@ tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    /* Clone current thread to new thread.*/
    struct thread *curr = thread_current();
-   if(list_size_int(&all_list) > 17) /*for multioom, restrict forked child number*/
-      return TID_ERROR;
+
    /*semaphore for forking and waiting the child to finish load. If success, sema_up after load. If load fails, sema_up at process_exit*/
    sema_init(&curr->fork_sema, 0); 
    int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_); /*create child thread*/

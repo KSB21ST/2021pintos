@@ -5,7 +5,7 @@ Pintos booting with:
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0xffe0000 (Usable: 260,992 kB)
 Calibrating timer...  209,510,400 loops/s.
-hd0:0: detected 393 sector (196 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:0: detected 401 sector (200 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 2,048 sector (1024 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
@@ -14,13 +14,13 @@ Executing 'tar fs.tar /':
 tar: exit(0)
 Execution of 'tar' complete.
 Getting 'fs.tar' from the file system...
-Timer: 203 ticks
-Thread: 74 idle ticks, 29 kernel ticks, 101 user ticks
+Timer: 197 ticks
+Thread: 45 idle ticks, 77 kernel ticks, 75 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 2601 reads, 1344 writes
+hd0:1: 1781 reads, 367 writes
 hd1:0: 0 reads, 327 writes
 hd1:1: 0 reads, 0 writes
-Console: 879 characters output
+Console: 877 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

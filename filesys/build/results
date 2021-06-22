@@ -68,7 +68,7 @@ pass tests/userprog/wait-simple
 pass tests/userprog/wait-twice
 pass tests/userprog/wait-killed
 pass tests/userprog/wait-bad-pid
-pass tests/userprog/multi-recurse
+FAIL tests/userprog/multi-recurse
 pass tests/userprog/multi-child-fd
 pass tests/userprog/rox-simple
 pass tests/userprog/rox-child
@@ -165,7 +165,7 @@ pass tests/vm/swap-file
 pass tests/vm/swap-anon
 pass tests/vm/swap-iter
 pass tests/vm/swap-fork
-FAIL tests/filesys/buffer-cache/bc-easy
+pass tests/filesys/buffer-cache/bc-easy
 pass tests/filesys/extended/dir-empty-name-persistence
 pass tests/filesys/extended/dir-mk-tree-persistence
 pass tests/filesys/extended/dir-mkdir-persistence

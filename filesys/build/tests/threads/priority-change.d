@@ -9,5 +9,7 @@ tests/threads/priority-change.o: ../../tests/threads/priority-change.c \
  ../../include/vm/uninit.h ../../include/vm/anon.h \
  ../../include/vm/file.h ../../include/filesys/file.h \
  ../../include/filesys/off_t.h ../../include/filesys/page_cache.h \
+ ../../include/devices/disk.h ../../include/lib/inttypes.h \
+ ../../include/lib/string.h ../../include/threads/synch.h \
  ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
- ../../include/lib/stdlib.h ../../include/threads/synch.h
+ ../../include/lib/stdlib.h

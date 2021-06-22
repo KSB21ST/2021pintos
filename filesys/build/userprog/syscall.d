@@ -10,12 +10,12 @@ userprog/syscall.o: ../../userprog/syscall.c \
  ../../include/threads/thread.h ../../include/vm/vm.h \
  ../../include/threads/palloc.h ../../include/vm/uninit.h \
  ../../include/vm/anon.h ../../include/vm/file.h \
- ../../include/filesys/page_cache.h ../../include/lib/kernel/hash.h \
+ ../../include/filesys/page_cache.h ../../include/lib/string.h \
+ ../../include/threads/synch.h ../../include/lib/kernel/hash.h \
  ../../include/lib/kernel/list.h ../../include/lib/stdlib.h \
- ../../include/threads/synch.h ../../include/threads/loader.h \
- ../../include/userprog/gdt.h ../../include/threads/flags.h \
- ../../include/intrinsic.h ../../include/threads/mmu.h \
- ../../include/threads/pte.h ../../include/threads/vaddr.h \
- ../../include/filesys/filesys.h ../../include/filesys/directory.h \
- ../../include/lib/string.h ../../include/threads/malloc.h \
+ ../../include/threads/loader.h ../../include/userprog/gdt.h \
+ ../../include/threads/flags.h ../../include/intrinsic.h \
+ ../../include/threads/mmu.h ../../include/threads/pte.h \
+ ../../include/threads/vaddr.h ../../include/filesys/filesys.h \
+ ../../include/filesys/directory.h ../../include/threads/malloc.h \
  ../../include/filesys/fat.h

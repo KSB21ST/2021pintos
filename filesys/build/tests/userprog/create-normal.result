@@ -1,1 +1,51 @@
-PASS
+FAIL
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (create-normal) begin
+  (create-normal) create quux.dat
+  (create-normal) end
+  create-normal: exit(0)
+Differences in `diff -u' format:
++ 
++  name: . in lookup 
++ 
++  name: .. in lookup 
++ 
++  name: create-normal in lookup 
+  (create-normal) begin
+  (create-normal) create quux.dat
++ 
++  name: . in lookup 
++ 
++  name: .. in lookup 
++ 
++  name: create-normal in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
++ 
++  name:  in lookup 
+  (create-normal) end
+  create-normal: exit(0)

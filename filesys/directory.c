@@ -129,7 +129,7 @@ lookup (const struct dir *dir, const char *name,
 	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
 			ofs += sizeof e){
 		// if(!strcmp("a", name)) //for symlink-file test
-		printf("\n name: %s in lookup \n", e.name);
+		// printf("\n name: %s in lookup \n", e.name);
 		if (e.in_use && !strcmp (name, e.name)) {
 			if (ep != NULL)
 				*ep = e;

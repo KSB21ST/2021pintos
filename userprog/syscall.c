@@ -17,6 +17,7 @@
 #include <hash.h>
 //end 20180109
 #include "filesys/fat.h"
+#include "filesys/page_cache.h"
 
 // register uint64_t *num asm ("rax") = (uint64_t *) num_;
 //    register uint64_t *a1 asm ("rdi") = (uint64_t *) a1_;
@@ -819,7 +820,8 @@ symlink (const char* target, const char* linkpath) {
    ASSERT (strlen(target) < 100);
 	strlcpy(symlink->data.link_path, target, strlen(target) + 1);
 
-   disk_write(filesys_disk, cluster_to_sector(symlink->sector), &symlink->data);
+   // disk_write(filesys_disk, cluster_to_sector(symlink->sector), &symlink->data);
+   page_cache_write(cluster_to_sector(symlink->sector), &symlink->data);
    dir_close(parent_dir);
    // inode_close(symlink);
 
@@ -924,7 +926,8 @@ int mount (const char *path, int chan_no, int dev_no){
          disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
          inode_close_scratch(inode);
       }else{
-         disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         // disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         page_cache_write(cluster_to_sector(inode->sector), &inode->data);
          inode_close(inode);
       }
 
@@ -956,7 +959,8 @@ int mount (const char *path, int chan_no, int dev_no){
          disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
          inode_close_scratch(inode);
       }else{
-         disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         // disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);              // write at filesys_disk
+         page_cache_write(cluster_to_sector(inode->sector), &inode->data);  
          inode_close(inode);
       }
       dir_close(root);
@@ -1022,7 +1026,8 @@ int umount (const char *path){
       disk_write(scratch_disk, cluster_to_sector_scratch(inode->sector), &inode->data);
       inode_close_scratch(inode);
    }else{
-      disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+      // disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+      page_cache_write(cluster_to_sector(inode->sector), &inode->data);
       inode_close(inode);
    }
    // need to edit for considering disk type later.

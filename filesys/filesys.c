@@ -27,6 +27,7 @@ filesys_init (bool format) {
 	if (filesys_disk == NULL)
 		PANIC ("hd0:1 (hdb) not present, file system initialization failed");
 
+	pagecache_init ();
 	inode_init ();
 
 #ifdef EFILESYS
@@ -54,6 +55,7 @@ filesys_done (void) {
 	/* Original FS */
 #ifdef EFILESYS
 	fat_close ();
+	page_cache_destroy(NULL);
 #else
 	free_map_close ();
 #endif

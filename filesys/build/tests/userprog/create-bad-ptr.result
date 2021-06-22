@@ -1,15 +1,1 @@
-FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (create-bad-ptr) begin
-  create-bad-ptr: exit(-1)
-Differences in `diff -u' format:
-+ 
-+  name: . in lookup 
-+ 
-+  name: .. in lookup 
-+ 
-+  name: create-bad-ptr in lookup 
-  (create-bad-ptr) begin
-  create-bad-ptr: exit(-1)
+PASS

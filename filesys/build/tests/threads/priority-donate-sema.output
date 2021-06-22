@@ -4,75 +4,11 @@ Kernel command line: -q -threads-tests -f run priority-donate-sema
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
-hd0:0: detected 393 sector (196 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+Calibrating timer...  104,755,200 loops/s.
+hd0:0: detected 401 sector (200 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
-Formatting file system...
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name: . in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-
- name:  in lookup 
-done.
+Formatting file system...done.
 Boot complete.
 Executing 'priority-donate-sema':
 (priority-donate-sema) begin
@@ -85,12 +21,12 @@ Executing 'priority-donate-sema':
 (priority-donate-sema) Main thread finished.
 (priority-donate-sema) end
 Execution of 'priority-donate-sema' complete.
-Timer: 90 ticks
-Thread: 32 idle ticks, 58 kernel ticks, 0 user ticks
+Timer: 68 ticks
+Thread: 36 idle ticks, 32 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 197 reads, 325 writes
+hd0:1: 161 reads, 320 writes
 hd1:1: 0 reads, 0 writes
-Console: 1789 characters output
+Console: 1148 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

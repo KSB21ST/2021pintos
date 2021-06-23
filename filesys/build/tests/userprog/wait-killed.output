@@ -22,13 +22,13 @@ child-bad: exit(-1)
 (wait-killed) end
 wait-killed: exit(0)
 Execution of 'wait-killed' complete.
-Timer: 107 ticks
-Thread: 42 idle ticks, 52 kernel ticks, 13 user ticks
+Timer: 95 ticks
+Thread: 35 idle ticks, 54 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 766 reads, 734 writes
+hd0:1: 662 reads, 735 writes
 hd1:0: 205 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1121 characters output
+Console: 1119 characters output
 Keyboard: 0 keys pressed
 Exception: 1 page faults
 Powering off...

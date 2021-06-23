@@ -121,6 +121,27 @@ file_write (struct file *file, const void *buffer, off_t size) {
 	file->pos += bytes_written;
 	return bytes_written;
 }
+/*
+off_t
+file_write_fsutil (struct file *file, const void *buffer, off_t size) {
+	//start 20180109 -for dir-open test
+	if(!file->inode->data._issym && file->inode->data._isdir){
+		// printf("not symlink and dir \n");
+		return -1;
+	}
+	if(file->inode->data._issym){
+		struct file *ans = file_open (file->inode->data.link_path);
+		// printf("link sector: %d in filesys_open\n", ans->inode->sector);
+		off_t bytes_written = inode_write_at (ans->inode, buffer, size, ans->pos);
+		ans->pos += bytes_written;
+		return bytes_written;
+	}
+	// printf("write at: %d in file_write\n", file->inode->data.start);
+	//eend 20180109
+	off_t bytes_written = inode_write_at (file->inode, buffer, size, file->pos);
+	file->pos += bytes_written;
+	return bytes_written;
+}*/
 
 /* Writes SIZE bytes from BUFFER into FILE,
  * starting at offset FILE_OFS in the file.

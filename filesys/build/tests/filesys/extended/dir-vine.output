@@ -20,10 +20,10 @@ Executing 'dir-vine':
 (dir-vine) end
 dir-vine: exit(0)
 Execution of 'dir-vine' complete.
-Timer: 3405 ticks
-Thread: 156 idle ticks, 190 kernel ticks, 3059 user ticks
+Timer: 3486 ticks
+Thread: 249 idle ticks, 185 kernel ticks, 3052 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 9336 reads, 5558 writes
+hd0:1: 9301 reads, 5550 writes
 hd1:0: 230 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1125 characters output

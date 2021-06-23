@@ -342,6 +342,9 @@ inode_remove (struct inode *inode) {
  * than SIZE if an error occurs or end of file is reached. */
 off_t
 inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset) {
+	if(inode->data._isscratch){
+		return inode_read_at_scratch(inode, buffer_, size, offset);
+	}
 	uint8_t *buffer = buffer_;
 	off_t bytes_read = 0;
 	uint8_t *bounce = NULL;
@@ -394,6 +397,9 @@ inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset) {
 off_t
 inode_read_at_scratch (struct inode *inode, void *buffer_, off_t size, off_t offset) {
 	// printf("hallo\n");
+	if(!inode->data._isscratch){
+		return inode_read_at (inode, buffer_, size, offset);
+	}
 	uint8_t *buffer = buffer_;
 	off_t bytes_read = 0;
 	uint8_t *bounce = NULL;
@@ -453,6 +459,11 @@ inode_read_at_scratch (struct inode *inode, void *buffer_, off_t size, off_t off
 off_t
 inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offset은 inode의 offset 이다
 		off_t offset) {
+	
+	if (inode->data._isscratch){
+		return inode_write_at_scratch (inode, buffer_, size, offset);
+	}
+
 	const uint8_t *buffer = buffer_;
 	off_t bytes_written = 0;
 	uint8_t *bounce = NULL;
@@ -539,6 +550,9 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size, //offset�
 off_t
 inode_write_at_scratch (struct inode *inode, const void *buffer_, off_t size, //offset은 inode의 offset 이다
 		off_t offset) {
+	if(!inode->data._isscratch){
+		return inode_write_at (inode, buffer_, size, offset);
+	}
 	const uint8_t *buffer = buffer_;
 	off_t bytes_written = 0;
 	uint8_t *bounce = NULL;

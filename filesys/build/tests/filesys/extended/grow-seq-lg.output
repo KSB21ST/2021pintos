@@ -4,7 +4,7 @@ Kernel command line: -q -f put grow-seq-lg put tar run grow-seq-lg
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  203,776,000 loops/s.
+Calibrating timer...  106,496,000 loops/s.
 hd0:0: detected 401 sector (200 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 223 sector (111 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -25,10 +25,10 @@ Executing 'grow-seq-lg':
 (grow-seq-lg) end
 grow-seq-lg: exit(0)
 Execution of 'grow-seq-lg' complete.
-Timer: 143 ticks
-Thread: 48 idle ticks, 66 kernel ticks, 29 user ticks
+Timer: 183 ticks
+Thread: 81 idle ticks, 72 kernel ticks, 31 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 1152 reads, 832 writes
+hd0:1: 1127 reads, 834 writes
 hd1:0: 223 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1249 characters output

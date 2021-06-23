@@ -25,10 +25,10 @@ Executing 'grow-tell':
 (grow-tell) end
 grow-tell: exit(0)
 Execution of 'grow-tell' complete.
-Timer: 99 ticks
-Thread: 42 idle ticks, 47 kernel ticks, 10 user ticks
+Timer: 91 ticks
+Thread: 33 idle ticks, 48 kernel ticks, 11 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 729 reads, 588 writes
+hd0:1: 611 reads, 589 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1217 characters output

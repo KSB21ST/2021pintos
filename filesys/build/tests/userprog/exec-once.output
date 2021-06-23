@@ -19,13 +19,13 @@ Executing 'exec-once':
 (child-simple) run
 exec-once: exit(81)
 Execution of 'exec-once' complete.
-Timer: 96 ticks
-Thread: 48 idle ticks, 45 kernel ticks, 4 user ticks
+Timer: 101 ticks
+Thread: 32 idle ticks, 63 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 732 reads, 730 writes
+hd0:1: 661 reads, 730 writes
 hd1:0: 203 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1045 characters output
+Console: 1046 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

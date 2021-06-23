@@ -22,13 +22,13 @@ Executing 'dir-open':
 (dir-open) end
 dir-open: exit(0)
 Execution of 'dir-open' complete.
-Timer: 93 ticks
-Thread: 33 idle ticks, 55 kernel ticks, 6 user ticks
+Timer: 120 ticks
+Thread: 66 idle ticks, 50 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 552 reads, 525 writes
+hd0:1: 577 reads, 525 writes
 hd1:0: 223 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1115 characters output
+Console: 1116 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

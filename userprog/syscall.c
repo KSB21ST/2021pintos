@@ -362,9 +362,11 @@ read (int fd, void *buffer, unsigned length)
    }else if(temp == -2){
       cnt = -1;
    }else{
-      if(temp == NULL)
+      if(temp == NULL){
          cnt = -1;
-      cnt = file_read(cur->fd_table[fd], buffer, length);
+      }else{
+         cnt = file_read(cur->fd_table[fd], buffer, length);
+      }
       // printf("after file_read\n");
    }
    lock_release(&file_lock);
@@ -394,11 +396,9 @@ write (int fd, const void *buffer, unsigned length)
    }else{
       if(temp == NULL){
          cnt = -1;
+      }else{
+         cnt = file_write(cur->fd_table[fd], buffer, length);
       }
-      // printf("fd: %d in syscall write\n", fd);
-      // struct file *t_f = cur->fd_table[fd];
-      // printf("sector: %d in syscall write\n", t_f->inode->sector);
-      cnt = file_write(cur->fd_table[fd], buffer, length);
    }
    lock_release(&file_lock);
    return cnt;
@@ -863,7 +863,7 @@ int mount (const char *path, int chan_no, int dev_no){
       dir_lookup (dir, path_name, &inode);
       dir_close (dir);
    }
-   
+
 	if (inode == NULL){
       // printf("inode is null\n");
 		palloc_free_page(path_name);

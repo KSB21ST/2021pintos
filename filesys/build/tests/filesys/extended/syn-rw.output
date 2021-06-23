@@ -4,7 +4,7 @@ Kernel command line: -q -f put syn-rw put tar put child-syn-rw run syn-rw
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  111,206,400 loops/s.
+Calibrating timer...  197,222,400 loops/s.
 hd0:0: detected 401 sector (200 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 343 sector (171 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -33,13 +33,13 @@ child-syn-rw: exit(3)
 (syn-rw) end
 syn-rw: exit(0)
 Execution of 'syn-rw' complete.
-Timer: 292 ticks
-Thread: 84 idle ticks, 102 kernel ticks, 106 user ticks
+Timer: 206 ticks
+Thread: 51 idle ticks, 63 kernel ticks, 92 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 2107 reads, 1293 writes
+hd0:1: 1665 reads, 1285 writes
 hd1:0: 343 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1578 characters output
+Console: 1576 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

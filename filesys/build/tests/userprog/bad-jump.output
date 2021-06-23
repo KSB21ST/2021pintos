@@ -16,10 +16,10 @@ Executing 'bad-jump':
 (bad-jump) begin
 bad-jump: exit(-1)
 Execution of 'bad-jump' complete.
-Timer: 98 ticks
-Thread: 41 idle ticks, 51 kernel ticks, 7 user ticks
+Timer: 86 ticks
+Thread: 40 idle ticks, 44 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 443 reads, 528 writes
+hd0:1: 410 reads, 528 writes
 hd1:0: 103 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 926 characters output

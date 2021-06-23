@@ -16,13 +16,13 @@ Executing 'exec-bad-ptr':
 (exec-bad-ptr) begin
 exec-bad-ptr: exit(-1)
 Execution of 'exec-bad-ptr' complete.
-Timer: 100 ticks
-Thread: 54 idle ticks, 42 kernel ticks, 5 user ticks
+Timer: 92 ticks
+Thread: 40 idle ticks, 48 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 441 reads, 526 writes
+hd0:1: 434 reads, 527 writes
 hd1:0: 102 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 955 characters output
+Console: 954 characters output
 Keyboard: 0 keys pressed
 Exception: 1 page faults
 Powering off...

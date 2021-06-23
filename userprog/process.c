@@ -514,23 +514,23 @@ process_exit (void) {
    If the parent didn't wait for this child, it must have freed the child when it exited by the loop right above,
    or will deallocate this child even after it's died after this child by the loop right above(if child->status == THREAD_EXIT).
    */
-   lock_acquire(&cur->exit_lock);
+   // lock_acquire(&cur->exit_lock);
    
-   if(cur->parent){
-      /*
-      set process_exit as true so that it can change it's status to THREAD_EXIT instead of THERAD_DYING in thread_exit() in thread.c.
-      Only when this one has parent.
-      Initialized as false in init_thread() in thread.c
-      */
-      
-      cond_signal(&cur->exit_cond, &cur->exit_lock);
-      cur->process_exit = true;
-      sema_up(&cur->parent->fork_sema);
-   }
+   // if(cur->parent){
+   //    /*
+   //    set process_exit as true so that it can change it's status to THREAD_EXIT instead of THERAD_DYING in thread_exit() in thread.c.
+   //    Only when this one has parent.
+   //    Initialized as false in init_thread() in thread.c
+   //    */
+   //    cur->process_exit = true;
+   //    cond_signal(&cur->exit_cond, &cur->exit_lock);
+   //    // cur->process_exit = true;
+   //    sema_up(&cur->parent->fork_sema);
+   // }
 
    process_cleanup ();
    /*release lock for cond_signal, exit_lock*/
-   lock_release(&cur->exit_lock);
+   // lock_release(&cur->exit_lock);
 
    // if(cur->parent) // i don't know here is the right place
    // sema_up(&(cur->parent)->fork_sema);

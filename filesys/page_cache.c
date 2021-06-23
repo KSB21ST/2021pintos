@@ -64,7 +64,7 @@ pagecache_init (void) {
 	lock_init(&read_ahead_lock);
 	cond_init (&read_ahead_cond);
 	lock_init (&cache_lock);
-	lock_init (&finished_lock);
+	// lock_init (&finished_lock);
 	page_cache_kworkerd(NULL);
 	
 }
@@ -135,12 +135,12 @@ static bool
 page_cache_readahead (struct page *page, void *kva) {
 	while (true) 
 	{
-		lock_acquire (&finished_lock);
+		// lock_acquire (&finished_lock);
 		if (finished) {
-		lock_release (&finished_lock);
+		// lock_release (&finished_lock);
 		break;
 		}
-		lock_release (&finished_lock);
+		// lock_release (&finished_lock);
     disk_sector_t sector = page_read_ahead_wait();
 
 		struct page_cache *info = get_or_evict_cache (sector);
@@ -168,12 +168,12 @@ static bool
 page_cache_writeback (struct page *page) {
 	while (true) 
 	{
-		lock_acquire (&finished_lock);
+		// lock_acquire (&finished_lock);
 		if (finished) {
-      lock_release (&finished_lock);
+      // lock_release (&finished_lock);
       break;
 		}
-		lock_release (&finished_lock);
+		// lock_release (&finished_lock);
     clock_buffer_cache(true);
 		timer_msleep (WRITE_BEIND_PERIOD_MS);
 	}
@@ -182,9 +182,9 @@ page_cache_writeback (struct page *page) {
 /* Destory the page_cache. */
 void
 page_cache_destroy (struct page *page) {
-	lock_acquire (&finished_lock);
+	// lock_acquire (&finished_lock);
 	finished = true;
-	lock_release (&finished_lock);
+	// lock_release (&finished_lock);
   clock_buffer_cache(false);
 }
 

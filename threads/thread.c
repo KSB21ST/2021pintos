@@ -328,7 +328,25 @@ thread_exit (void) {
 	/* Just set our status to dying and schedule another process.
 	   We will be destroyed during the call to schedule_tail(). */
 	intr_disable ();
-	int status = curr->process_exit ? THREAD_EXIT:THREAD_DYING;
+	// int status = curr->process_exit ? THREAD_EXIT:THREAD_DYING;
+
+	lock_acquire(&curr->exit_lock);
+   	int status;
+	if(curr->parent){
+		/*
+		set process_exit as true so that it can change it's status to THREAD_EXIT instead of THERAD_DYING in thread_exit() in thread.c.
+		Only when this one has parent.
+		Initialized as false in init_thread() in thread.c
+		*/
+		curr->process_exit = true;
+		status = curr->process_exit ? THREAD_EXIT:THREAD_DYING;
+		cond_signal(&curr->exit_cond, &curr->exit_lock);
+		// cur->process_exit = true;
+		sema_up(&curr->parent->fork_sema);
+	}else{
+		status = curr->process_exit ? THREAD_EXIT:THREAD_DYING;
+	}
+	lock_release(&curr->exit_lock);
 	do_schedule (status);
 	// do_schedule(THREAD_DYING);
 	NOT_REACHED ();

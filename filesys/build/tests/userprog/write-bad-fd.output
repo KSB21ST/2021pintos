@@ -16,10 +16,10 @@ Executing 'write-bad-fd':
 (write-bad-fd) begin
 write-bad-fd: exit(-1)
 Execution of 'write-bad-fd' complete.
-Timer: 69 ticks
-Thread: 30 idle ticks, 37 kernel ticks, 2 user ticks
+Timer: 89 ticks
+Thread: 38 idle ticks, 47 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 410 reads, 528 writes
+hd0:1: 443 reads, 528 writes
 hd1:0: 103 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 954 characters output

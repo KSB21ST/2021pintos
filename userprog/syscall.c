@@ -855,9 +855,15 @@ int mount (const char *path, int chan_no, int dev_no){
 		return -1;
 	}
    // printf("dir_sector: %d, dir->isscratch: %d, dir->mountpt: %d\n", dir->inode->sector, dir->inode->data._isscratch, dir->inode->data._mountpt);
-	if (dir != NULL)
-		dir_lookup (dir, path_name, &inode);
-	dir_close (dir);
+
+	if (dir->inode->data._isscratch){
+      dir_lookup_scratch (dir, path_name, &inode);
+      dir_close_scratch (dir);
+   }else{
+      dir_lookup (dir, path_name, &inode);
+      dir_close (dir);
+   }
+   
 	if (inode == NULL){
       // printf("inode is null\n");
 		palloc_free_page(path_name);
@@ -1003,6 +1009,9 @@ int umount (const char *path){
 		palloc_free_page(path_copy);
 		return -1;
 	}
+   if(!inode->data._mountpt){
+      return -1;
+   }
 
    if(inode->data._isscratch){
       mount_cnt[1]--;

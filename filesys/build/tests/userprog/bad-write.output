@@ -16,10 +16,10 @@ Executing 'bad-write':
 (bad-write) begin
 bad-write: exit(-1)
 Execution of 'bad-write' complete.
-Timer: 81 ticks
-Thread: 39 idle ticks, 40 kernel ticks, 3 user ticks
+Timer: 79 ticks
+Thread: 40 idle ticks, 37 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 419 reads, 526 writes
+hd0:1: 441 reads, 526 writes
 hd1:0: 102 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 933 characters output

@@ -503,7 +503,6 @@ parse_path(char *path_name, char *last_name)
 		//printf("hehe\n", inode_get_inumber(dir_get_inode(dir)));
 		else{
 			if(thread_current()->isscratch){
-				printf("here??\n");
 				t_dir = dir_open_scratch(inode_open_scratch(thread_current()->t_sector));
 			}else{
 				t_dir = dir_open(inode_open(thread_current()->t_sector));

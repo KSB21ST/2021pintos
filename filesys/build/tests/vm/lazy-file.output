@@ -40,13 +40,13 @@ Executing 'lazy-file':
 (lazy-file) end
 lazy-file: exit(0)
 Execution of 'lazy-file' complete.
-Timer: 91 ticks
-Thread: 42 idle ticks, 42 kernel ticks, 7 user ticks
+Timer: 115 ticks
+Thread: 43 idle ticks, 61 kernel ticks, 12 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 641 reads, 626 writes
 hd1:0: 151 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1796 characters output
+Console: 1798 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

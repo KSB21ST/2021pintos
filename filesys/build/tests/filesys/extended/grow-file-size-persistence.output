@@ -14,10 +14,10 @@ Executing 'tar fs.tar /':
 tar: exit(0)
 Execution of 'tar' complete.
 Getting 'fs.tar' from the file system...
-Timer: 100 ticks
-Thread: 33 idle ticks, 39 kernel ticks, 28 user ticks
+Timer: 130 ticks
+Thread: 42 idle ticks, 57 kernel ticks, 31 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 886 reads, 270 writes
+hd0:1: 990 reads, 270 writes
 hd1:0: 0 reads, 233 writes
 hd1:1: 0 reads, 0 writes
 Console: 876 characters output

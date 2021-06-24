@@ -256,19 +256,11 @@ sema_up(fork_sema) will be done in thread_exit, no need to be done here.
  * Returns -1 on fail. */
 int
 process_exec (void *f_name) {
-   // lock_acquire(&exec_lock);
    struct thread *cur = thread_current();
    char *file_name = f_name;
    bool success;
-   // printf("p_exec\n");
-   // sema_down(&cur->exec_sema);
-   /*palloc_get_page might be too big to allocate, since it is 4KB. But couldn't risk using malloc. free it later.
-   pointer for argument array. Would contain parsed argument from input f_name after 'argument_parse' function
-   */
    char *argv;
    argv = palloc_get_page(PAL_ZERO); 
-   // argv = malloc(128);
-   // argv = (char *)malloc(sizeof(char)*1024);
    if(f_name == NULL) exit(-1);
 
    /* We cannot use the intr_frame in the thread structure.
@@ -279,28 +271,15 @@ process_exec (void *f_name) {
    _if.cs = SEL_UCSEG;
    _if.eflags = FLAG_IF | FLAG_MBS;
 
-   /*
-   use palloc_get_page to avoid passing kernel address to load function. 
-   fn_copy is for argument_parse function
-   fn_copy2 is for realname, which is input file name to load function
-   just by declaring 
-   char *file_name = f_name;
-   was not safe. Why? maybe f_name was in kernel address.
-   Had to allocate new page in user program memeory and copy the content of f_name.
-   */
    char *fn_copy;
    char *fn_copy2;
    fn_copy = palloc_get_page(0);
    fn_copy2 = palloc_get_page (0);
-   //fn_copy = (char*)malloc(sizeof(char)*1024);
-   //fn_copy2 = (char*)malloc(sizeof(char)*1024);
    if (fn_copy == NULL || fn_copy2 == NULL){
        return -1;
    }
    strlcpy (fn_copy, file_name, PGSIZE);
    strlcpy (fn_copy2, file_name, PGSIZE);
-   //strlcpy(fn_copy, file_name, sizeof(char)*1024);
-   //strlcpy(fn_copy2, file_name, sizeof(char)*1024);
    char *next_ptr;
    char *realname;
 
@@ -320,11 +299,6 @@ process_exec (void *f_name) {
    int argc = argument_parse(fn_copy, argv);
    /*load - did not change anything in load*/
    success = load(realname, &_if);
-   /*
-   if load success, stack parsed arguments in stack.
-   and sema_up fork_sema to notify the parent that load is finished.
-   parent thread will be running from now, woken up from sema_down in process_fork
-   */
    if(success){
       argument_stack(argv, argc, &_if);
    }
@@ -334,24 +308,8 @@ process_exec (void *f_name) {
    free all the allocated pages. important for multioom, memory leak.
    */
    palloc_free_page(argv);
-   // free(argv);
-
    palloc_free_page (fn_copy); 
    palloc_free_page(fn_copy2);
-   //free(fn_copy);
-   //free(fn_copy2);
-   // palloc_free_page(file_name); 
-   /*
-   file_name was allocated in process_create_initd, if this is the second created process. 
-   But if not second thread, where was it allocated?
-   */
-   // if(!strcmp(thread_current()->name, 'child-arg'))
-      // hex_dump(_if.rsp , _if.rsp , KERN_BASE - _if.rsp, true);
-   /*
-   if load fails, return -1.
-   just by returning -1 will eventually call thread_exit().
-   if this is a child, it will sema_up at thread_exit().
-   */
    if(!success){
       // sema_up(&(thread_current()->parent)->fork_sema); // edit
       // printf("kill??\n");
@@ -359,9 +317,6 @@ process_exec (void *f_name) {
    }
 
    /* Start switched process. */
-   // lock_release(&exec_lock);
-   // printf("end of p_exec, tid: %d\n", thread_current()->tid);
-   // sema_up(&(thread_current()->parent)->fork_sema); // edit
    do_iret (&_if);
    NOT_REACHED ();
 }
@@ -446,9 +401,7 @@ process_exit (void) {
    for(int i=0;i<128;i++){
       struct file *_file = cur_fd_table[i];
       if(_file == NULL || _file == -1 || _file == -2) continue;
-      // lock_acquire(&file_locker);
       close(i);
-      // lock_release(&file_locker);
       cur_fd_table[i] = 0;
    }
    palloc_free_page(cur->fd_table);
@@ -456,16 +409,6 @@ process_exit (void) {
    if(cur->executable)
        file_close(cur->executable);
 
-   /*
-   So this is what I wrote about in process_wait().
-   Iterate child list before I die.
-   Tell the child that I am dying.(child->parent = NULL)
-   remove the child from the child_list.
-   If there's a waiting child which has THREAD_EXIT status, free the child.
-   No need to free the THREAD_EXIT child's fd_table, because it would already have been freed when
-   the child previously entered process_wait().
-   If a child has THREAD_EXIT status, the child SHOULD have entered process_exit().
-   */
    struct list_elem *e;
    struct thread *t;
    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
@@ -477,46 +420,7 @@ process_exit (void) {
       if(t->status == THREAD_EXIT) palloc_free_page(t);
    }
 
-   // #ifdef VM
-   //    if(thread_current()->parent != NULL)
-   //       sema_up(&(thread_current()->parent)->fork_sema);
-   // #endif
-
-   /*
-   sema_up the fork_sema, where the parent will have been waiting for in process_fork if load in process_exec haven't failed.
-   sema_up in total may have occured two times, if a thread successfully loaded (fist sema_up) and exited normall (second sema_up)
-   because normal threads enter process_exit too.
-   However, it doesn't mater because once the parent is sema_up-ed, it will sema_init again in process_fork.
-   */
-
-
-   /*
-   signal waiting parent if there is a parent. 
-   Use cond_signal.
-   If the parent didn't wait for this child, it must have freed the child when it exited by the loop right above,
-   or will deallocate this child even after it's died after this child by the loop right above(if child->status == THREAD_EXIT).
-   */
-   // lock_acquire(&cur->exit_lock);
-   
-   // if(cur->parent){
-   //    /*
-   //    set process_exit as true so that it can change it's status to THREAD_EXIT instead of THERAD_DYING in thread_exit() in thread.c.
-   //    Only when this one has parent.
-   //    Initialized as false in init_thread() in thread.c
-   //    */
-   //    cur->process_exit = true;
-   //    cond_signal(&cur->exit_cond, &cur->exit_lock);
-   //    // cur->process_exit = true;
-   //    sema_up(&cur->parent->fork_sema);
-   // }
-
    process_cleanup ();
-   /*release lock for cond_signal, exit_lock*/
-   // lock_release(&cur->exit_lock);
-
-   // if(cur->parent) // i don't know here is the right place
-   // sema_up(&(cur->parent)->fork_sema);
-   // printf("process_exit is done!\n");
 }
 
 /* Free the current process's resources. */
@@ -947,15 +851,11 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* TODO: Set up aux to pass information to the lazy_load_segment. */
       struct page_load *aux = aux_load(file, ofs, page_read_bytes, page_zero_bytes);
-      // lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
                writable, lazy_load_segment, aux))
       {
-         // lock_release(&file_locker);
          return false;
       }
-         
-      // lock_release(&file_locker);
       /* Advance. */
       zero_bytes -= page_zero_bytes;
       read_bytes -= page_read_bytes;
@@ -1001,7 +901,8 @@ void argument_stack(char **argv, int argc, struct intr_frame *if_)
     while (if_->rsp % 8 != 0)
     {
       if_->rsp--;
-      *(uint8_t *)(if_->rsp) = 0;
+      // *(uint8_t *)(if_->rsp) = 0;
+      memset(if_->rsp, 0, 1);
     }
     
     /* insert address of strings including sentinel */

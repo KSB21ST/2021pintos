@@ -104,15 +104,18 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    /* Clone current thread to new thread.*/
+   enum intr_level old_level = intr_disable();
    struct thread *curr = thread_current();
 
    /*semaphore for forking and waiting the child to finish load. If success, sema_up after load. If load fails, sema_up at process_exit*/
    sema_init(&curr->fork_sema, 0); 
    int ans = thread_create(name, PRI_DEFAULT, __do_fork, if_); /*create child thread*/
    if (ans == TID_ERROR){ /*if thread_create went wrong reaturn TID_ERROR which is -1*/
+      intr_set_level(old_level);
       return ans;
    }
    sema_down(&curr->fork_sema); /*wait for the child to finish loading*/
+   intr_set_level(old_level);
    return ans;
 }
 
@@ -164,6 +167,7 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
  *       this function. */
 static void
 __do_fork (void *aux) {
+   enum intr_level old_level = intr_disable();
    struct intr_frame if_;
    // struct thread *parent = (struct thread *) aux;
    struct thread *current = thread_current ();
@@ -200,7 +204,7 @@ __do_fork (void *aux) {
     * TODO:       the resources of parent.*/
 
    /*acquire file_locker for file_duplicate, and any other possible interruptions*/
-   lock_acquire(&file_locker); 
+   // lock_acquire(&file_locker); 
    struct file ** parent_fd_table = parent->fd_table;
    struct file ** child_fd_table = current->fd_table;
    struct file *child_f;
@@ -220,7 +224,7 @@ __do_fork (void *aux) {
       }
       current->fd_table[i] = child_f;
    }   
-   lock_release(&file_locker);
+   // lock_release(&file_locker);
    /*if we memcpy parent's fd table to child's fd table without duplicating file, multioom pass but other tests fail*/
    // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table)); 
    // printf("before process_init\n");
@@ -234,6 +238,7 @@ __do_fork (void *aux) {
       if_.R.rax = 0; 
       // sema_up(&parent->fork_sema); // edit
       sema_down(&current->exec_sema); // edit
+      intr_set_level(old_level);
       do_iret (&if_);
    }
 error:
@@ -243,6 +248,7 @@ sema_up(fork_sema) will be done in thread_exit, no need to be done here.
 */
    sema_up(&parent->fork_sema);
    current->exit_status=-1;
+   intr_set_level(old_level);
    thread_exit ();
 }
 
@@ -312,12 +318,8 @@ process_exec (void *f_name) {
 
    /*parse arguments. use fn_copy, which is copy of f_name. argv is list for arguments.*/
    int argc = argument_parse(fn_copy, argv);
-
    /*load - did not change anything in load*/
    success = load(realname, &_if);
-
-   sema_up(&cur->parent->fork_sema);
-   sema_down(&cur->exec_sema);
    /*
    if load success, stack parsed arguments in stack.
    and sema_up fork_sema to notify the parent that load is finished.
@@ -325,11 +327,9 @@ process_exec (void *f_name) {
    */
    if(success){
       argument_stack(argv, argc, &_if);
-      // #ifndef VM
-      // sema_up(&(thread_current()->parent)->fork_sema);
-      // #endif
    }
-   
+   sema_up(&cur->parent->fork_sema);
+   sema_down(&cur->exec_sema);
    /*
    free all the allocated pages. important for multioom, memory leak.
    */
@@ -388,6 +388,7 @@ process_wait (tid_t child_tid UNUSED) {
    /*
    iterate lists of child and find the child that has the same tid with input argument. If there is no such child, return -1.
    */
+  enum intr_level old_level = intr_disable();
    for (e = list_begin(&(thread_current()->child_list)); e != list_end(&(thread_current()->child_list)); e = list_next(e)) 
    {
       t = list_entry(e, struct thread, child_elem);
@@ -398,35 +399,15 @@ process_wait (tid_t child_tid UNUSED) {
             palloc_free_page(t);
             return -1;
          } 
-         /*
-         so condition is a very unique term. Go to synch.c for more explanation.
-         cond_wait will wait for cond_signal. Similar to semaphore, but multiple jobs can wait for one signal.
-         also, it should have a pair of lock and condition to implement.
-         In thread.h, implemented exit_lock and exit_cond.
-         cond_signal for exit_lock is called in thread_exit().
-         this is because, process_wait() waits for the child to enter exit(). The child will close all the files, sema_up the forked parent, 
-         then call cond_signal and make process_exit = true if it has a parent. After calling cond_signal, it will retreat to thread_exit(). 
-         In thread_exit() in thread.c, if child->process_exit is true, it will become a status of THREAD_EXIT.
-         THREAD_EXIT is thread status I implemented. Schedule will only push thread if the thread status is THREAD_DYING. 
-         If thread status is THREAD_EXIT,it won't be killed by scheduler. Thus it will pend like a zombie.
-         A thread can only be THREAD_EXIT if it has a parent.(see the code in process_exit)
-         If it doesn't have a parent, doesn't call cond_signal, because it has no waiting parent and the thread will just exit like normal thraed.
-         if it has parent but parent doesn't wait, parent will make all the children orphans in thread_exit() by iterating child_list before it dies.
-         So either child has parent but doesn't wait, child has parent but wait, child does not have parent. Three cases. This is for the second case.
-         */
-         for(int temp = 0; temp < 50; temp++){
+         for(int temp = 0; temp < 200; temp++){
             sema_up(&t->exec_sema);
          }
-         // printf("before lock in p_wait\n");
          lock_acquire(&t->exit_lock);
-         // printf("after lock in p_wait\n");
-         // if(t->status != THREAD_EXIT){
             
          while(t->process_exit != true){
-            // printf("wait child %d\n", t->tid);
             cond_wait(&t->exit_cond, &t->exit_lock);
-            // printf("after cond_wait\n");
          }
+         intr_set_level(old_level);
          // printf("after waiting\n");
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
@@ -439,6 +420,7 @@ process_wait (tid_t child_tid UNUSED) {
          return exit_status;
       }
    }
+   intr_set_level(old_level);
    return -1;
 }
 
@@ -464,9 +446,9 @@ process_exit (void) {
    for(int i=0;i<128;i++){
       struct file *_file = cur_fd_table[i];
       if(_file == NULL || _file == -1 || _file == -2) continue;
-      lock_acquire(&file_locker);
+      // lock_acquire(&file_locker);
       close(i);
-      lock_release(&file_locker);
+      // lock_release(&file_locker);
       cur_fd_table[i] = 0;
    }
    palloc_free_page(cur->fd_table);
@@ -658,12 +640,12 @@ load (const char *file_name, struct intr_frame *if_) {
       goto done;
    process_activate (thread_current ());
 
-   lock_acquire(&file_locker);
+   // lock_acquire(&file_locker);
 
    /* Open executable file. */
    file = filesys_open (file_name);
 
-   lock_release(&file_locker);
+   // lock_release(&file_locker);
 
    if (file == NULL) {
       printf ("load: %s: open failed\n", file_name);
@@ -965,15 +947,15 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* TODO: Set up aux to pass information to the lazy_load_segment. */
       struct page_load *aux = aux_load(file, ofs, page_read_bytes, page_zero_bytes);
-      lock_acquire(&file_locker);
+      // lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
                writable, lazy_load_segment, aux))
       {
-         lock_release(&file_locker);
+         // lock_release(&file_locker);
          return false;
       }
          
-      lock_release(&file_locker);
+      // lock_release(&file_locker);
       /* Advance. */
       zero_bytes -= page_zero_bytes;
       read_bytes -= page_read_bytes;

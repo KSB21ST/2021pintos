@@ -64,7 +64,6 @@ pagecache_init (void) {
 	lock_init(&read_ahead_lock);
 	cond_init (&read_ahead_cond);
 	lock_init (&cache_lock);
-	// lock_init (&finished_lock);
 	page_cache_kworkerd(NULL);
 	
 }
@@ -86,7 +85,6 @@ page_cache_read(disk_sector_t sector, void *buffer){
   lock_acquire (&read_ahead_lock);
 	struct read_ahead_entry* entry = malloc (sizeof (struct read_ahead_entry));
 	entry->sector = sector + 1;
-	// lock_acquire (&read_ahead_lock);
 	list_push_back (&read_ahead_queue, &entry->elem);
 	cond_signal (&read_ahead_cond, &read_ahead_lock);
 	lock_release (&read_ahead_lock);
@@ -135,12 +133,9 @@ static bool
 page_cache_readahead (struct page *page, void *kva) {
 	while (true) 
 	{
-		// lock_acquire (&finished_lock);
 		if (finished) {
-		// lock_release (&finished_lock);
 		break;
 		}
-		// lock_release (&finished_lock);
     disk_sector_t sector = page_read_ahead_wait();
 
 		struct page_cache *info = get_or_evict_cache (sector);
@@ -151,7 +146,6 @@ page_cache_readahead (struct page *page, void *kva) {
 disk_sector_t
 page_read_ahead_wait(void){
   lock_acquire (&read_ahead_lock);
-  // lock_acquire (&cache_lock);
   while (list_empty (&read_ahead_queue))
   {
     cond_wait (&read_ahead_cond, &read_ahead_lock);
@@ -168,12 +162,9 @@ static bool
 page_cache_writeback (struct page *page) {
 	while (true) 
 	{
-		// lock_acquire (&finished_lock);
 		if (finished) {
-      // lock_release (&finished_lock);
       break;
 		}
-		// lock_release (&finished_lock);
     clock_buffer_cache(true);
 		timer_msleep (WRITE_BEIND_PERIOD_MS);
 	}
@@ -182,9 +173,7 @@ page_cache_writeback (struct page *page) {
 /* Destory the page_cache. */
 void
 page_cache_destroy (struct page *page) {
-	// lock_acquire (&finished_lock);
 	finished = true;
-	// lock_release (&finished_lock);
   clock_buffer_cache(false);
 }
 

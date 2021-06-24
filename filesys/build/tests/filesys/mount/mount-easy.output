@@ -29,10 +29,10 @@ Formatting file system...done.
 (mount-easy) end
 mount-easy: exit(0)
 Execution of 'mount-easy' complete.
-Timer: 116 ticks
-Thread: 43 idle ticks, 56 kernel ticks, 17 user ticks
+Timer: 109 ticks
+Thread: 42 idle ticks, 51 kernel ticks, 16 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 589 reads, 531 writes
+hd0:1: 587 reads, 531 writes
 hd1:0: 341 reads, 25 writes
 hd1:1: 0 reads, 0 writes
 Console: 1395 characters output

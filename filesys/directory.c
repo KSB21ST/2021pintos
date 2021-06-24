@@ -568,7 +568,6 @@ parse_path(char *path_name, char *last_name)
 			token = extra;
 			extra = strtok_r (NULL, "/", &last);
 			i++;
-
 		}else{
 			// printf("not scratch\n");
 			if(!dir_lookup(t_dir, token, &t_inode)){ //dir이 존재하지 않으면

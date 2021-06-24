@@ -16,8 +16,8 @@ Executing 'exit':
 (exit) begin
 exit: exit(57)
 Execution of 'exit' complete.
-Timer: 95 ticks
-Thread: 42 idle ticks, 47 kernel ticks, 7 user ticks
+Timer: 94 ticks
+Thread: 36 idle ticks, 52 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 441 reads, 526 writes
 hd1:0: 102 reads, 0 writes

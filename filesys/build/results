@@ -89,7 +89,7 @@ pass tests/filesys/base/sm-full
 pass tests/filesys/base/sm-random
 pass tests/filesys/base/sm-seq-block
 pass tests/filesys/base/sm-seq-random
-FAIL tests/filesys/base/syn-read
+pass tests/filesys/base/syn-read
 pass tests/filesys/base/syn-remove
 pass tests/filesys/base/syn-write
 pass tests/filesys/extended/dir-empty-name
@@ -130,9 +130,9 @@ pass tests/vm/pt-grow-stk-sc
 pass tests/vm/page-linear
 pass tests/vm/page-parallel
 pass tests/vm/page-merge-seq
-FAIL tests/vm/page-merge-par
+pass tests/vm/page-merge-par
 pass tests/vm/page-merge-stk
-pass tests/vm/page-merge-mm
+FAIL tests/vm/page-merge-mm
 pass tests/vm/page-shuffle
 pass tests/vm/mmap-read
 pass tests/vm/mmap-close
@@ -142,7 +142,7 @@ pass tests/vm/mmap-twice
 pass tests/vm/mmap-write
 pass tests/vm/mmap-ro
 pass tests/vm/mmap-exit
-pass tests/vm/mmap-shuffle
+FAIL tests/vm/mmap-shuffle
 pass tests/vm/mmap-bad-fd
 pass tests/vm/mmap-clean
 pass tests/vm/mmap-inherit

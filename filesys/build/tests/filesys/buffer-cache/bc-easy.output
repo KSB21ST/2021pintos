@@ -24,10 +24,10 @@ Executing 'bc-easy':
 (bc-easy) end
 bc-easy: exit(0)
 Execution of 'bc-easy' complete.
-Timer: 287 ticks
-Thread: 31 idle ticks, 52 kernel ticks, 204 user ticks
+Timer: 355 ticks
+Thread: 43 idle ticks, 45 kernel ticks, 267 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 552 reads, 540 writes
+hd0:1: 623 reads, 540 writes
 hd1:0: 227 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1124 characters output

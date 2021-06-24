@@ -34,7 +34,7 @@ void syscall_handler (struct intr_frame *);
 void check_addr(const void* sp);
 void check_buffer(void *buffer, unsigned size);
 int ans = -1;
-static struct lock file_lock;
+// static struct lock file_lock;
 static bool sym_mkdir (const char *dir);
 //end 20180109
 
@@ -344,8 +344,9 @@ read (int fd, void *buffer, unsigned length)
    #ifdef VM
    check_buffer(buffer, length);
    struct page *p = spt_find_page(&thread_current()->spt, pg_round_down(buffer));
-   if(p->writable != true) //edit for cow
+   if(p->writable != true){ //edit for cow
       exit(-1);
+   }
    #endif
    // check_addr(buffer);
    int cnt = 0;

@@ -22,9 +22,11 @@
 #ifdef VM
 #include "vm/vm.h"
 #endif
+#include "userprog/syscall.h"
 
 //start 20180109
 #include "filesys/inode.h"
+
 void argument_stack(char **argv, int argc, struct intr_frame *if_); //stack arguments after load
 int argument_parse(const char *file_name, char **argv); //parse argument before load in process_exec
 static struct lock file_locker; //lock for file access, before proj3 implementation
@@ -104,6 +106,7 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
    /* Clone current thread to new thread.*/
+   enum intr_level old_level = intr_disable(); // edit intr
    struct thread *curr = thread_current();
 
    /*semaphore for forking and waiting the child to finish load. If success, sema_up after load. If load fails, sema_up at process_exit*/
@@ -113,6 +116,7 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
       return ans;
    }
    sema_down(&curr->fork_sema); /*wait for the child to finish loading*/
+   intr_set_level(old_level);
    return ans;
 }
 
@@ -164,6 +168,7 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
  *       this function. */
 static void
 __do_fork (void *aux) {
+   enum intr_level old_level = intr_disable(); // edit intr
    struct intr_frame if_;
    // struct thread *parent = (struct thread *) aux;
    struct thread *current = thread_current ();
@@ -234,6 +239,7 @@ __do_fork (void *aux) {
       if_.R.rax = 0; 
       // sema_up(&parent->fork_sema); // edit
       sema_down(&current->exec_sema); // edit
+      intr_set_level(old_level);
       do_iret (&if_);
    }
 error:
@@ -289,6 +295,7 @@ process_exec (void *f_name) {
    //fn_copy = (char*)malloc(sizeof(char)*1024);
    //fn_copy2 = (char*)malloc(sizeof(char)*1024);
    if (fn_copy == NULL || fn_copy2 == NULL){
+      printf("fn_copy or fn_copy2 is null\n");
        return -1;
    }
    strlcpy (fn_copy, file_name, PGSIZE);
@@ -297,6 +304,7 @@ process_exec (void *f_name) {
    //strlcpy(fn_copy2, file_name, sizeof(char)*1024);
    char *next_ptr;
    char *realname;
+
 
    /* We first kill the current context */
    process_cleanup ();
@@ -316,19 +324,23 @@ process_exec (void *f_name) {
    /*load - did not change anything in load*/
    success = load(realname, &_if);
 
-   sema_up(&cur->parent->fork_sema);
-   sema_down(&cur->exec_sema);
+   // sema_up(&cur->parent->fork_sema);
+   // sema_down(&cur->exec_sema);
    /*
    if load success, stack parsed arguments in stack.
    and sema_up fork_sema to notify the parent that load is finished.
    parent thread will be running from now, woken up from sema_down in process_fork
    */
+   // lock_acquire(&file_locker);
    if(success){
       argument_stack(argv, argc, &_if);
       // #ifndef VM
       // sema_up(&(thread_current()->parent)->fork_sema);
       // #endif
    }
+   // lock_release(&file_locker);
+   sema_up(&cur->parent->fork_sema);
+   sema_down(&cur->exec_sema);
    
    /*
    free all the allocated pages. important for multioom, memory leak.
@@ -385,6 +397,7 @@ process_wait (tid_t child_tid UNUSED) {
    struct list_elem* e;
    struct thread* t = NULL;
    int exit_status;
+   enum intr_level old_level = intr_disable(); // edit intr
    /*
    iterate lists of child and find the child that has the same tid with input argument. If there is no such child, return -1.
    */
@@ -414,7 +427,7 @@ process_wait (tid_t child_tid UNUSED) {
          if it has parent but parent doesn't wait, parent will make all the children orphans in thread_exit() by iterating child_list before it dies.
          So either child has parent but doesn't wait, child has parent but wait, child does not have parent. Three cases. This is for the second case.
          */
-         for(int temp = 0; temp < 50; temp++){
+         for(int temp = 0; temp < 200; temp++){
             sema_up(&t->exec_sema);
          }
          // printf("before lock in p_wait\n");
@@ -431,6 +444,7 @@ process_wait (tid_t child_tid UNUSED) {
          exit_status = t->exit_status;
          list_remove(&t->child_elem);
          lock_release(&t->exit_lock);
+         intr_set_level(old_level);
          /*
          in thread_create(), every therad get's allocated by palloc_get_page, which is 1KB. 
          The discription in thead.h recommends thread structure to have less than 1KB of memeory.
@@ -439,6 +453,7 @@ process_wait (tid_t child_tid UNUSED) {
          return exit_status;
       }
    }
+   intr_set_level(old_level);
    return -1;
 }
 
@@ -451,6 +466,7 @@ process_exit (void) {
     * TODO: project2/process_termination.html).
     * TODO: We recommend you to implement process resource cleanup here. */
    //start 20180109
+   enum intr_level old_level = intr_disable(); // edit intr
    struct thread *cur = thread_current ();
    struct file **cur_fd_table = cur->fd_table;
    /*
@@ -464,15 +480,21 @@ process_exit (void) {
    for(int i=0;i<128;i++){
       struct file *_file = cur_fd_table[i];
       if(_file == NULL || _file == -1 || _file == -2) continue;
+      intr_set_level(old_level); // edit intr
       lock_acquire(&file_locker);
       close(i);
       lock_release(&file_locker);
+      old_level = intr_disable(); // edit intr
+
       cur_fd_table[i] = 0;
    }
    palloc_free_page(cur->fd_table);
 
-   if(cur->executable)
+   if(cur->executable){
+      intr_set_level(old_level); // edit intr
        file_close(cur->executable);
+       old_level = intr_disable(); // edit intr
+   }
 
    /*
    So this is what I wrote about in process_wait().
@@ -529,6 +551,7 @@ process_exit (void) {
    // }
 
    process_cleanup ();
+   intr_set_level(old_level);
    /*release lock for cond_signal, exit_lock*/
    // lock_release(&cur->exit_lock);
 

@@ -8,6 +8,8 @@
 #include "filesys/inode.h"
 #include "threads/interrupt.h"
 
+static struct lock file_lock;
+
 void syscall_init (void);
 void check_addr(const void* va);
 void check_stack_addr(const void* sp, void *va);

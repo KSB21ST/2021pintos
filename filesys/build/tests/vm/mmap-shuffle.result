@@ -1,1 +1,27 @@
-PASS
+FAIL
+Kernel panic in run: PANIC at ../../devices/timer.c:217 in real_time_sleep(): assertion `intr_get_level () == INTR_ON' failed.
+Call stack: 0x80042146e3 0x800420e5ce 0x800420e2d0 0x8004210be6 0x8004210c1b 0x8004210817 0x800420fd65 0x8004224302 0x8004223a3c 0x800422281d 0x800421fb9f 0x800422a5c6 0x800421b230 0x8004229914 0x8004217081 0x80042297c4 0x8004218981 0x800421893c 0x80042071f3 0x800421a52b 0x8004219ee4 0x8004219d6f 0x401104
+Translation of call stack:
+0x00000080042146e3: debug_panic (lib/kernel/debug.c:32)
+0x000000800420e5ce: real_time_sleep (devices/timer.c:218)
+0x000000800420e2d0: timer_nsleep (devices/timer.c:130)
+0x0000008004210be6: select_device (devices/disk.c:503)
+0x0000008004210c1b: select_device_wait (devices/disk.c:511)
+0x0000008004210817: select_sector (devices/disk.c:415)
+0x000000800420fd65: disk_read (devices/disk.c:220)
+0x0000008004224302: get_or_evict_cache (filesys/page_cache.c:263)
+0x0000008004223a3c: page_cache_write (filesys/page_cache.c:97)
+0x000000800422281d: inode_write_at (filesys/inode.c:545)
+0x000000800421fb9f: file_write (filesys/file.c:120)
+0x000000800422a5c6: do_munmap (vm/file.c:144)
+0x000000800421b230: munmap (userprog/syscall.c:532)
+0x0000008004229914: hash_file_backup (vm/vm.c:382)
+0x0000008004217081: hash_apply (lib/kernel/hash.c:160 (discriminator 3))
+0x00000080042297c4: supplemental_page_table_kill (vm/vm.c:356)
+0x0000008004218981: process_cleanup (userprog/process.c:576)
+0x000000800421893c: process_exit (userprog/process.c:554)
+0x00000080042071f3: thread_exit (threads/thread.c:330)
+0x000000800421a52b: fork (userprog/syscall.c:217)
+0x0000008004219ee4: syscall_handler (userprog/syscall.c:93)
+0x0000008004219d6f: no_sti (userprog/syscall-entry.o:?)
+0x0000000000401104: (unknown)

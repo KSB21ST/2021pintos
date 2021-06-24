@@ -21,13 +21,13 @@ Executing 'dir-rmdir':
 (dir-rmdir) end
 dir-rmdir: exit(0)
 Execution of 'dir-rmdir' complete.
-Timer: 82 ticks
-Thread: 31 idle ticks, 45 kernel ticks, 6 user ticks
+Timer: 108 ticks
+Thread: 46 idle ticks, 51 kernel ticks, 11 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 535 reads, 525 writes
+hd0:1: 595 reads, 525 writes
 hd1:0: 223 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1080 characters output
+Console: 1082 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

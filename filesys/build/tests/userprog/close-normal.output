@@ -20,13 +20,13 @@ Executing 'close-normal':
 (close-normal) end
 close-normal: exit(0)
 Execution of 'close-normal' complete.
-Timer: 101 ticks
-Thread: 50 idle ticks, 45 kernel ticks, 6 user ticks
+Timer: 90 ticks
+Thread: 39 idle ticks, 46 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 444 reads, 533 writes
+hd0:1: 485 reads, 533 writes
 hd1:0: 105 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1100 characters output
+Console: 1099 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

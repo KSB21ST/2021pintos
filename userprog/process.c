@@ -205,7 +205,7 @@ __do_fork (void *aux) {
     * TODO:       the resources of parent.*/
 
    /*acquire file_locker for file_duplicate, and any other possible interruptions*/
-   lock_acquire(&file_locker); 
+   // lock_acquire(&file_locker); 
    struct file ** parent_fd_table = parent->fd_table;
    struct file ** child_fd_table = current->fd_table;
    struct file *child_f;
@@ -225,7 +225,7 @@ __do_fork (void *aux) {
       }
       current->fd_table[i] = child_f;
    }   
-   lock_release(&file_locker);
+   // lock_release(&file_locker);
    /*if we memcpy parent's fd table to child's fd table without duplicating file, multioom pass but other tests fail*/
    // memcpy(&child_fd_table, &parent_fd_table, sizeof(parent_fd_table)); 
    // printf("before process_init\n");
@@ -481,9 +481,9 @@ process_exit (void) {
       struct file *_file = cur_fd_table[i];
       if(_file == NULL || _file == -1 || _file == -2) continue;
       // intr_set_level(old_level); // edit intr
-      lock_acquire(&file_locker);
+      // lock_acquire(&file_locker);
       close(i);
-      lock_release(&file_locker);
+      // lock_release(&file_locker);
       // old_level = intr_disable(); // edit intr
 
       cur_fd_table[i] = 0;
@@ -681,12 +681,12 @@ load (const char *file_name, struct intr_frame *if_) {
       goto done;
    process_activate (thread_current ());
 
-   lock_acquire(&file_locker);
+   // lock_acquire(&file_locker);
 
    /* Open executable file. */
    file = filesys_open (file_name);
 
-   lock_release(&file_locker);
+   // lock_release(&file_locker);
 
    if (file == NULL) {
       printf ("load: %s: open failed\n", file_name);
@@ -988,15 +988,15 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* TODO: Set up aux to pass information to the lazy_load_segment. */
       struct page_load *aux = aux_load(file, ofs, page_read_bytes, page_zero_bytes);
-      lock_acquire(&file_locker);
+      // lock_acquire(&file_locker);
       if (!vm_alloc_page_with_initializer (VM_ANON, upage,
                writable, lazy_load_segment, aux))
       {
-         lock_release(&file_locker);
+         // lock_release(&file_locker);
          return false;
       }
          
-      lock_release(&file_locker);
+      // lock_release(&file_locker);
       /* Advance. */
       zero_bytes -= page_zero_bytes;
       read_bytes -= page_read_bytes;
